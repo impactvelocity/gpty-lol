@@ -1,36 +1,26 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# gpty.lol
 
-## Getting Started
+A simple AI chat that changes costumes. Each costume swaps the UI and the assistant's personality.
 
-First, run the development server:
+Costumes: Plain Clothes (ChatGPT-style), MSN '03, Midnight BBS, ICQ '99, Skype '04, Messenger, haunted editions of each (Ghostenger, Crypt BBS, ICQ: Uh-Oh Boo, Skype from Beyond, Boo-ssenger) and a Séance (Ouija board).
+
+## Run
 
 ```bash
+cp .env.example .env.local   # add AI_GATEWAY_API_KEY
+npm install
 npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+Open http://localhost:3000. Press Ctrl/Cmd+K or use the costume button to change. `?costume=bbs-haunted` deep-links a costume.
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+## Add a costume
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+1. Add an entry to `src/lib/costumes.ts` (pick an existing `layout`, set palette and copy).
+2. Add its persona prompt to `src/lib/personas.ts` (keyed by costume id).
 
-## Learn More
+A new look needs a layout in `src/components/layouts/` registered in `ChatApp.tsx`.
 
-To learn more about Next.js, take a look at the following resources:
+## Stack
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
-
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
-
-## Deploy on Vercel
-
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
-
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+Next.js (App Router), AI SDK (`useChat`, `streamText`) via Vercel AI Gateway, AI Elements for the clean costume, Tailwind. Personas live server-side; the client only sends a costume id. Set `AI_MODEL` to change the model.
