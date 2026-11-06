@@ -5,7 +5,7 @@ import {
   type ToolSet,
   toUIMessageStream,
 } from "ai";
-import { maxOutputTokensFor, systemPromptFor } from "@/lib/personas";
+import { systemPromptFor } from "@/lib/personas";
 import type { ChatMessage } from "@/lib/types";
 
 export const maxDuration = 60;
@@ -19,10 +19,10 @@ export async function POST(req: Request) {
   const costumeId = typeof costume === "string" ? costume : "clean";
   const result = streamText({
     model: MODEL,
-    maxOutputTokens: maxOutputTokensFor(costumeId),
     // The persona lives on the server; the client only sends a costume id.
     system: systemPromptFor(costumeId),
-    messages: await convertToModelMessages(messages),
+    // Threads can grow long; only the recent history is sent to the model.
+    messages: await convertToModelMessages(messages.slice(-40)),
   });
 
   return createUIMessageStreamResponse({

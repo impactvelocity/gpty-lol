@@ -1,4 +1,4 @@
 import type { UIMessage } from "ai";
 
-/** Chat message with a client-visible creation time (ms since epoch). */
-export type ChatMessage = UIMessage<{ createdAt?: number }>;
+/** Chat message metadata: creation time (ms since epoch) and the costume it was sent in. */
+export type ChatMessage = UIMessage<{ createdAt?: number; costume?: string }>;

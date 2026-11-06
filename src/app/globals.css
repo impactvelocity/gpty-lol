@@ -128,68 +128,226 @@
     @apply font-sans;
   }
 }
-/* ───────── gpty.lol costume effects ───────── */
-.costume { min-height: 100dvh; }
+/* ───────── gpty.lol ───────── */
 
-/* BBS phosphor */
-.crt { position: relative; text-shadow: 0 0 6px color-mix(in srgb, var(--fg) 55%, transparent); }
-.crt::after {
-  content: ""; position: absolute; inset: 0; pointer-events: none;
-  background: repeating-linear-gradient(to bottom, rgba(0,0,0,0.18) 0 1px, transparent 1px 3px);
-  box-shadow: inset 0 0 120px rgba(0,0,0,0.65);
-}
-.blink { animation: blink 1s steps(1) infinite; }
+html, body { height: 100%; overflow: hidden; }
+
+/* Crisp, non-antialiased text for the 90s Windows costumes (macOS browsers honor this). */
+.pixel-text, .pixel-text * { -webkit-font-smoothing: none; font-smooth: never; }
+
+/* Windows 98/2000 bevels */
+.bevel-out { box-shadow: inset -1px -1px #404040, inset 1px 1px #fff, inset -2px -2px #808080, inset 2px 2px #dfdfdf; }
+.bevel-in { box-shadow: inset -1px -1px #fff, inset 1px 1px #808080, inset -2px -2px #dfdfdf, inset 2px 2px #404040; }
+.bevel-thin-in { box-shadow: inset -1px -1px #fff, inset 1px 1px #808080; }
+.bevel-window { box-shadow: inset -1px -1px #404040, inset 1px 1px #dfdfdf, inset -2px -2px #808080, inset 2px 2px #fff, 4px 6px 24px rgba(0,0,0,.45); }
+.btn-classic { background: #d4d0c8; box-shadow: inset -1px -1px #404040, inset 1px 1px #fff, inset -2px -2px #808080, inset 2px 2px #dfdfdf; }
+.btn-classic:active:not(:disabled) { box-shadow: inset -1px -1px #fff, inset 1px 1px #404040, inset -2px -2px #dfdfdf, inset 2px 2px #808080; }
+.btn-classic:disabled { color: #808080; text-shadow: 1px 1px #fff; }
+.btn-classic:focus-visible { outline: 1px dotted #000; outline-offset: -4px; }
+
+/* Windows XP Luna */
+.xp-window { background: #0831d9; padding: 0 3px 3px; border-radius: 8px 8px 0 0; box-shadow: 0 10px 40px rgba(0,0,0,.45), inset 0 0 0 1px #001ea0; }
+.xp-title { background: linear-gradient(180deg, #0997ff 0%, #0053ee 8%, #0050ee 40%, #06f 88%, #06f 93%, #005bff 95%, #003dd7 96%, #003dd7 100%); }
+.xp-cap { display: grid; place-items: center; width: 21px; height: 21px; border-radius: 3px; border: 1px solid #fff;
+  background: radial-gradient(circle at 90% 90%, #0054e9 0%, #2263d5 55%, #4479e4 70%, #a3bbec 90%, #fff 100%); box-shadow: inset 0 0 0 1px rgba(0,0,0,.05); }
+.xp-close { background: radial-gradient(circle at 90% 90%, #cc4600 0%, #dc6527 55%, #cd7546 70%, #ffccb2 90%, #fff 100%); }
+.xp-btn { border: 1px solid #003c74; border-radius: 3px; background: linear-gradient(180deg, #fff 0%, #ecebe6 86%, #d6d0c5 100%); box-shadow: inset 0 -1px rgba(0,0,0,.08); }
+.xp-btn:hover:not(:disabled) { box-shadow: inset 0 0 0 2px #f8b636, inset 0 -1px #e5a01a; }
+.xp-btn:disabled { color: #a19f95; border-color: #c9c7ba; }
+
+/* Windows Vista Aero */
+.aero-window { border-radius: 7px; border: 1px solid rgba(0,0,0,.7);
+  background: linear-gradient(180deg, rgba(150,190,215,.62), rgba(70,110,140,.55) 40px, rgba(60,95,120,.5));
+  backdrop-filter: blur(14px) saturate(1.4); box-shadow: inset 0 0 0 1px rgba(255,255,255,.45), 0 14px 50px rgba(0,0,0,.6); }
+.aero-cap { display: grid; place-items: center; height: 19px; width: 27px; background: linear-gradient(180deg, rgba(255,255,255,.55), rgba(255,255,255,.2) 48%, rgba(0,0,0,.15) 52%, rgba(255,255,255,.12)); }
+.aero-close { background: linear-gradient(180deg, #e8a493, #d26a51 48%, #b72c10 52%, #d0573a); }
+
+/* Chrome 2015 tab */
+.chrome-tab { clip-path: polygon(14px 0, calc(100% - 14px) 0, 100% 100%, 0 100%); border-radius: 4px 4px 0 0; }
+
+/* CRT */
+.crt-screen { position: relative; overflow: hidden; }
+.crt-screen::before { content: ""; position: absolute; inset: 0; pointer-events: none; z-index: 2;
+  background: repeating-linear-gradient(to bottom, rgba(0,0,0,.28) 0 1px, transparent 1px 3px); }
+.crt-screen::after { content: ""; position: absolute; inset: 0; pointer-events: none; z-index: 3;
+  background: radial-gradient(ellipse at center, transparent 60%, rgba(0,0,0,.55) 100%);
+  box-shadow: inset 0 0 60px rgba(0,0,0,.8); animation: crt-flicker 6s infinite; }
+@keyframes crt-flicker { 0%, 97%, 100% { opacity: 1; } 98% { opacity: .85; } }
+.crt-glow { text-shadow: 0 0 4px currentColor; }
+.blink { animation: blink 1.06s steps(1) infinite; }
 @keyframes blink { 50% { opacity: 0; } }
 
+/* Typing dots (Messenger, Slack) */
+.dot { animation: dot 1.2s ease-in-out infinite; }
+@keyframes dot { 0%, 60%, 100% { transform: translateY(0); opacity: .45; } 30% { transform: translateY(-3px); opacity: 1; } }
+
+/* Spinner (terminal) */
+.spin { animation: spin 1s linear infinite; }
+@keyframes spin { to { transform: rotate(360deg); } }
+
 /* MSN nudge */
-.nudge { animation: nudge 0.5s linear; }
+.nudge { animation: nudge .5s linear; }
 @keyframes nudge {
-  0%,100% { transform: translate(0,0); }
-  20% { transform: translate(-8px,3px); } 40% { transform: translate(7px,-4px); }
-  60% { transform: translate(-6px,-2px); } 80% { transform: translate(5px,4px); }
+  0%, 100% { transform: translate(0, 0); } 10% { transform: translate(-9px, 4px); } 20% { transform: translate(8px, -5px); }
+  30% { transform: translate(-7px, -3px); } 40% { transform: translate(7px, 5px); } 50% { transform: translate(-6px, 2px); }
+  60% { transform: translate(5px, -4px); } 70% { transform: translate(-4px, 3px); } 80% { transform: translate(3px, -2px); }
 }
 
-/* Messenger typing dots */
-.dot { animation: dot 1s ease-in-out infinite; }
-@keyframes dot { 0%,60%,100% { transform: translateY(0); opacity: .5; } 30% { transform: translateY(-4px); opacity: 1; } }
+/* Toasts (MSN, ICQ) */
+.toast-up { animation: toast-up 3.2s ease-in-out forwards; }
+@keyframes toast-up { 0% { transform: translateY(110%); } 10%, 85% { transform: translateY(0); } 100% { transform: translateY(110%); } }
+.pop { animation: pop 1.8s ease-out forwards; }
+@keyframes pop { 0% { transform: scale(.4); opacity: 0; } 12% { transform: scale(1.08); opacity: 1; } 20%, 80% { transform: scale(1); opacity: 1; } 100% { opacity: 0; } }
 
-/* Haunted overlay */
-.fog { position: absolute; inset: auto -20% 0 -20%; height: 45%;
-  background: radial-gradient(ellipse at 50% 100%, rgba(190,170,230,.22), transparent 70%);
-  filter: blur(18px); animation: drift 22s ease-in-out infinite alternate; }
-.fog-b { height: 30%; opacity: .7; animation-duration: 31s; animation-direction: alternate-reverse; }
-@keyframes drift { from { transform: translateX(-6%); } to { transform: translateX(6%); } }
-.vignette { background: radial-gradient(ellipse at center, transparent 55%, rgba(0,0,0,.45)); }
-.roamer { left: -10%; animation: roam 14s linear forwards; filter: drop-shadow(0 0 12px rgba(255,255,255,.4)); opacity: .85; }
-@keyframes roam {
-  0% { transform: translate(0, 0) rotate(-6deg); }
-  50% { transform: translate(60vw, -30px) rotate(6deg); }
-  100% { transform: translate(120vw, 10px) rotate(-6deg); }
-}
-.is-haunted { animation: flicker 9s infinite; }
-@keyframes flicker { 0%,96%,100% { filter: none; } 97% { filter: brightness(.82); } 98% { filter: brightness(1.1); } 99% { filter: brightness(.9); } }
+/* ───── Wallpapers: one desktop per era, drawn in CSS ───── */
+.wp { position: absolute; inset: 0; transition: opacity .7s ease; }
+.wp-scrim { position: absolute; inset: 0;
+  background: linear-gradient(rgba(0,0,0,.5), transparent 120px), linear-gradient(to top, rgba(0,0,0,.45), transparent 110px); }
 
-/* Séance */
-.candle { position: fixed; top: 10px; right: 14px; width: 14px; height: 22px; border-radius: 50% 50% 50% 50% / 60% 60% 40% 40%;
-  background: radial-gradient(circle at 50% 70%, #fff6c8, #ffb02e 60%, transparent 72%); filter: blur(.4px) drop-shadow(0 0 16px #ffb02e);
-  animation: candle 1.6s ease-in-out infinite alternate; }
-@keyframes candle { from { transform: scale(1) rotate(-3deg); opacity: .9; } to { transform: scale(1.1,.95) rotate(3deg); opacity: 1; } }
-.planchette { font-size: 4rem; animation: wander 2.4s ease-in-out infinite alternate; filter: drop-shadow(0 0 14px var(--glow)); }
-@keyframes wander {
-  0% { transform: translate(-90px,-10px) rotate(-10deg); } 33% { transform: translate(60px,25px) rotate(8deg); }
-  66% { transform: translate(-30px,-30px) rotate(-4deg); } 100% { transform: translate(100px,5px) rotate(10deg); }
-}
+/* Now: a quiet dark room with a warm glow. */
+.wp-clean { background:
+  radial-gradient(ellipse 80% 55% at 50% -10%, rgba(251,146,60,.16), transparent 70%),
+  #121214; }
 
-/* Costume change */
-.poof { position: fixed; inset: 0; z-index: 60; display: grid; place-content: center; justify-items: center; gap: .5rem;
-  background: radial-gradient(circle, #fff 0%, #c9a7ff 30%, #1a0b2e 75%); color: #1a0b2e;
-  animation: poof 1s ease-in-out forwards; pointer-events: none; }
-.poof span { font-size: 6rem; animation: spin 1s ease-in-out; }
-.poof b { font-size: 1.5rem; letter-spacing: .05em; }
-@keyframes poof { 0% { opacity: 0; } 40%,60% { opacity: 1; } 100% { opacity: 0; } }
-@keyframes spin { from { transform: rotate(-200deg) scale(.2); } to { transform: rotate(0) scale(1); } }
+/* 1993: a dark desk at midnight, lit by the monitor. */
+.wp-bbs { background:
+  radial-gradient(ellipse 55% 45% at 50% 50%, rgba(70,255,140,.13), transparent 70%),
+  radial-gradient(ellipse 90% 35% at 50% 112%, #3a2a1a 0%, #20170e 55%, transparent 75%),
+  repeating-linear-gradient(90deg, rgba(255,255,255,.012) 0 2px, transparent 2px 9px),
+  linear-gradient(#08090a, #050504); }
+
+/* 1999: the Windows 2000 desktop blue. */
+.wp-irc { background:
+  radial-gradient(ellipse 120% 90% at 50% 40%, transparent 60%, rgba(0,0,0,.18)),
+  #3a6ea5; }
+
+/* 2000: Windows 98 teal. */
+.wp-icq { background:
+  radial-gradient(ellipse 120% 90% at 50% 40%, transparent 60%, rgba(0,0,0,.18)),
+  #008080; }
+
+/* 2005: a big blue sky over rolling green hills. */
+.wp-msn { background:
+  radial-gradient(ellipse 14% 5% at 18% 20%, rgba(255,255,255,.85), transparent 70%),
+  radial-gradient(ellipse 22% 6% at 26% 23%, rgba(255,255,255,.6), transparent 70%),
+  radial-gradient(ellipse 18% 5% at 74% 14%, rgba(255,255,255,.7), transparent 70%),
+  radial-gradient(ellipse 26% 7% at 82% 18%, rgba(255,255,255,.45), transparent 70%),
+  radial-gradient(130% 62% at 72% 118%, #3f8e1e 0%, #5aa52a 42%, #70b83a 49.6%, transparent 50%),
+  radial-gradient(150% 70% at 28% 122%, #4f9c22 0%, #6db53a 38%, #8fcd52 49.6%, transparent 50%),
+  linear-gradient(180deg, #1d5fcf 0%, #3f86e6 30%, #7fb6f2 55%, #c4e0fb 72%); }
+
+/* 2007: an aurora of Aero greens and blues. */
+.wp-skype { background:
+  radial-gradient(ellipse 70% 18% at 22% 30%, rgba(150,255,200,.6), transparent 70%),
+  radial-gradient(ellipse 80% 24% at 70% 58%, rgba(70,210,240,.55), transparent 70%),
+  radial-gradient(ellipse 50% 16% at 85% 26%, rgba(140,240,150,.45), transparent 70%),
+  radial-gradient(ellipse 60% 20% at 15% 75%, rgba(60,170,255,.4), transparent 70%),
+  repeating-linear-gradient(160deg, rgba(255,255,255,.04) 0 1px, transparent 1px 26px),
+  linear-gradient(160deg, #04362b 0%, #08604c 45%, #0c4a70 100%); }
+
+/* 2014: sunset over granite mountains. */
+.wp-slack { background:
+  url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 1600 400' preserveAspectRatio='none'%3E%3Cpath d='M0 260 L180 200 L320 230 L470 150 L620 210 L760 170 L900 230 L1060 160 L1220 220 L1380 180 L1600 240 V400 H0Z' fill='%23574a78' fill-opacity='.75'/%3E%3Cpath d='M0 330 L140 290 L260 310 L420 250 L520 120 L560 60 L600 120 L640 270 L800 300 L980 260 L1120 300 L1300 240 L1460 290 L1600 270 V400 H0Z' fill='%232a2240'/%3E%3C/svg%3E") bottom / 100% 48% no-repeat,
+  radial-gradient(ellipse 40% 20% at 50% 62%, rgba(255,200,140,.55), transparent 70%),
+  linear-gradient(180deg, #1f2752 0%, #4c4a82 30%, #a26a8a 55%, #e79a78 72%, #f6c58f 85%); }
+
+/* 2015: deep blue with beams of light. */
+.wp-messenger { background:
+  conic-gradient(from 52deg at -5% 55%, transparent 0deg, rgba(90,175,255,.22) 6deg, transparent 13deg, rgba(90,175,255,.16) 19deg, transparent 27deg, rgba(90,175,255,.2) 34deg, transparent 44deg, rgba(90,175,255,.12) 52deg, transparent 62deg, transparent 360deg),
+  radial-gradient(ellipse 45% 60% at 38% 52%, rgba(30,130,255,.55), transparent 70%),
+  linear-gradient(135deg, #020a1c 0%, #06204d 55%, #0a3a86 100%); }
+
+/* Now: a soft, dark macOS-style gradient. */
+.wp-terminal { background:
+  radial-gradient(ellipse 70% 60% at 85% 105%, rgba(110,80,230,.55), transparent 70%),
+  radial-gradient(ellipse 60% 55% at 5% -5%, rgba(20,140,160,.45), transparent 70%),
+  radial-gradient(ellipse 50% 40% at 50% 50%, rgba(122,162,247,.12), transparent 70%),
+  #0b0d17; }
+
+/* 10,000 BC: deep cave rock, lit faintly from below by a fire. */
+.wp-caveman { background:
+  radial-gradient(ellipse 70% 40% at 50% 112%, rgba(255,120,30,.28), transparent 70%),
+  radial-gradient(ellipse 30% 22% at 18% 70%, rgba(201,111,46,.12), transparent 70%),
+  radial-gradient(ellipse 26% 18% at 82% 30%, rgba(120,90,60,.14), transparent 70%),
+  radial-gradient(ellipse 40% 30% at 65% 85%, rgba(60,40,25,.5), transparent 70%),
+  linear-gradient(170deg, #161210 0%, #221a14 55%, #19120d 100%); }
+
+/* 1888: a candlelit parlor, all velvet and shadow. */
+.wp-seance { background:
+  radial-gradient(ellipse 30% 24% at 12% 88%, rgba(255,176,46,.22), transparent 70%),
+  radial-gradient(ellipse 30% 24% at 88% 88%, rgba(255,176,46,.2), transparent 70%),
+  radial-gradient(ellipse 60% 45% at 50% 30%, rgba(90,50,110,.16), transparent 70%),
+  repeating-linear-gradient(45deg, rgba(255,255,255,.012) 0 2px, transparent 2px 14px),
+  linear-gradient(180deg, #0b0609 0%, #140b10 60%, #0a0507 100%); }
+
+/* Dec 24: aurora over snowfields at the Pole. */
+.wp-elf { background:
+  radial-gradient(ellipse 4% 2% at 20% 18%, rgba(255,255,255,.9), transparent 70%),
+  radial-gradient(ellipse 3% 1.5% at 70% 10%, rgba(255,255,255,.8), transparent 70%),
+  radial-gradient(ellipse 3% 1.5% at 85% 26%, rgba(255,255,255,.7), transparent 70%),
+  radial-gradient(ellipse 5% 2% at 38% 8%, rgba(255,255,255,.6), transparent 70%),
+  radial-gradient(ellipse 55% 20% at 55% 24%, rgba(80,230,170,.3), transparent 70%),
+  radial-gradient(ellipse 45% 16% at 30% 34%, rgba(120,160,255,.26), transparent 70%),
+  radial-gradient(140% 50% at 50% 118%, #e8f2fb 0%, #c6dcf0 42%, #9fc2e4 49.6%, transparent 50%),
+  linear-gradient(180deg, #0a1430 0%, #15295c 55%, #2c4a86 78%); }
+
+/* 2199: void, with the faintest green rain. */
+.wp-machine { background:
+  repeating-linear-gradient(90deg, rgba(0,230,83,.05) 0 1px, transparent 1px 64px),
+  radial-gradient(ellipse 70% 50% at 50% 50%, rgba(0,230,83,.07), transparent 70%),
+  #010403; }
+
+/* ───── New-costume effects ───── */
+
+/* Candle flame (seance) */
+.flame { width: 11px; height: 20px; border-radius: 50% 50% 50% 50% / 62% 62% 38% 38%;
+  background: radial-gradient(circle at 50% 72%, #fff6c8, #ffb02e 58%, rgba(255,120,20,.4) 78%, transparent 85%);
+  filter: drop-shadow(0 0 14px rgba(255,176,46,.8)); transform-origin: 50% 100%;
+  animation: flame 1.7s ease-in-out infinite alternate; }
+@keyframes flame { 0% { transform: scaleX(1) rotate(-4deg); opacity: .92; }
+  55% { transform: scale(1.06,.96) rotate(3deg); } 100% { transform: scaleX(.94) rotate(5deg); opacity: 1; } }
+
+/* Wandering planchette (seance, while the spirit gathers itself) */
+.planchette { animation: planchette 2.6s ease-in-out infinite alternate; }
+@keyframes planchette {
+  0% { transform: translate(-110px,-14px) rotate(-10deg); } 33% { transform: translate(70px,26px) rotate(8deg); }
+  66% { transform: translate(-40px,-30px) rotate(-5deg); } 100% { transform: translate(120px,8px) rotate(11deg); } }
+
+/* Hand-painted rock slabs (caveman) */
+.slab { border-radius: 255px 18px 225px 18px / 18px 225px 18px 255px; }
+.slab-alt { border-radius: 18px 225px 18px 255px / 255px 18px 225px 18px; }
+
+/* Torchlight licking at the cave wall */
+.torch { animation: torch 2.3s ease-in-out infinite alternate; }
+@keyframes torch { from { opacity: .55; } 45% { opacity: .8; } to { opacity: .95; } }
+
+/* Glyph rain (machine) */
+.mx-col { position: absolute; top: 0; animation: mx-fall linear infinite; }
+@keyframes mx-fall { from { transform: translateY(-105%); } to { transform: translateY(900px); } }
+
+/* Snow (elf) */
+.snowflake { position: absolute; top: -24px; animation: snow-fall linear infinite; }
+@keyframes snow-fall { to { transform: translateY(860px) rotate(300deg); } }
+
+/* String lights (elf) */
+.light-dot { animation: light-glow 1.5s ease-in-out infinite alternate; }
+@keyframes light-glow { from { opacity: .45; filter: saturate(.8); } to { opacity: 1; filter: saturate(1.3) drop-shadow(0 0 6px currentColor); } }
+
+/* Trick-or-treat candy */
+.candy-pop { animation: candy-pop .45s cubic-bezier(.2,2,.4,1); }
+@keyframes candy-pop { 0% { transform: scale(1); } 40% { transform: scale(1.35); } 100% { transform: scale(1); } }
+.candy-toast { animation: candy-toast 3.8s ease forwards; }
+@keyframes candy-toast {
+  0% { transform: translateY(-14px); opacity: 0; } 8%, 88% { transform: translateY(0); opacity: 1; }
+  100% { transform: translateY(-10px); opacity: 0; } }
 
 @media (prefers-reduced-motion: reduce) {
-  .fog, .roamer, .is-haunted, .candle, .planchette, .nudge, .blink, .dot, .poof span { animation: none !important; }
-  .poof { animation-duration: .4s !important; }
+  .nudge, .toast-up, .pop, .dot, .blink, .spin, .crt-screen::after,
+  .flame, .planchette, .torch, .mx-col, .snowflake, .light-dot, .candy-pop { animation: none !important; }
+  .mx-col, .snowflake { display: none; }
+  .wp { transition: none; }
 }
+
+/* Horizontal chip rows scroll without a visible bar. */
+.no-scrollbar { scrollbar-width: none; }
+.no-scrollbar::-webkit-scrollbar { display: none; }
