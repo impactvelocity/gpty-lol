@@ -89,7 +89,7 @@ export function SeanceLayout({
 
       <div className="flex min-h-0 flex-1 gap-3 p-3 sm:px-6">
         {/* The medium's ledger */}
-        <aside className="hidden w-52 shrink-0 flex-col rounded-lg border border-[#3a2414] bg-black/30 p-2 md:flex">
+        <aside data-threads className="hidden w-52 shrink-0 flex-col rounded-lg border border-[#3a2414] bg-black/30 p-2 md:flex">
           <div className="pb-1 text-center text-[12px] tracking-[0.3em] text-[#9a7b4f]">
             THE LEDGER
           </div>

@@ -2,6 +2,7 @@ import type { Costume } from "@/lib/costumes";
 import { BbsLayout } from "./BbsLayout";
 import { CavemanLayout } from "./CavemanLayout";
 import { ElfLayout } from "./ElfLayout";
+import { FacebookLayout } from "./FacebookLayout";
 import { CleanLayout } from "./CleanLayout";
 import { IcqLayout } from "./IcqLayout";
 import { IrcLayout } from "./IrcLayout";
@@ -23,6 +24,7 @@ export const LAYOUTS: Record<Costume["layout"], (p: LayoutProps) => React.ReactN
   icq: IcqLayout,
   msn: MsnLayout,
   skype: SkypeLayout,
+  facebook: FacebookLayout,
   slack: SlackLayout,
   messenger: MessengerLayout,
   terminal: TerminalLayout,

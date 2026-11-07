@@ -1,0 +1,606 @@
+/*
+ * ICQ 2000b, remastered. Windows 98 surfaces with real depth: a faint grain
+ * on the grey, crisp two-tone bevels, a modern drop shadow. Everything is
+ * scoped under .icq (or an icq- class) so it can't leak into other costumes.
+ */
+
+.icq,
+.icq-pick {
+  --icq-font: Tahoma, "Segoe UI", Verdana, Geneva, sans-serif;
+  --icq-face: #d9d5cc;
+  --icq-hi: #ffffff;
+  --icq-lite: #ecE9e1;
+  --icq-shade: #8c887f;
+  --icq-dark: #33322e;
+  --icq-navy: #0a1f8f;
+  --icq-select: #0b2a8f;
+  --icq-green: #3fae3a;
+  --icq-green-dk: #1b7316;
+  --icq-red: #d81e14;
+  --icq-them: #c4161c;
+  --icq-me: #0b3db8;
+  --icq-them-ink: #11632b;
+  --icq-tip: #ffffe1;
+  --icq-ink: #111;
+  --icq-mute: #5d5a53;
+  --icq-grain: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='140' height='140'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.85' numOctaves='2' stitchTiles='stitch'/%3E%3CfeColorMatrix values='0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 .07 0'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
+  --icq-raised: inset -1px -1px var(--icq-dark), inset 1px 1px var(--icq-lite), inset -2px -2px var(--icq-shade), inset 2px 2px var(--icq-hi);
+  --icq-pressed: inset -1px -1px var(--icq-hi), inset 1px 1px var(--icq-dark), inset -2px -2px var(--icq-lite), inset 2px 2px var(--icq-shade);
+  --icq-sunken: inset -1px -1px var(--icq-hi), inset 1px 1px var(--icq-shade), inset -2px -2px var(--icq-lite), inset 2px 2px var(--icq-dark);
+  --icq-thin-in: inset -1px -1px var(--icq-hi), inset 1px 1px var(--icq-shade);
+  --icq-thin-out: inset -1px -1px var(--icq-shade), inset 1px 1px var(--icq-hi);
+  --icq-dither: repeating-conic-gradient(#fff 0 25%, #d9d5cc 0 50%) 0 0 / 2px 2px;
+}
+
+.icq {
+  font-family: var(--icq-font);
+  font-size: 12px;
+  color: var(--icq-ink);
+  -webkit-font-smoothing: antialiased;
+}
+.icq ::selection { background: var(--icq-select); color: #fff; }
+.icq :focus-visible { outline: 1px dotted #111; outline-offset: -4px; }
+/* The site gives headers and navs an ink shadow for the sidebar; not in here. */
+.icq header, .icq nav, .icq footer, .icq section { text-shadow: none; }
+
+/* Windows 98 scrollbars: dithered track, bevelled thumb, arrow buttons. */
+.icq ::-webkit-scrollbar { width: 16px; height: 16px; }
+.icq ::-webkit-scrollbar-track { background: var(--icq-dither); }
+.icq ::-webkit-scrollbar-thumb { background: var(--icq-face); box-shadow: var(--icq-raised); }
+.icq ::-webkit-scrollbar-button:single-button { display: block; width: 16px; height: 16px; background-color: var(--icq-face); background-repeat: no-repeat; background-position: center; box-shadow: var(--icq-raised); }
+.icq ::-webkit-scrollbar-button:single-button:active { box-shadow: inset 0 0 0 1px var(--icq-shade); background-position: calc(50% + 1px) calc(50% + 1px); }
+.icq ::-webkit-scrollbar-button:single-button:vertical:decrement { background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='8' height='8'%3E%3Cpath d='M4 1.6 7.4 5.4H.6Z' fill='%23000'/%3E%3C/svg%3E"); }
+.icq ::-webkit-scrollbar-button:single-button:vertical:increment { background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='8' height='8'%3E%3Cpath d='M.6 2.6h6.8L4 6.4Z' fill='%23000'/%3E%3C/svg%3E"); }
+.icq ::-webkit-scrollbar-corner { background: var(--icq-face); }
+@supports not selector(::-webkit-scrollbar) {
+  .icq * { scrollbar-color: #b9b5ab #ecE9e1; }
+}
+
+/* ───────── Window ───────── */
+
+.icq-window {
+  position: relative;
+  isolation: isolate;
+  display: flex;
+  flex-direction: column;
+  width: 100%;
+  height: 100%;
+  padding: 3px;
+  border-radius: 2px;
+  container: icq-window / inline-size;
+  background: var(--icq-grain), linear-gradient(180deg, #e4e0d7 0%, #d8d4ca 40%, #d1cdc3 100%);
+  box-shadow:
+    var(--icq-raised),
+    0 46px 90px -34px rgba(0, 30, 34, 0.72),
+    0 16px 34px -14px rgba(0, 24, 28, 0.5);
+}
+.icq-window[data-dragging] { box-shadow: var(--icq-raised), 0 56px 100px -34px rgba(0, 30, 34, 0.78), 0 20px 40px -14px rgba(0, 24, 28, 0.55); }
+.icq-window[data-dragging] * { cursor: default; }
+
+/* Title bar: the navy-to-blue gradient, with a touch of gloss. */
+.icq-titlebar {
+  position: relative;
+  display: flex;
+  flex-shrink: 0;
+  align-items: center;
+  gap: 6px;
+  height: 25px;
+  padding: 0 3px 0 5px;
+  overflow: hidden;
+  color: #fff;
+  font-weight: 700;
+  font-size: 12px;
+  letter-spacing: 0.01em;
+  background:
+    linear-gradient(180deg, rgba(255, 255, 255, 0.2), rgba(255, 255, 255, 0.04) 50%, rgba(0, 0, 0, 0) 51%),
+    linear-gradient(90deg, #05106e 0%, #0b2a9a 34%, #1c6fce 78%, #3a9ae6 100%);
+  touch-action: none;
+  user-select: none;
+  -webkit-user-select: none;
+}
+.icq .icq-titlebar { text-shadow: 0 1px 0 rgba(0, 0, 40, 0.55); }
+.icq-titlebar > * { position: relative; z-index: 1; }
+/* The inactive colors, flashed on and off when a message arrives (like a taskbar button). */
+.icq-titlebar::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  opacity: 0;
+  background: linear-gradient(90deg, #7d7b76 0%, #a9a69f 60%, #c2bfb7 100%);
+}
+.icq-window[data-flash="a"] .icq-titlebar::before { animation: icq-flash-a 2.1s steps(1, end); }
+.icq-window[data-flash="b"] .icq-titlebar::before { animation: icq-flash-b 2.1s steps(1, end); }
+@keyframes icq-flash-a { 0%, 33%, 66% { opacity: 1; } 16%, 50%, 83%, 100% { opacity: 0; } }
+@keyframes icq-flash-b { 0%, 33%, 66% { opacity: 1; } 16%, 50%, 83%, 100% { opacity: 0; } }
+.icq-title { display: flex; align-items: center; gap: 6px; min-width: 0; flex: 1; }
+.icq-caps { display: flex; gap: 2px; margin-left: auto; }
+.icq-cap { display: grid; place-items: center; width: 17px; height: 15px; background: var(--icq-face); box-shadow: var(--icq-raised); color: #000; }
+.icq-cap + .icq-cap:last-child { margin-left: 2px; }
+.icq-cap svg { width: 8px; height: 7px; }
+
+/* ───────── Header: who you're talking to ───────── */
+
+.icq-head { display: flex; flex-wrap: wrap; align-items: flex-start; gap: 6px 10px; padding: 8px 6px 7px 7px; }
+.icq-photo { position: relative; flex: none; width: 66px; height: 66px; padding: 2px; background: var(--icq-face); box-shadow: var(--icq-sunken); }
+.icq-photo-pic {
+  display: grid;
+  place-items: center;
+  width: 100%;
+  height: 100%;
+  overflow: hidden;
+  background:
+    radial-gradient(60% 40% at 30% 20%, rgba(255, 255, 255, 0.85), rgba(255, 255, 255, 0) 70%),
+    linear-gradient(180deg, #7fd3d0 0%, #bfeae0 55%, #8fd27a 56%, #4caa3f 100%);
+}
+.icq-photo-pic img { width: 100%; height: 100%; object-fit: cover; }
+.icq-photo-badge { position: absolute; right: -6px; bottom: -6px; width: 20px; height: 20px; filter: drop-shadow(0 1px 1px rgba(0, 0, 0, 0.35)); }
+
+.icq-fields {
+  display: grid;
+  flex: 1 1 300px;
+  min-width: 0;
+  grid-template-columns: auto minmax(0, 1.25fr) auto minmax(0, 1fr);
+  align-items: center;
+  gap: 5px 7px;
+}
+.icq-label { white-space: nowrap; color: #1d1c19; }
+.icq-label u { text-decoration-thickness: 1px; text-underline-offset: 2px; }
+.icq-field {
+  display: flex;
+  align-items: center;
+  gap: 5px;
+  min-width: 0;
+  height: 22px;
+  padding: 0 6px;
+  overflow: hidden;
+  white-space: nowrap;
+  text-overflow: ellipsis;
+  background: #fff;
+  box-shadow: var(--icq-sunken);
+  font-size: 12px;
+}
+.icq-field > span { overflow: hidden; text-overflow: ellipsis; }
+.icq-nick b { font-weight: 700; }
+.icq-field-mute { color: var(--icq-mute); }
+
+/* Flat toolbar: buttons appear only on hover, sink when pressed. */
+.icq-tools { position: relative; display: flex; flex: none; gap: 1px; margin-left: auto; }
+.icq-tool {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 1px;
+  min-width: 52px;
+  padding: 4px 4px 3px;
+  font-size: 11px;
+  color: #000;
+  background: transparent;
+}
+.icq-tool > :first-child { width: 28px; height: 28px; filter: drop-shadow(0 1px 0.5px rgba(0, 0, 0, 0.28)); transition: transform 0.16s cubic-bezier(0.3, 1.6, 0.5, 1); }
+.icq-tool:hover:not(:disabled) { box-shadow: var(--icq-thin-out); }
+.icq-tool:hover:not(:disabled) > :first-child { transform: translateY(-1px) scale(1.06); }
+.icq-tool:active:not(:disabled), .icq-tool[aria-pressed="true"], .icq-tool[aria-expanded="true"] { background: var(--icq-dither); box-shadow: var(--icq-thin-in); }
+.icq-tool:active:not(:disabled) > *, .icq-tool[aria-pressed="true"] > *, .icq-tool[aria-expanded="true"] > * { translate: 1px 1px; }
+.icq-tool:disabled { color: #8c887f; text-shadow: 1px 1px #fff; }
+.icq-tool:disabled > :first-child { filter: grayscale(1) opacity(0.5); }
+
+/* ───────── The banner ad ───────── */
+
+.icq-adwrap { flex-shrink: 0; padding: 0 6px 7px 7px; }
+.icq-ad {
+  position: relative;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  width: 100%;
+  height: 58px;
+  padding: 0 14px 0 10px;
+  overflow: hidden;
+  text-align: left;
+  box-shadow: var(--icq-thin-in), inset 0 0 0 2px rgba(0, 0, 0, 0.12);
+  cursor: pointer;
+  animation: icq-ad-in 0.18s steps(3, end);
+}
+@keyframes icq-ad-in { from { opacity: 0; } to { opacity: 1; } }
+.icq-ad:focus-visible { outline-offset: -5px; }
+.icq-ad-img { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; object-position: right center; }
+.icq-ad-img + .icq-ad-wash { position: absolute; inset: 0; }
+.icq-ad > :not(.icq-ad-img):not(.icq-ad-wash) { position: relative; }
+.icq-ad-art { display: flex; flex: none; align-items: center; justify-content: center; width: 64px; height: 50px; }
+.icq-ad-copy { display: flex; flex: 1; flex-direction: column; min-width: 0; line-height: 1.15; }
+.icq-ad-copy b { overflow: hidden; white-space: nowrap; text-overflow: ellipsis; font-family: "Arial Black", "Arial Bold", Arial, sans-serif; font-size: 17px; letter-spacing: -0.01em; }
+.icq-ad-copy span { overflow: hidden; white-space: nowrap; text-overflow: ellipsis; margin-top: 2px; font-family: Verdana, Arial, sans-serif; font-size: 11px; }
+.icq-ad-cta {
+  flex: none;
+  padding: 4px 10px;
+  font-family: Arial, sans-serif;
+  font-size: 11px;
+  font-weight: 700;
+  color: #000;
+  background: var(--icq-face);
+  box-shadow: var(--icq-raised);
+  animation: icq-cta 1.2s steps(1, end) infinite;
+}
+@keyframes icq-cta { 50% { color: #c4161c; } }
+.icq-ad-tag { position: absolute; top: 1px; right: 4px; font-size: 9px; opacity: 0.7; }
+
+/* 1: the millionth visitor */
+.icq-ad-visitor { background: linear-gradient(90deg, #a30000, #e01b1b 40%, #ff4a1a); color: #fff; }
+.icq-ad-visitor .icq-ad-copy b { color: #ffe600; text-shadow: 2px 2px 0 #5a0000; animation: icq-cta 0.9s steps(1, end) infinite; }
+.icq-ad-visitor .icq-burst { position: absolute; width: 62px; height: 62px; animation: icq-spin 9s linear infinite; }
+.icq-ad-visitor .icq-trophy { position: relative; width: 34px; height: 34px; animation: icq-hop 1.2s ease-in-out infinite; }
+/* 2: free smileys */
+.icq-ad-smileys { background: linear-gradient(180deg, #8fd4ff 0%, #d8f1ff 60%, #fff 100%); color: #003a8c; }
+.icq-ad-smileys .icq-ad-copy b { color: #0047c2; text-shadow: 1px 1px 0 #fff; }
+.icq-ad-smileys .icq-ad-art .icq-emote { width: 22px; height: 22px; margin: 0 -2px; animation: icq-hop 1s ease-in-out infinite; }
+.icq-ad-smileys .icq-ad-art .icq-emote:nth-child(2) { animation-delay: -0.33s; }
+.icq-ad-smileys .icq-ad-art .icq-emote:nth-child(3) { animation-delay: -0.66s; }
+/* 3: still on 56k */
+.icq-ad-modem { background: radial-gradient(120% 140% at 0% 50%, #10306e, #050b24 70%); color: #8cffa0; }
+.icq-ad-modem .icq-ad-copy b { font-family: "Courier New", monospace; font-size: 18px; font-weight: 700; color: #39ff6a; text-shadow: 0 0 6px rgba(57, 255, 106, 0.6); }
+.icq-ad-modem .icq-ad-copy span { font-family: "Courier New", monospace; color: #b8ffc4; }
+.icq-ad-modem .icq-ad-art svg { width: 64px; }
+/* 4: a free homepage */
+.icq-ad-homepage {
+  background:
+    radial-gradient(1px 1px at 20% 30%, #fff, transparent), radial-gradient(1px 1px at 70% 20%, #fff, transparent),
+    radial-gradient(1px 1px at 45% 75%, #fff, transparent), radial-gradient(1px 1px at 88% 60%, #fff, transparent),
+    radial-gradient(1px 1px at 32% 55%, #ccf, transparent), #07051a;
+  color: #fff;
+}
+.icq-ad-homepage .icq-ad-copy b { color: #ff4fd8; font-family: "Times New Roman", serif; font-style: italic; font-size: 19px; text-shadow: 0 0 8px rgba(255, 79, 216, 0.6); }
+.icq-ad-homepage .icq-ad-art svg { width: 38px; height: 38px; animation: icq-hop 1.4s ease-in-out infinite; }
+.icq-counter { display: inline-flex; gap: 1px; margin-left: 4px; padding: 1px; background: #000; vertical-align: 1px; }
+.icq-counter i { min-width: 8px; padding: 0 1px; font-family: "Courier New", monospace; font-style: normal; font-size: 10px; font-weight: 700; color: #ff3030; text-align: center; background: #1c0000; }
+@keyframes icq-hop { 0%, 100% { transform: translateY(1px); } 50% { transform: translateY(-3px); } }
+
+/* ───────── Body ───────── */
+
+.icq-body { display: flex; flex: 1; flex-direction: column; min-height: 0; padding: 0 6px 0 7px; }
+.icq-panel { position: relative; flex: 1; min-height: 0; overflow: hidden; padding: 2px; background: #fff; box-shadow: var(--icq-sunken); }
+.icq-backdrop { position: absolute; inset: 2px; width: calc(100% - 4px); height: calc(100% - 4px); object-fit: cover; opacity: 0.14; pointer-events: none; }
+
+.icq-history { position: relative; height: 100%; overflow-y: auto; padding: 8px 12px 12px; font-size: 13px; }
+
+.icq-msg { padding: 6px 0 7px; border-top: 1px dotted #dcd8cf; animation: icq-in 0.18s ease-out both; }
+.icq-msg:first-child, .icq-sys + .icq-msg { border-top: 0; }
+.icq-msg-head { display: flex; align-items: center; gap: 6px; font-size: 12px; font-weight: 700; }
+.icq-msg-head > svg { flex: none; }
+.icq-msg-head time { margin-left: auto; padding-left: 10px; font-weight: 400; font-size: 11px; color: #8c887f; white-space: nowrap; }
+.icq-them .icq-msg-head { color: var(--icq-them); }
+.icq-me .icq-msg-head { color: var(--icq-me); }
+.icq-msg-body { padding: 2px 0 0 22px; line-height: 1.5; white-space: pre-wrap; overflow-wrap: anywhere; }
+.icq-them .icq-msg-body { font-family: Verdana, Tahoma, sans-serif; font-size: 12.5px; color: var(--icq-them-ink); }
+.icq-ink[data-bg] { padding: 1px 3px; -webkit-box-decoration-break: clone; box-decoration-break: clone; }
+@keyframes icq-in { from { opacity: 0; transform: translateY(2px); } to { opacity: 1; transform: none; } }
+
+.icq-emote { display: inline-block; width: 1.4em; height: 1.4em; margin: 0 1px; vertical-align: -0.38em; filter: drop-shadow(0 0.5px 0.5px rgba(60, 40, 0, 0.3)); }
+
+/* "System Message": the very ICQ way to be told someone added you. */
+.icq-sys {
+  margin: 2px 0 10px;
+  padding: 7px 10px 9px;
+  background: var(--icq-tip);
+  border: 1px solid #b6b08a;
+  box-shadow: 1px 1px 0 rgba(0, 0, 0, 0.08);
+  font-size: 12px;
+  animation: icq-in 0.18s ease-out both;
+}
+.icq-sys-head { display: flex; align-items: center; gap: 6px; margin-bottom: 4px; font-weight: 700; color: #5a5130; }
+.icq-sys-head time { margin-left: auto; font-weight: 400; font-size: 11px; color: #8c887f; }
+.icq-sys p { margin: 0 0 7px 22px; line-height: 1.45; }
+.icq-sys-actions { display: flex; flex-wrap: wrap; gap: 6px; margin-left: 22px; }
+
+.icq-note { display: flex; align-items: flex-start; gap: 7px; margin: 7px 0; padding: 4px 0 2px; font-size: 12px; line-height: 1.45; color: #4b473d; animation: icq-in 0.18s ease-out both; }
+.icq-note > :first-child { flex: none; width: 16px; height: 16px; margin-top: 1px; }
+.icq-note time { margin-left: auto; padding-left: 10px; font-size: 11px; color: #a19d94; white-space: nowrap; }
+.icq-note button { color: #0033cc; text-decoration: underline; text-underline-offset: 2px; }
+.icq-error { color: #b3130b; }
+
+/* File transfer: the blocky Windows progress bar and an estimate that only gets worse. */
+.icq-xfer { margin: 8px 0; padding: 7px 10px 8px; background: var(--icq-face); box-shadow: var(--icq-raised); font-size: 12px; animation: icq-in 0.18s ease-out both; }
+.icq-xfer-head { display: flex; align-items: center; gap: 7px; margin-bottom: 5px; }
+.icq-xfer-head svg { flex: none; width: 18px; height: 18px; }
+.icq-xfer-head b { overflow: hidden; white-space: nowrap; text-overflow: ellipsis; }
+.icq-progress { height: 18px; padding: 2px 3px; background: #fff; box-shadow: var(--icq-sunken); }
+.icq-progress i { display: block; height: 100%; min-width: 0; background: repeating-linear-gradient(90deg, #0b2a8f 0 8px, transparent 8px 10px); transition: width 0.25s steps(2, end); }
+.icq-xfer-stats { display: flex; flex-wrap: wrap; gap: 2px 12px; margin-top: 5px; font-size: 11px; color: #3b3934; }
+.icq-xfer-stats .icq-error { font-weight: 700; }
+.icq-xfer-foot { display: flex; align-items: center; gap: 8px; margin-top: 6px; }
+
+.icq-typing { display: flex; align-items: center; gap: 6px; padding: 6px 0 0 1px; font-size: 12px; font-style: italic; color: var(--icq-mute); }
+
+/* ───────── ICQ Chat: the live split screen ───────── */
+
+.icq-chat { display: grid; height: 100%; grid-template-rows: auto minmax(0, 1.15fr) minmax(0, 0.85fr); gap: 3px; padding: 3px; background: var(--icq-face); }
+.icq-chat-bar { display: flex; align-items: center; gap: 6px; padding: 2px 2px 3px 4px; font-size: 12px; }
+.icq-chat-bar b { font-weight: 700; }
+.icq-pane { display: flex; flex-direction: column; min-height: 0; background: #fff; box-shadow: var(--icq-sunken); padding: 2px; }
+.icq-pane-head {
+  display: flex;
+  flex-shrink: 0;
+  align-items: center;
+  gap: 6px;
+  height: 21px;
+  padding: 0 7px;
+  font-size: 12px;
+  font-weight: 700;
+  color: #fff;
+  background: linear-gradient(90deg, #0b6e2a, #36b04a);
+}
+.icq-pane-me .icq-pane-head { background: linear-gradient(90deg, #0b2a8f, #3a7ad8); }
+.icq-pane-head small { margin-left: auto; font-weight: 400; font-size: 11px; opacity: 0.85; }
+.icq-pane-text { flex: 1; min-height: 0; overflow-y: auto; padding: 8px 12px; font-family: Arial, Helvetica, sans-serif; font-size: 16px; line-height: 1.45; white-space: pre-wrap; overflow-wrap: anywhere; }
+.icq-pane-them .icq-pane-text { color: var(--icq-them-ink); font-weight: 700; }
+.icq-pane-me .icq-pane-text { font-weight: 700; }
+.icq-caret { display: inline-block; width: 2px; height: 1.05em; margin-left: 1px; vertical-align: -0.15em; background: currentColor; animation: icq-caret 1s steps(1, end) infinite; }
+@keyframes icq-caret { 50% { opacity: 0; } }
+.icq-pane-them .icq-error { font-weight: 400; font-size: 13px; }
+
+/* ───────── Composer ───────── */
+
+.icq-compose { position: relative; display: flex; flex-shrink: 0; flex-direction: column; gap: 4px; padding: 6px 6px 0 7px; container-type: inline-size; }
+.icq-fmt { display: flex; align-items: center; gap: 1px; min-height: 24px; }
+.icq-fmt-label { margin-right: 6px; font-weight: 700; }
+.icq-fbtn { display: inline-flex; align-items: center; gap: 2px; height: 23px; padding: 0 4px; color: #000; background: transparent; }
+.icq-fbtn > svg:first-child { flex: none; }
+.icq-fbtn:hover:not(:disabled) { box-shadow: var(--icq-thin-out); }
+.icq-fbtn:active:not(:disabled), .icq-fbtn[aria-expanded="true"] { background: var(--icq-dither); box-shadow: var(--icq-thin-in); }
+.icq-fbtn .icq-emote { width: 17px; height: 17px; margin: 0; vertical-align: 0; }
+.icq-chev { width: 7px; height: 7px; }
+.icq-sep { width: 2px; height: 18px; margin: 0 4px; box-shadow: inset 1px 0 var(--icq-shade), inset -1px 0 var(--icq-hi); }
+.icq-check { display: inline-flex; align-items: center; gap: 5px; padding: 0 4px; cursor: pointer; white-space: nowrap; user-select: none; }
+.icq-check input { position: absolute; opacity: 0; pointer-events: none; }
+.icq-box { display: grid; place-items: center; width: 13px; height: 13px; background: #fff; box-shadow: var(--icq-sunken); }
+.icq-box svg { width: 9px; height: 9px; opacity: 0; }
+.icq-check input:checked + .icq-box svg { opacity: 1; }
+.icq-check input:focus-visible + .icq-box + span { outline: 1px dotted #111; }
+.icq-chars { margin-left: auto; padding-left: 8px; font-size: 11px; color: var(--icq-mute); white-space: nowrap; font-variant-numeric: tabular-nums; }
+.icq-chars[data-full] { color: var(--icq-red); font-weight: 700; }
+
+.icq-input {
+  width: 100%;
+  height: 68px;
+  padding: 5px 7px;
+  resize: none;
+  border: 0;
+  outline: none;
+  font-family: var(--icq-font);
+  font-size: 13px;
+  line-height: 1.4;
+  box-shadow: var(--icq-sunken);
+}
+.icq .icq-input:focus-visible { outline: none; box-shadow: var(--icq-sunken), inset 0 0 0 3px rgba(76, 192, 67, 0.22); }
+
+.icq-buttons { display: flex; align-items: center; gap: 6px; padding: 5px 0 1px; }
+
+/* Push buttons, with the black ring a default button had. */
+.icq-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 5px;
+  min-width: 75px;
+  height: 24px;
+  padding: 0 10px;
+  font-size: 12px;
+  color: #000;
+  background: var(--icq-face);
+  box-shadow: var(--icq-raised);
+}
+.icq-btn:hover:not(:disabled) { background: #e3dfd6; }
+.icq-btn:active:not(:disabled), .icq-btn[aria-expanded="true"] { box-shadow: var(--icq-pressed); }
+.icq-btn:active:not(:disabled) > *, .icq-btn[aria-expanded="true"] > * { translate: 1px 1px; }
+.icq-btn:disabled { color: #8c887f; text-shadow: 1px 1px #fff; }
+.icq-btn u { text-decoration-thickness: 1px; text-underline-offset: 2px; }
+.icq-btn-default { outline: 1px solid #000; outline-offset: 0; font-weight: 700; }
+.icq .icq-btn-default:focus-visible { outline: 1px solid #000; box-shadow: var(--icq-raised), inset 0 0 0 4px var(--icq-face), inset 0 0 0 5px #111; }
+.icq-btn-sm { min-width: 0; height: 21px; padding: 0 8px; font-size: 11.5px; }
+
+/* ───────── Status bar ───────── */
+
+.icq-status { display: flex; flex-shrink: 0; gap: 2px; height: 22px; margin: 5px 1px 0; font-size: 11px; }
+.icq-sb { display: flex; align-items: center; gap: 5px; min-width: 0; padding: 0 6px; box-shadow: var(--icq-thin-in); white-space: nowrap; }
+.icq-sb > span { overflow: hidden; text-overflow: ellipsis; }
+.icq-sb-grow { flex: 1; }
+.icq-status-btn { display: flex; align-items: center; gap: 5px; height: 100%; padding: 0 6px; font-size: 11px; color: #000; box-shadow: var(--icq-thin-in); }
+.icq-status-btn:hover { background: #e3dfd6; }
+.icq-status-btn[aria-expanded="true"] { background: var(--icq-dither); }
+.icq-status-btn svg:first-child { width: 15px; height: 15px; }
+.icq-grip { width: 14px; flex: none; background: linear-gradient(135deg, transparent 50%, var(--icq-hi) 50% 58%, var(--icq-shade) 58% 66%, transparent 66% 72%, var(--icq-hi) 72% 80%, var(--icq-shade) 80% 88%, transparent 88%); }
+
+/* ───────── Menus and popovers ───────── */
+
+.icq-menu {
+  position: absolute;
+  z-index: 30;
+  min-width: 190px;
+  padding: 2px;
+  background: var(--icq-face);
+  box-shadow: var(--icq-raised), 3px 4px 10px rgba(0, 0, 0, 0.28);
+  font-size: 12px;
+  animation: icq-menu 0.12s ease-out;
+}
+@keyframes icq-menu { from { clip-path: inset(0 0 100% 0); } to { clip-path: inset(0); } }
+.icq-menu-up { animation-name: icq-menu-up; }
+@keyframes icq-menu-up { from { clip-path: inset(100% 0 0 0); } to { clip-path: inset(0); } }
+.icq-mi { display: flex; align-items: center; gap: 8px; width: 100%; height: 23px; padding: 0 18px 0 6px; color: #000; text-align: left; white-space: nowrap; }
+.icq-mi > svg:first-child { flex: none; width: 16px; height: 16px; }
+.icq-mi:hover, .icq-mi:focus-visible { background: var(--icq-select); color: #fff; outline: none; }
+.icq-mi[aria-checked="true"] { font-weight: 700; }
+.icq-msep { height: 2px; margin: 3px 2px; box-shadow: inset 0 1px var(--icq-shade), inset 0 -1px var(--icq-hi); }
+.icq-menu-title { padding: 3px 6px 4px; font-weight: 700; color: #3b3934; }
+.icq-pop-foot { margin-top: 4px; padding: 5px 6px 3px; box-shadow: inset 0 1px var(--icq-shade), inset 0 2px var(--icq-hi); font-size: 11px; color: var(--icq-mute); white-space: normal; }
+
+.icq-palette { display: grid; grid-template-columns: repeat(8, 20px); gap: 3px; padding: 4px; }
+.icq-swatch { width: 20px; height: 20px; padding: 2px; background: var(--icq-face); box-shadow: var(--icq-sunken); }
+.icq-swatch i { display: block; width: 100%; height: 100%; }
+.icq-swatch:hover { outline: 1px solid #000; outline-offset: 0; }
+.icq-swatch[aria-checked="true"] { outline: 2px solid #000; outline-offset: 1px; }
+
+.icq-smileys { display: grid; grid-template-columns: repeat(10, 28px); gap: 1px; padding: 3px; }
+.icq-smiley-btn { display: grid; place-items: center; width: 28px; height: 28px; }
+.icq-smiley-btn:hover, .icq-smiley-btn:focus-visible { background: #fff; box-shadow: var(--icq-thin-out); outline: none; }
+.icq-smiley-btn .icq-emote { width: 21px; height: 21px; margin: 0; vertical-align: 0; transition: transform 0.15s cubic-bezier(0.3, 1.8, 0.5, 1); }
+.icq-smiley-btn:hover .icq-emote { transform: scale(1.18); }
+
+/* User Details: a little dialog with tabs. */
+.icq-dialog { position: absolute; top: calc(100% + 2px); right: 0; z-index: 30; width: 318px; padding: 3px; background: var(--icq-grain), var(--icq-face); box-shadow: var(--icq-raised), 4px 6px 18px rgba(0, 0, 0, 0.32); animation: icq-in 0.14s ease-out; }
+.icq-dialog .icq-titlebar { height: 20px; font-size: 11.5px; cursor: default; }
+.icq-dialog-x { display: grid; place-items: center; width: 16px; height: 14px; margin-left: auto; color: #000; background: var(--icq-face); box-shadow: var(--icq-raised); }
+.icq-tabs { display: flex; gap: 0; padding: 7px 5px 0; }
+.icq-tab { position: relative; padding: 3px 9px 4px; font-size: 11.5px; color: #000; background: var(--icq-face); box-shadow: inset 1px 1px var(--icq-hi), inset -1px 0 var(--icq-dark), inset -2px 0 var(--icq-shade); border-radius: 3px 3px 0 0; margin-top: 2px; }
+.icq-tab[aria-selected="true"] { z-index: 1; margin-top: 0; padding-bottom: 6px; margin-bottom: -2px; }
+.icq-tabpane { margin: 0 5px 5px; padding: 10px 10px 9px; box-shadow: var(--icq-raised); font-size: 12px; }
+.icq-kv { display: grid; grid-template-columns: 84px minmax(0, 1fr); gap: 5px 8px; align-items: center; }
+.icq-kv dt { color: #1d1c19; }
+.icq-kv dd { min-width: 0; height: 21px; padding: 2px 6px 0; overflow: hidden; white-space: nowrap; text-overflow: ellipsis; background: #fff; box-shadow: var(--icq-sunken); }
+.icq-kv dd.icq-dd-tall { height: auto; min-height: 21px; padding: 3px 6px; white-space: normal; line-height: 1.4; }
+.icq-dialog a { color: #0033cc; text-decoration: underline; }
+
+/* ───────── Pop-ups (bottom right) ───────── */
+
+.icq-toast {
+  position: fixed;
+  right: 18px;
+  bottom: 18px;
+  z-index: 60;
+  width: 264px;
+  padding: 3px;
+  font-family: var(--icq-font);
+  font-size: 12px;
+  background: var(--icq-grain), var(--icq-face);
+  box-shadow: var(--icq-raised), 0 18px 40px -12px rgba(0, 20, 30, 0.6);
+  pointer-events: none;
+  animation: icq-toast 5.2s cubic-bezier(0.2, 0.8, 0.2, 1) forwards;
+}
+.icq-toast[data-kind="chatreq"] { pointer-events: auto; animation-duration: 14s; }
+.icq-toast .icq-titlebar { height: 20px; font-size: 11.5px; cursor: default; }
+.icq-toast-body { display: flex; align-items: center; gap: 10px; padding: 9px 8px 8px; line-height: 1.4; }
+.icq-toast-body > :first-child { flex: none; }
+.icq-toast-actions { display: flex; justify-content: flex-end; gap: 6px; padding: 0 6px 6px; }
+@keyframes icq-toast {
+  0% { transform: translateY(calc(100% + 30px)); }
+  7% { transform: translateY(-2px); }
+  10%, 90% { transform: none; }
+  100% { transform: translateY(calc(100% + 30px)); }
+}
+@keyframes icq-toast-fade { 0%, 100% { opacity: 0; } 6%, 92% { opacity: 1; } }
+
+/* "Uh-oh!": a comic burst that pops out of the corner of the pop-up. */
+.icq-uhoh {
+  position: absolute;
+  top: -66px;
+  left: -34px;
+  display: grid;
+  place-items: center;
+  width: 128px;
+  height: 84px;
+  pointer-events: none;
+  animation: icq-uhoh 5.2s cubic-bezier(0.3, 1.6, 0.5, 1) both;
+}
+.icq-uhoh .icq-burst { position: absolute; inset: 0; width: 100%; height: 100%; filter: drop-shadow(0 4px 6px rgba(0, 0, 0, 0.25)); }
+.icq-uhoh span {
+  position: relative;
+  font-family: "Arial Black", "Arial Bold", Arial, sans-serif;
+  font-size: 21px;
+  font-weight: 900;
+  font-style: italic;
+  letter-spacing: -0.02em;
+  color: #e2231a;
+  transform: rotate(-8deg);
+  text-shadow: 2px 0 #fff, -2px 0 #fff, 0 2px #fff, 0 -2px #fff, 1.5px 1.5px #fff, -1.5px -1.5px #fff, 1.5px -1.5px #fff, -1.5px 1.5px #fff, 3px 4px 0 rgba(90, 0, 0, 0.35);
+}
+@keyframes icq-uhoh {
+  0%, 6% { transform: scale(0) rotate(-30deg); opacity: 0; }
+  14% { transform: scale(1.18) rotate(6deg); opacity: 1; }
+  20% { transform: scale(0.94) rotate(-3deg); }
+  26%, 70% { transform: scale(1) rotate(0); opacity: 1; }
+  80%, 100% { transform: scale(0.6) rotate(10deg); opacity: 0; }
+}
+
+/* ───────── Motion bits ───────── */
+
+.icq-spin { animation: icq-spin 1.4s linear infinite; }
+@keyframes icq-spin { to { rotate: 360deg; } }
+.icq-dialing .icq-petal ellipse:first-child { fill: #c9c5bc; stroke: #7d7a72; animation: icq-petal 1.6s linear infinite; animation-delay: calc(var(--i) * 0.2s - 1.6s); }
+@keyframes icq-petal { 0%, 100% { fill: #c9c5bc; stroke: #7d7a72; } 8%, 55% { fill: #4cc043; stroke: #1b7316; } }
+.icq-blink { animation: icq-blink 1s steps(1, end) infinite; }
+@keyframes icq-blink { 50% { opacity: 0.15; } }
+.icq-led-on { animation: icq-led 0.36s steps(1, end) infinite; }
+@keyframes icq-led { 0% { fill: #3dff8a; } 50% { fill: #0d3b3b; } }
+.icq-modem-led { animation: icq-modem-led 0.9s steps(1, end) infinite; }
+@keyframes icq-modem-led { 0% { fill: #ff3b2f; } 40% { fill: #3a2a2a; } 70% { fill: #4dff6a; } }
+.icq-caret-blink { animation: icq-caret 1s steps(1, end) infinite; }
+.icq-tear { animation: icq-tear 1.6s ease-in infinite; }
+@keyframes icq-tear { 0% { transform: translateY(-1px); opacity: 0; } 20% { opacity: 1; } 100% { transform: translateY(4px); opacity: 0; } }
+.icq-float { animation: icq-float 2.2s ease-in-out infinite; }
+@keyframes icq-float { 0%, 100% { transform: translateY(0); } 50% { transform: translateY(-1.2px); } }
+
+/* ───────── Small windows ───────── */
+
+@container icq-window (max-width: 780px) {
+  .icq-tools { order: 3; flex: 1 0 100%; justify-content: flex-start; margin-left: 74px; padding-top: 3px; box-shadow: inset 0 1px var(--icq-shade), inset 0 2px var(--icq-hi); }
+  .icq-tool { flex-direction: row; gap: 5px; min-width: 0; padding: 3px 7px 3px 4px; }
+  .icq-tool > :first-child { width: 20px; height: 20px; }
+}
+@container icq-window (max-width: 600px) {
+  .icq-photo, .icq-adwrap { display: none; }
+  .icq-tools { margin-left: 0; }
+  .icq-fields { grid-template-columns: auto minmax(0, 1fr) auto minmax(0, 0.7fr); }
+  .icq-hide-sm { display: none; }
+  .icq-tool span { display: none; }
+  .icq-tool { padding: 3px 6px; }
+}
+@container (max-width: 440px) {
+  .icq-check span:last-child, .icq-fmt-label { display: none; }
+}
+@media (max-height: 740px) {
+  .icq-adwrap { display: none; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .icq *, .icq *::before, .icq *::after, .icq-pick * { animation: none !important; transition: none !important; }
+  .icq-toast { animation: icq-toast-fade 5.2s ease forwards !important; }
+  .icq-toast[data-kind="chatreq"] { animation-duration: 14s !important; }
+}
+
+/* ───────── The open ICQ agent in the sidebar: a selected contact ───────── */
+
+.icq-pick {
+  position: relative;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  width: 100%;
+  padding: 6px 10px 6px 6px;
+  text-align: left;
+  font-family: var(--icq-font);
+  font-size: 12px;
+  color: #000;
+  text-shadow: none;
+  border-radius: 2px;
+  background: var(--icq-grain), linear-gradient(180deg, #ebe8e0, #d6d2c8);
+  box-shadow: var(--icq-raised), 0 12px 26px -14px rgba(0, 0, 0, 0.7);
+  animation: icq-pick-in 0.22s steps(4, end);
+}
+@keyframes icq-pick-in { from { clip-path: inset(0 100% 0 0); } to { clip-path: inset(0); } }
+.icq-pick:active { box-shadow: var(--icq-pressed), 0 12px 26px -14px rgba(0, 0, 0, 0.7); }
+.icq-pick:focus-visible { outline: 1px dotted #000; outline-offset: -5px; }
+.icq-pick-icon { display: grid; flex: none; place-items: center; width: 42px; height: 42px; padding: 2px; background: var(--icq-face); box-shadow: var(--icq-sunken); }
+.icq-pick-icon > span {
+  display: grid;
+  place-items: center;
+  width: 100%;
+  height: 100%;
+  background:
+    radial-gradient(60% 40% at 30% 20%, rgba(255, 255, 255, 0.85), rgba(255, 255, 255, 0) 70%),
+    linear-gradient(180deg, #7fd3d0 0%, #bfeae0 55%, #8fd27a 56%, #4caa3f 100%);
+}
+.icq-pick-name { display: flex; align-items: center; gap: 5px; min-width: 0; }
+/* The Windows selection: navy, white text, a dotted focus ring. */
+.icq-pick-name b { padding: 0 4px; font-size: 13px; font-weight: 700; color: #fff; background: var(--icq-select); outline: 1px dotted rgba(255, 220, 90, 0.9); outline-offset: -1px; }
+.icq-pick-uin { font-size: 11px; color: #4a4741; white-space: nowrap; }
+.icq-pick-bio { display: flex; align-items: center; gap: 4px; margin-top: 3px; overflow: hidden; white-space: nowrap; text-overflow: ellipsis; font-size: 11px; color: #34322d; }
+.icq-pick-bio > span { overflow: hidden; text-overflow: ellipsis; }
+.icq-pick-bio b { color: #c4161c; }

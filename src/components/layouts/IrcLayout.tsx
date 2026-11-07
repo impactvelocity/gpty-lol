@@ -62,7 +62,7 @@ export function IrcLayout({
 
       <div className="mt-[3px] flex min-h-0 flex-1 gap-[3px]">
         {/* Treebar */}
-        <nav className="bevel-in hidden w-48 shrink-0 overflow-y-auto bg-white p-1.5 md:block" aria-label="Channels">
+        <nav data-threads className="bevel-in hidden w-48 shrink-0 overflow-y-auto bg-white p-1.5 md:block" aria-label="Channels">
           <div className="flex items-center gap-1">
             <span>🖥️</span> <span>irc.gpty.lol</span>
           </div>

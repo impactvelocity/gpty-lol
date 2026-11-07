@@ -66,7 +66,7 @@ export function ElfLayout({
 
       <div className="z-[1] flex min-h-0 flex-1 gap-2 p-2">
         {/* Letters inbox */}
-        <aside className="hidden w-56 shrink-0 flex-col rounded-xl bg-[#f7f1e4] shadow-inner ring-1 ring-black/20 md:flex">
+        <aside data-threads className="hidden w-56 shrink-0 flex-col rounded-xl bg-[#f7f1e4] shadow-inner ring-1 ring-black/20 md:flex">
           <div className="flex items-center justify-between rounded-t-xl bg-[#2e6b3e] px-3 py-2 font-bold text-white">
             💌 Letters
             <span className="rounded-full bg-white/20 px-2 text-[11px] font-normal">{letters.length}</span>

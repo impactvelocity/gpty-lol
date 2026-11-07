@@ -1,24 +1,25 @@
 "use client";
 
-import { COSTUMES } from "@/lib/costumes";
+import { SCENES } from "./Scenes";
 
 /**
- * A desktop wallpaper per era, drawn in CSS (see `.wp-*` in globals.css).
- * All of them are stacked and the current one fades in, so switching
- * costume crossfades the desktop along with the window.
+ * The site's background is the open agent's scene (see Scenes.tsx). All of
+ * them are stacked and the current one fades in, so switching agents
+ * crossfades the world along with the window. Scenes you can't see are paused.
  */
 export function Wallpaper({ current }: { current: string }) {
   return (
-    <div aria-hidden className="pointer-events-none fixed inset-0 -z-10 bg-[#121214]">
-      {COSTUMES.map((c) => (
-        <div
-          key={c.id}
-          className={`wp wp-${c.id}`}
-          style={{ opacity: c.id === current ? 1 : 0 }}
-        />
-      ))}
-      {/* Darkens the top and bottom edges so the site header and strip stay readable. */}
-      <div className="wp-scrim" />
+    <div aria-hidden className="pointer-events-none absolute inset-0 -z-10 bg-[#121214]">
+      {Object.entries(SCENES).map(([id, scene]) => {
+        const on = id === current;
+        return (
+          <div key={id} className="scene" data-on={on} style={{ background: scene.bg, opacity: on ? 1 : 0 }}>
+            {scene.draw()}
+          </div>
+        );
+      })}
+      {/* A soft shade on the left keeps the sidebar readable, with no panel edge. */}
+      <div className="wp-side" />
     </div>
   );
 }

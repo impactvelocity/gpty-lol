@@ -45,7 +45,7 @@ export function IcqLayout({
 
       <div className="mt-[3px] flex min-h-0 flex-1 gap-[3px]">
         {/* Contact list */}
-        <aside className="hidden w-52 shrink-0 flex-col gap-[3px] md:flex">
+        <aside data-threads className="hidden w-52 shrink-0 flex-col gap-[3px] md:flex">
           <div className="bevel-out flex items-center gap-2 bg-[#d4d0c8] px-2 py-1.5">
             <IcqFlower className="h-7 w-7" status="logo" />
             <div className="leading-tight">
@@ -100,7 +100,7 @@ export function IcqLayout({
           <div className="flex flex-wrap items-center gap-x-3 gap-y-1 pt-1">
             <Field label="Nickname:" value={nick} grow />
             <Field label="UIN:" value="31337" />
-            <Field label="Email:" value="buddy@icq.com" />
+            <Field label="Email:" value="daisy@icq.com" />
           </div>
           <div className="flex items-center gap-1.5 text-[#404040]">
             <IcqFlower className="h-3 w-3" status={busy ? "away" : "online"} />

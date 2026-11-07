@@ -28,7 +28,7 @@ export function SlackLayout({
 
   return (
     <div className="flex h-full overflow-hidden rounded-[6px] bg-white font-[family-name:var(--font-lato)] text-[15px] text-[#2c2d30] shadow-[0_22px_70px_rgba(0,0,0,.55)] ring-1 ring-black/30">
-      <aside className="hidden w-[220px] shrink-0 flex-col bg-[#4d394b] text-[#ab9ba9] md:flex">
+      <aside data-threads className="hidden w-[220px] shrink-0 flex-col bg-[#4d394b] text-[#ab9ba9] md:flex">
         <div className="px-3 pt-3">
           <TrafficLights />
         </div>

@@ -13,14 +13,12 @@ export const maxDuration = 60;
 const MODEL = process.env.AI_MODEL ?? "anthropic/claude-sonnet-5.5";
 
 export async function POST(req: Request) {
-  const { messages, costume }: { messages: ChatMessage[]; costume?: string } =
-    await req.json();
+  const { messages, agent }: { messages: ChatMessage[]; agent?: string } = await req.json();
 
-  const costumeId = typeof costume === "string" ? costume : "clean";
   const result = streamText({
     model: MODEL,
-    // The persona lives on the server; the client only sends a costume id.
-    system: systemPromptFor(costumeId),
+    // The persona lives on the server; the client only sends an agent id.
+    system: systemPromptFor(typeof agent === "string" ? agent : ""),
     // Threads can grow long; only the recent history is sent to the model.
     messages: await convertToModelMessages(messages.slice(-40)),
   });

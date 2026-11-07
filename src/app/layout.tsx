@@ -11,14 +11,14 @@ const jetbrains = JetBrains_Mono({ variable: "--font-jetbrains", subsets: ["lati
 const caveat = Caveat({ variable: "--font-caveat", subsets: ["latin"], weight: ["600", "700"] });
 
 const description =
-  "What if your AI chatbot shipped in 10,000 BC? Or 1993? 13 costumes, from a cave wall to a séance board to MSN Messenger to the bare machine. The look and the personality change together.";
+  "Chat with the gptys: AI agents who each live inside an app from another time, from a cave wall to MSN Messenger to 2199, and only know the world as it was then.";
 
 export const metadata: Metadata = {
   // Absolute URLs for share cards. Set NEXT_PUBLIC_SITE_URL on preview deployments.
   metadataBase: new URL(process.env.NEXT_PUBLIC_SITE_URL ?? "https://gpty.lol"),
-  title: "gpty.lol — a chatbot in costume",
+  title: "gpty.lol — chat with the past",
   description,
-  openGraph: { siteName: "gpty.lol", title: "gpty.lol — a chatbot in costume", description, type: "website" },
+  openGraph: { siteName: "gpty.lol", title: "gpty.lol — chat with the past", description, type: "website" },
   twitter: { card: "summary_large_image" },
 };
 

@@ -1,58 +1,43 @@
 "use client";
 
 import { useChat } from "@ai-sdk/react";
+import { Menu } from "lucide-react";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { flushSync } from "react-dom";
-import {
-  COSTUMES,
-  DEFAULT_COSTUME,
-  costumeIndex,
-  costumeTitle,
-  getCostume,
-  type Costume,
-} from "@/lib/costumes";
-import { useCandy } from "@/lib/candy";
-import { playEnter, playReply, setSoundEnabled, soundEnabled } from "@/lib/sounds";
+import { type Agent, agentEra, getAgent, isAgent } from "@/lib/agents";
 import { messageText, previewOf, useThreads } from "@/lib/threads";
 import type { ChatMessage } from "@/lib/types";
 import { AboutModal } from "./AboutModal";
-import { SiteHeader } from "./SiteHeader";
+import { AgentSidebar, Logo } from "./AgentSidebar";
+import { MeetPage } from "./MeetPage";
+import { toneOf } from "./Scenes";
 import { Wallpaper } from "./Wallpaper";
-import { Wardrobe } from "./Wardrobe";
-import { useOnNewReply } from "./layouts/hooks";
+import type { Mood } from "./Gpty";
 import { LAYOUTS } from "./layouts";
 import { NUDGE } from "./layouts/MsnLayout";
 import type { ChatLine, ThreadItem } from "./layouts/types";
 
-const COSTUME_KEY = "gpty.costume";
-
-/** Old window fades out quickly, new one fades in with a small overshoot. */
-const OUT: Keyframe[] = [{ opacity: 0, transform: "translateY(6px) scale(0.985)" }];
-const IN: Keyframe[] = [
-  { opacity: 0, transform: "translateY(12px) scale(0.97)" },
-  { opacity: 1, transform: "translateY(-3px) scale(1.006)", offset: 0.65 },
+/** The new window settles in with a small, quick bounce. */
+const SETTLE: Keyframe[] = [
+  { opacity: 0.4, transform: "translateY(8px)" },
+  { opacity: 1, transform: "translateY(-2px)", offset: 0.6 },
   { opacity: 1, transform: "none" },
 ];
 
-const isCostume = (id: string | null | undefined): id is string =>
-  !!id && COSTUMES.some((c) => c.id === id);
-
-/** A costume in the URL (/msn or the older ?costume=msn) wins over the last one used. */
-function initialCostume(fromRoute?: string) {
+/** An agent in the URL (/msn) opens a new chat with that agent. */
+function agentFromUrl(fromRoute?: string) {
   // Read the address bar rather than trusting the route alone: switching
-  // costume rewrites the path without a navigation, so it's the newer value.
+  // agents rewrites the path without a navigation, so it's the newer value.
   const fromPath = window.location.pathname.split("/")[1];
-  if (isCostume(fromPath)) return fromPath;
-  if (isCostume(fromRoute)) return fromRoute;
-  const fromQuery = new URLSearchParams(window.location.search).get("costume");
-  if (isCostume(fromQuery)) return fromQuery;
-  const saved = localStorage.getItem(COSTUME_KEY);
-  return isCostume(saved) ? saved : DEFAULT_COSTUME;
+  if (isAgent(fromPath)) return fromPath;
+  return isAgent(fromRoute) ? fromRoute : undefined;
 }
 
-/** Keep the address bar shareable: gpty.lol/<costume>. */
-function rememberCostume(id: string) {
-  localStorage.setItem(COSTUME_KEY, id);
+/** /meet opens the Meet the gptys page. */
+const MEET = "meet";
+
+/** Keep the address bar shareable: gpty.lol/<agent> or gpty.lol/meet. */
+function rememberPath(id: string) {
   const url = new URL(window.location.href);
   url.pathname = `/${id}`;
   url.searchParams.delete("costume");
@@ -60,131 +45,59 @@ function rememberCostume(id: string) {
 }
 
 export function ChatApp({ costume: fromRoute }: { costume?: string }) {
-  const store = useThreads();
-  const candy = useCandy(store.threads);
-  const [shownId, setShownId] = useState(() => initialCostume(fromRoute));
-  const [pickerOpen, setPickerOpen] = useState(false);
+  const [fromUrl] = useState(() => agentFromUrl(fromRoute));
+  const store = useThreads(fromUrl);
+  const agent = getAgent(store.agentId);
   const [aboutOpen, setAboutOpen] = useState(false);
-  const [sound, setSound] = useState(soundEnabled);
-  const [candyToast, setCandyToast] = useState<{ k: number; name: string; n: number } | null>(null);
-  const winRef = useRef<HTMLDivElement>(null);
-  /** The costume we're heading to, so quick repeated clicks keep advancing. */
-  const targetRef = useRef(shownId);
-  const seq = useRef(0);
-  const costume = getCostume(shownId);
+  const [mood, setMood] = useState<Mood>("watching");
+  const [drawer, setDrawer] = useState(false);
+  const [meet, setMeet] = useState(
+    () => window.location.pathname.split("/")[1] === MEET || (fromRoute === MEET && !fromUrl),
+  );
+  const stageRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
-    document.title = costumeTitle(costume);
-  }, [costume]);
+    document.title = meet ? "Meet the gptys — gpty.lol" : `${agent.name} · ${agentEra(agent)} — gpty.lol`;
+    rememberPath(meet ? MEET : agent.id);
+  }, [agent, meet]);
 
-  // A brand-new visitor who didn't follow a costume link: open the wardrobe,
-  // which shows every costume answering the same question. Esc closes it.
-  const [firstVisit] = useState(() => {
-    const q = new URLSearchParams(window.location.search).get("costume");
-    const path = window.location.pathname.split("/")[1];
-    return !localStorage.getItem(COSTUME_KEY) && !isCostume(path) && !isCostume(q) && !isCostume(fromRoute);
-  });
-  useEffect(() => {
-    if (!firstVisit || store.threads.length > 0) return;
-    const t = setTimeout(() => setPickerOpen(true), 700);
-    return () => clearTimeout(t);
-    // Once, on mount.
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, []);
-
-  // Normalise the URL on first load (e.g. "/" or "?costume=" to "/clean").
-  useEffect(() => {
-    rememberCostume(targetRef.current);
-  }, []);
-
-  const go = useCallback((id: string) => {
-    if (id === targetRef.current) return;
-    targetRef.current = id;
-    rememberCostume(id);
-    // Every caller is a click or key press, so audio is allowed to start.
-    playEnter(id);
-    const token = ++seq.current;
-    const el = winRef.current;
-    const swap = () => flushSync(() => setShownId(id));
-    if (!el || window.matchMedia("(prefers-reduced-motion: reduce)").matches) {
-      swap();
-      return;
-    }
-    // Start from wherever a running animation left the window.
-    const from = getComputedStyle(el).opacity;
+  /** Swap what the window shows, then settle it in with a short bounce. */
+  const transition = useCallback((change: () => void) => {
+    setDrawer(false);
+    flushSync(change);
+    const el = stageRef.current;
+    if (!el || window.matchMedia("(prefers-reduced-motion: reduce)").matches) return;
     el.getAnimations().forEach((a) => a.cancel());
-    const out = el.animate([{ opacity: from }, ...OUT], {
-      duration: 170,
-      easing: "ease-in",
-      fill: "forwards",
-    });
-    out.finished.then(
-      () => {
-        if (token !== seq.current) return;
-        swap();
-        winRef.current?.animate(IN, { duration: 460, easing: "cubic-bezier(.22,.9,.3,1)" });
-        out.cancel();
-      },
-      () => {}, // cancelled by a newer change
-    );
+    el.animate(SETTLE, { duration: 280, easing: "cubic-bezier(.3,.7,.4,1)" });
   }, []);
 
-  const step = useCallback(
-    (dir: 1 | -1) => {
-      const i = costumeIndex(targetRef.current);
-      go(COSTUMES[(i + dir + COSTUMES.length) % COSTUMES.length].id);
-    },
-    [go],
+  const { openAgent, select, deleteThread } = store;
+  const onOpenAgent = useCallback(
+    (id: string) =>
+      transition(() => {
+        setMeet(false);
+        openAgent(id);
+      }),
+    [transition, openAgent],
   );
-
-  const surprise = useCallback(() => {
-    const others = COSTUMES.filter((c) => c.id !== targetRef.current);
-    go(others[Math.floor(Math.random() * others.length)].id);
-  }, [go]);
-
-  // ⌘K / Ctrl+K opens the picker; [ and ] cycle when you're not typing.
-  useEffect(() => {
-    const onKey = (e: KeyboardEvent) => {
-      if ((e.metaKey || e.ctrlKey) && e.key.toLowerCase() === "k") {
-        e.preventDefault();
-        setPickerOpen((o) => !o);
-        return;
-      }
-      const el = e.target as HTMLElement | null;
-      const typing =
-        el && (el.tagName === "INPUT" || el.tagName === "TEXTAREA" || el.isContentEditable);
-      if (typing || e.metaKey || e.ctrlKey || e.altKey) return;
-      if (e.key === "]") step(1);
-      if (e.key === "[") step(-1);
-    };
-    window.addEventListener("keydown", onKey);
-    return () => window.removeEventListener("keydown", onKey);
-  }, [step]);
-
-  /** On each fresh reply: play the costume's cue and maybe drop a candy in the bag. */
-  const { collect } = candy;
-  const onReply = useCallback(
-    (id: string) => {
-      playReply(id);
-      const n = collect(id);
-      if (n) setCandyToast({ k: Date.now(), name: getCostume(id).name, n });
-    },
-    [collect],
+  const onSelectThread = useCallback(
+    (id: string) =>
+      transition(() => {
+        setMeet(false);
+        select(id);
+      }),
+    [transition, select],
   );
+  const onMeet = useCallback(() => transition(() => setMeet(true)), [transition]);
 
   const items: ThreadItem[] = useMemo(
     () => [
-      ...(store.isDraft
-        ? [{ id: store.activeId, title: "", preview: "", updatedAt: 0, draft: true }]
-        : []),
-      ...store.threads.map((t) => ({
-        id: t.id,
-        title: t.title || "Untitled",
-        preview: previewOf(t),
-        updatedAt: t.updatedAt,
-      })),
+      ...(store.isDraft ? [{ id: store.activeId, title: "", preview: "", updatedAt: 0, draft: true }] : []),
+      ...store.threads
+        .filter((t) => t.agentId === store.agentId)
+        .map((t) => ({ id: t.id, title: t.title || "Untitled", preview: previewOf(t), updatedAt: t.updatedAt })),
     ],
-    [store.isDraft, store.activeId, store.threads],
+    [store.isDraft, store.activeId, store.threads, store.agentId],
   );
 
   const initial = useMemo(
@@ -194,84 +107,74 @@ export function ChatApp({ costume: fromRoute }: { costume?: string }) {
     [store.activeId],
   );
 
+  const sidebar = (
+    <AgentSidebar
+      agentId={store.agentId}
+      isDraft={store.isDraft}
+      meet={meet}
+      mood={mood}
+      onOpenAgent={onOpenAgent}
+      onMeet={onMeet}
+      onAbout={() => {
+        setDrawer(false);
+        setAboutOpen(true);
+      }}
+    />
+  );
+
   return (
     <div
-      className="relative isolate flex h-dvh flex-col overflow-hidden px-3 pb-3 md:px-10 md:pb-6 xl:px-16"
+      data-tone={toneOf(meet ? MEET : agent.id)}
+      className="shell relative isolate flex h-dvh overflow-hidden font-[family-name:var(--font-geist-sans)] text-[var(--shell-text)] antialiased"
     >
-      <Wallpaper current={costume.id} />
-      <div className="mx-auto w-full max-w-[1280px]">
-        <SiteHeader
-          costume={costume}
-          candy={candy.got.size}
-          candyTotal={candy.total}
-          sound={sound}
-          onToggleSound={() => {
-            setSound((on) => {
-              setSoundEnabled(!on);
-              return !on;
-            });
-          }}
-          onPrev={() => step(-1)}
-          onNext={() => step(1)}
-          onOpenPicker={() => setPickerOpen(true)}
-          onOpenAbout={() => setAboutOpen(true)}
-        />
-      </div>
+      <Wallpaper current={meet ? MEET : agent.id} />
+      <aside className="hidden w-[300px] shrink-0 md:block">
+        {sidebar}
+      </aside>
 
-      <main className="mx-auto min-h-0 w-full max-w-[1280px] flex-1">
-        <ChatView
-          key={store.activeId}
-          winRef={winRef}
-          threadId={store.activeId}
-          initial={initial}
-          costume={costume}
-          onSave={store.saveMessages}
-          threads={items}
-          onSelectThread={store.select}
-          onNewThread={store.newThread}
-          onDeleteThread={store.deleteThread}
-          onReply={onReply}
-        />
-      </main>
-
-      {candyToast && (
-        <div
-          key={candyToast.k}
-          role="status"
-          className="candy-toast pointer-events-none fixed left-1/2 top-14 z-50 -translate-x-1/2 rounded-full border border-white/15 bg-black/80 px-4 py-1.5 font-sans text-sm text-white shadow-xl backdrop-blur-md"
-        >
-          🍬 <b>{candyToast.name}</b> added to your bag ·{" "}
-          {candyToast.n === candy.total ? (
-            <b className="text-amber-300">FULL BAG! 🎃</b>
-          ) : (
-            <span className="text-white/70">
-              {candyToast.n}/{candy.total}
-            </span>
-          )}
+      {/* Mobile drawer */}
+      {drawer && (
+        <div className="fixed inset-0 z-40 md:hidden">
+          <button aria-label="Close menu" className="absolute inset-0 bg-black/40" onClick={() => setDrawer(false)} />
+          <aside className="drawer-in absolute inset-y-0 left-0 w-[284px] max-w-[85vw] bg-[var(--shell-drawer)] shadow-2xl backdrop-blur-2xl">
+            {sidebar}
+          </aside>
         </div>
       )}
 
-      <Wardrobe
-        open={pickerOpen}
-        current={costume.id}
-        collected={candy.got}
-        onPick={(c) => {
-          setPickerOpen(false);
-          go(c.id);
-        }}
-        onSurprise={() => {
-          setPickerOpen(false);
-          surprise();
-        }}
-        onClose={() => setPickerOpen(false)}
-      />
-      <AboutModal
-        open={aboutOpen}
-        onClose={() => setAboutOpen(false)}
-        costume={costume}
-        userId={store.userId}
-        threadCount={store.threads.length}
-      />
+      <main className="relative flex min-w-0 flex-1 flex-col">
+        {/* Phones have no room for the sidebar: a menu button opens it as a drawer. */}
+        <header className="flex h-12 shrink-0 items-center gap-1 px-2 md:hidden">
+          <button
+            onClick={() => setDrawer(true)}
+            aria-label="Open agents"
+            className="grid h-9 w-9 place-items-center rounded-lg text-[var(--shell-muted)] hover:bg-[var(--shell-hover)] hover:text-[var(--shell-text)]"
+          >
+            <Menu className="h-5 w-5" />
+          </button>
+          <Logo />
+        </header>
+        <div ref={stageRef} className="min-h-0 flex-1 px-2 pb-2 md:py-6 md:pl-2 md:pr-6">
+          {meet && <MeetPage onOpenAgent={onOpenAgent} />}
+          {/* The chat stays mounted under the page, so a reply in progress isn't lost. */}
+          <div className={meet ? "hidden" : "h-full"}>
+            <ChatView
+              key={store.activeId}
+              threadId={store.activeId}
+              initial={initial}
+              agent={agent}
+              onSave={store.saveMessages}
+              threads={items}
+              onSelectThread={onSelectThread}
+              onNewThread={() => onOpenAgent(agent.id)}
+              onDeleteThread={deleteThread}
+              onMood={setMood}
+            />
+          </div>
+        </div>
+      </main>
+
+      <AboutModal open={aboutOpen} onClose={() => setAboutOpen(false)} agent={agent} />
     </div>
   );
 }
@@ -282,32 +185,32 @@ function signature(ms: ChatMessage[]) {
 }
 
 function ChatView({
-  winRef,
   threadId,
   initial,
-  costume,
+  agent,
   onSave,
   threads,
   onSelectThread,
   onNewThread,
   onDeleteThread,
-  onReply,
+  onMood,
 }: {
-  winRef: React.RefObject<HTMLDivElement | null>;
   threadId: string;
   initial: ChatMessage[];
-  costume: Costume;
-  onSave: (id: string, messages: ChatMessage[]) => void;
+  agent: Agent;
+  onSave: (id: string, agentId: string, messages: ChatMessage[]) => void;
   threads: ThreadItem[];
   onSelectThread: (id: string) => void;
   onNewThread: () => void;
   onDeleteThread: (id: string) => void;
-  onReply: (costumeId: string) => void;
+  onMood: (mood: Mood) => void;
 }) {
   const { messages, sendMessage, status, stop, error } = useChat<ChatMessage>({
     id: threadId,
     messages: initial,
   });
+  const costume = agent.costume;
+  const agentId = agent.id;
 
   // Persist whenever the transcript settles (after send, finish, stop or error).
   const savedSig = useRef(signature(initial));
@@ -316,8 +219,8 @@ function ChatView({
     const sig = signature(messages);
     if (sig === savedSig.current) return;
     savedSig.current = sig;
-    onSave(threadId, messages);
-  }, [messages, status, threadId, onSave]);
+    onSave(threadId, agentId, messages);
+  }, [messages, status, threadId, agentId, onSave]);
 
   const lines: ChatLine[] = useMemo(
     () =>
@@ -339,30 +242,27 @@ function ChatView({
   );
 
   const busy = status === "submitted" || status === "streaming";
-  const waiting =
-    status === "submitted" || (status === "streaming" && lines.at(-1)?.role !== "assistant");
 
-  const costumeId = costume.id;
+  // The agent's orb in the sidebar mirrors the chat: thinking until the first
+  // words arrive, typing while they stream, watching you the rest of the time.
+  const failed = status === "error" || !!error;
+  const replying = status === "streaming" && messages.at(-1)?.role === "assistant";
+  useEffect(() => {
+    onMood(failed ? "error" : status === "submitted" ? "thinking" : replying ? "typing" : status === "streaming" ? "thinking" : "watching");
+  }, [failed, status, replying, onMood]);
+  const waiting = status === "submitted" || (status === "streaming" && lines.at(-1)?.role !== "assistant");
+
   const onSend = useCallback(
     (text: string) => {
-      sendMessage(
-        { text, metadata: { createdAt: Date.now(), costume: costumeId } },
-        { body: { costume: costumeId } },
-      );
+      sendMessage({ text, metadata: { createdAt: Date.now(), agent: agentId } }, { body: { agent: agentId } });
     },
-    [sendMessage, costumeId],
+    [sendMessage, agentId],
   );
-
-  useOnNewReply(lines, () => onReply(costumeId));
 
   const Layout = LAYOUTS[costume.layout];
   return (
-    <div className="grid h-full grid-rows-[minmax(0,1fr)] place-items-center">
-      <div
-        ref={winRef}
-        className="h-full w-full"
-        style={{ maxWidth: costume.window.w, maxHeight: costume.window.h }}
-      >
+    <div className="h-full">
+      <div className="agent-window h-full w-full">
         <Layout
           costume={costume}
           lines={lines}

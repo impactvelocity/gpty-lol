@@ -199,104 +199,6 @@ html, body { height: 100%; overflow: hidden; }
 .pop { animation: pop 1.8s ease-out forwards; }
 @keyframes pop { 0% { transform: scale(.4); opacity: 0; } 12% { transform: scale(1.08); opacity: 1; } 20%, 80% { transform: scale(1); opacity: 1; } 100% { opacity: 0; } }
 
-/* ───── Wallpapers: one desktop per era, drawn in CSS ───── */
-.wp { position: absolute; inset: 0; transition: opacity .7s ease; }
-.wp-scrim { position: absolute; inset: 0;
-  background: linear-gradient(rgba(0,0,0,.5), transparent 120px), linear-gradient(to top, rgba(0,0,0,.45), transparent 110px); }
-
-/* Now: a quiet dark room with a warm glow. */
-.wp-clean { background:
-  radial-gradient(ellipse 80% 55% at 50% -10%, rgba(251,146,60,.16), transparent 70%),
-  #121214; }
-
-/* 1993: a dark desk at midnight, lit by the monitor. */
-.wp-bbs { background:
-  radial-gradient(ellipse 55% 45% at 50% 50%, rgba(70,255,140,.13), transparent 70%),
-  radial-gradient(ellipse 90% 35% at 50% 112%, #3a2a1a 0%, #20170e 55%, transparent 75%),
-  repeating-linear-gradient(90deg, rgba(255,255,255,.012) 0 2px, transparent 2px 9px),
-  linear-gradient(#08090a, #050504); }
-
-/* 1999: the Windows 2000 desktop blue. */
-.wp-irc { background:
-  radial-gradient(ellipse 120% 90% at 50% 40%, transparent 60%, rgba(0,0,0,.18)),
-  #3a6ea5; }
-
-/* 2000: Windows 98 teal. */
-.wp-icq { background:
-  radial-gradient(ellipse 120% 90% at 50% 40%, transparent 60%, rgba(0,0,0,.18)),
-  #008080; }
-
-/* 2005: a big blue sky over rolling green hills. */
-.wp-msn { background:
-  radial-gradient(ellipse 14% 5% at 18% 20%, rgba(255,255,255,.85), transparent 70%),
-  radial-gradient(ellipse 22% 6% at 26% 23%, rgba(255,255,255,.6), transparent 70%),
-  radial-gradient(ellipse 18% 5% at 74% 14%, rgba(255,255,255,.7), transparent 70%),
-  radial-gradient(ellipse 26% 7% at 82% 18%, rgba(255,255,255,.45), transparent 70%),
-  radial-gradient(130% 62% at 72% 118%, #3f8e1e 0%, #5aa52a 42%, #70b83a 49.6%, transparent 50%),
-  radial-gradient(150% 70% at 28% 122%, #4f9c22 0%, #6db53a 38%, #8fcd52 49.6%, transparent 50%),
-  linear-gradient(180deg, #1d5fcf 0%, #3f86e6 30%, #7fb6f2 55%, #c4e0fb 72%); }
-
-/* 2007: an aurora of Aero greens and blues. */
-.wp-skype { background:
-  radial-gradient(ellipse 70% 18% at 22% 30%, rgba(150,255,200,.6), transparent 70%),
-  radial-gradient(ellipse 80% 24% at 70% 58%, rgba(70,210,240,.55), transparent 70%),
-  radial-gradient(ellipse 50% 16% at 85% 26%, rgba(140,240,150,.45), transparent 70%),
-  radial-gradient(ellipse 60% 20% at 15% 75%, rgba(60,170,255,.4), transparent 70%),
-  repeating-linear-gradient(160deg, rgba(255,255,255,.04) 0 1px, transparent 1px 26px),
-  linear-gradient(160deg, #04362b 0%, #08604c 45%, #0c4a70 100%); }
-
-/* 2014: sunset over granite mountains. */
-.wp-slack { background:
-  url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 1600 400' preserveAspectRatio='none'%3E%3Cpath d='M0 260 L180 200 L320 230 L470 150 L620 210 L760 170 L900 230 L1060 160 L1220 220 L1380 180 L1600 240 V400 H0Z' fill='%23574a78' fill-opacity='.75'/%3E%3Cpath d='M0 330 L140 290 L260 310 L420 250 L520 120 L560 60 L600 120 L640 270 L800 300 L980 260 L1120 300 L1300 240 L1460 290 L1600 270 V400 H0Z' fill='%232a2240'/%3E%3C/svg%3E") bottom / 100% 48% no-repeat,
-  radial-gradient(ellipse 40% 20% at 50% 62%, rgba(255,200,140,.55), transparent 70%),
-  linear-gradient(180deg, #1f2752 0%, #4c4a82 30%, #a26a8a 55%, #e79a78 72%, #f6c58f 85%); }
-
-/* 2015: deep blue with beams of light. */
-.wp-messenger { background:
-  conic-gradient(from 52deg at -5% 55%, transparent 0deg, rgba(90,175,255,.22) 6deg, transparent 13deg, rgba(90,175,255,.16) 19deg, transparent 27deg, rgba(90,175,255,.2) 34deg, transparent 44deg, rgba(90,175,255,.12) 52deg, transparent 62deg, transparent 360deg),
-  radial-gradient(ellipse 45% 60% at 38% 52%, rgba(30,130,255,.55), transparent 70%),
-  linear-gradient(135deg, #020a1c 0%, #06204d 55%, #0a3a86 100%); }
-
-/* Now: a soft, dark macOS-style gradient. */
-.wp-terminal { background:
-  radial-gradient(ellipse 70% 60% at 85% 105%, rgba(110,80,230,.55), transparent 70%),
-  radial-gradient(ellipse 60% 55% at 5% -5%, rgba(20,140,160,.45), transparent 70%),
-  radial-gradient(ellipse 50% 40% at 50% 50%, rgba(122,162,247,.12), transparent 70%),
-  #0b0d17; }
-
-/* 10,000 BC: deep cave rock, lit faintly from below by a fire. */
-.wp-caveman { background:
-  radial-gradient(ellipse 70% 40% at 50% 112%, rgba(255,120,30,.28), transparent 70%),
-  radial-gradient(ellipse 30% 22% at 18% 70%, rgba(201,111,46,.12), transparent 70%),
-  radial-gradient(ellipse 26% 18% at 82% 30%, rgba(120,90,60,.14), transparent 70%),
-  radial-gradient(ellipse 40% 30% at 65% 85%, rgba(60,40,25,.5), transparent 70%),
-  linear-gradient(170deg, #161210 0%, #221a14 55%, #19120d 100%); }
-
-/* 1888: a candlelit parlor, all velvet and shadow. */
-.wp-seance { background:
-  radial-gradient(ellipse 30% 24% at 12% 88%, rgba(255,176,46,.22), transparent 70%),
-  radial-gradient(ellipse 30% 24% at 88% 88%, rgba(255,176,46,.2), transparent 70%),
-  radial-gradient(ellipse 60% 45% at 50% 30%, rgba(90,50,110,.16), transparent 70%),
-  repeating-linear-gradient(45deg, rgba(255,255,255,.012) 0 2px, transparent 2px 14px),
-  linear-gradient(180deg, #0b0609 0%, #140b10 60%, #0a0507 100%); }
-
-/* Dec 24: aurora over snowfields at the Pole. */
-.wp-elf { background:
-  radial-gradient(ellipse 4% 2% at 20% 18%, rgba(255,255,255,.9), transparent 70%),
-  radial-gradient(ellipse 3% 1.5% at 70% 10%, rgba(255,255,255,.8), transparent 70%),
-  radial-gradient(ellipse 3% 1.5% at 85% 26%, rgba(255,255,255,.7), transparent 70%),
-  radial-gradient(ellipse 5% 2% at 38% 8%, rgba(255,255,255,.6), transparent 70%),
-  radial-gradient(ellipse 55% 20% at 55% 24%, rgba(80,230,170,.3), transparent 70%),
-  radial-gradient(ellipse 45% 16% at 30% 34%, rgba(120,160,255,.26), transparent 70%),
-  radial-gradient(140% 50% at 50% 118%, #e8f2fb 0%, #c6dcf0 42%, #9fc2e4 49.6%, transparent 50%),
-  linear-gradient(180deg, #0a1430 0%, #15295c 55%, #2c4a86 78%); }
-
-/* 2199: void, with the faintest green rain. */
-.wp-machine { background:
-  repeating-linear-gradient(90deg, rgba(0,230,83,.05) 0 1px, transparent 1px 64px),
-  radial-gradient(ellipse 70% 50% at 50% 50%, rgba(0,230,83,.07), transparent 70%),
-  #010403; }
-
 /* ───── New-costume effects ───── */
 
 /* Candle flame (seance) */
@@ -351,3 +253,97 @@ html, body { height: 100%; overflow: hidden; }
 /* Horizontal chip rows scroll without a visible bar. */
 .no-scrollbar { scrollbar-width: none; }
 .no-scrollbar::-webkit-scrollbar { display: none; }
+
+/* ---------- Agent shell: a clean, quiet frame around the era windows ---------- */
+/* The shell floats on the agent's scene; its ink flips with the scene's tone. */
+.shell {
+  --shell-text: #ffffff;
+  --shell-soft: rgba(255, 255, 255, 0.82);
+  --shell-muted: rgba(255, 255, 255, 0.6);
+  --shell-hover: rgba(255, 255, 255, 0.09);
+  --shell-active: rgba(255, 255, 255, 0.15);
+  --shell-ring: rgba(255, 255, 255, 0.16);
+  --shell-glass: rgba(12, 12, 20, 0.28);
+  --shell-shadow: 0 8px 24px -8px rgba(0, 0, 0, 0.45);
+  --shell-ink-shadow: 0 1px 2px rgba(0, 0, 0, 0.35);
+  --shell-shade: linear-gradient(90deg, rgba(0,0,0,.38) 0, rgba(0,0,0,.24) 240px, transparent 440px);
+  --shell-drawer: rgba(14, 14, 22, 0.6);
+  color-scheme: dark;
+  transition: color .5s ease;
+}
+.shell[data-tone="light"] {
+  --shell-text: #0d2438;
+  --shell-soft: rgba(13, 36, 56, 0.82);
+  --shell-muted: rgba(13, 36, 56, 0.58);
+  --shell-hover: rgba(255, 255, 255, 0.35);
+  --shell-active: rgba(255, 255, 255, 0.72);
+  --shell-ring: rgba(13, 36, 56, 0.08);
+  --shell-glass: rgba(255, 255, 255, 0.5);
+  --shell-shadow: 0 8px 24px -10px rgba(13, 36, 56, 0.3);
+  --shell-ink-shadow: none;
+  --shell-shade: linear-gradient(90deg, rgba(255,255,255,.4) 0, rgba(255,255,255,.2) 240px, transparent 440px);
+  --shell-drawer: rgba(255, 255, 255, 0.7);
+  color-scheme: light;
+}
+.shell nav, .shell header, .shell aside { text-shadow: var(--shell-ink-shadow); }
+.wp-side { position: absolute; inset: 0; background: var(--shell-shade); transition: background .6s ease; }
+@media (max-width: 767px) { .wp-side { display: none; } }
+
+/* ---------- Scenes: gentle, looping motion for the agents' backdrops ---------- */
+.scene { position: absolute; inset: 0; overflow: hidden; transition: opacity .7s ease; }
+.scene[data-on="false"], .scene[data-on="false"] * { animation-play-state: paused !important; }
+/* Pieces at the foot of the sidebar column: only where the list leaves room. */
+.sc-under { display: none; }
+@media (min-height: 1060px) { .sc-under { display: block; } }
+@media (max-width: 767px) { .sc-under { display: block; } }
+.sc-bob { animation: sc-bob var(--d, 7s) ease-in-out infinite; animation-delay: var(--dl, 0s); }
+@keyframes sc-bob { 0%, 100% { transform: translateY(0) rotate(var(--r, 0deg)); } 50% { transform: translateY(-12px) rotate(var(--r, 0deg)); } }
+.sc-drift { animation: sc-drift var(--d, 140s) linear infinite; animation-delay: var(--dl, 0s); }
+@keyframes sc-drift { from { transform: translateX(-35vw); } to { transform: translateX(110vw); } }
+.sc-twinkle { animation: sc-twinkle var(--d, 3s) ease-in-out infinite; animation-delay: var(--dl, 0s); }
+@keyframes sc-twinkle { 0%, 100% { opacity: .2; } 50% { opacity: 1; } }
+.sc-spin { animation: sc-spin var(--d, 60s) linear infinite; }
+@keyframes sc-spin { to { rotate: 360deg; } }
+.sc-fall { animation: sc-fall var(--d, 12s) linear infinite; animation-delay: var(--dl, 0s); }
+@keyframes sc-fall { from { transform: translate3d(0, -10vh, 0); } to { transform: translate3d(var(--x, 0px), 110vh, 0); } }
+.sc-rise { animation: sc-rise var(--d, 6s) ease-out infinite; animation-delay: var(--dl, 0s); }
+@keyframes sc-rise { 0% { transform: translate(0, 0); opacity: 0; } 15% { opacity: 1; } 100% { transform: translate(var(--x, 10px), -42vh); opacity: 0; } }
+.sc-flicker { animation: sc-flicker 2.6s ease-in-out infinite; }
+@keyframes sc-flicker { 0%, 100% { opacity: .85; } 30% { opacity: 1; } 60% { opacity: .7; } }
+.sc-blink { animation: sc-blink var(--d, 2s) ease-in-out infinite; }
+@keyframes sc-blink { 0%, 100% { opacity: 1; } 50% { opacity: .35; } }
+.sc-aurora { animation: sc-aurora var(--d, 13s) ease-in-out infinite; animation-delay: var(--dl, 0s); }
+@keyframes sc-aurora { 0%, 100% { transform: translateX(-4%) skewX(-10deg); opacity: .6; } 50% { transform: translateX(4%) skewX(8deg); opacity: 1; } }
+/* A photo backdrop that slowly pushes in and back, so it never feels frozen. */
+.sc-drift-in { transform-origin: 62% 58%; animation: sc-drift-in 48s ease-in-out infinite alternate; }
+@keyframes sc-drift-in { from { transform: scale(1); } to { transform: scale(1.07); } }
+.sc-blob { animation: sc-blob var(--d, 28s) ease-in-out infinite; animation-delay: var(--dl, 0s); }
+@keyframes sc-blob { 0%, 100% { transform: translate(0, 0) scale(1); } 33% { transform: translate(8vw, -5vh) scale(1.1); } 66% { transform: translate(-5vw, 6vh) scale(.94); } }
+.sc-grid { animation: sc-grid 2.4s linear infinite; }
+@keyframes sc-grid { to { background-position: 0 64px; } }
+.sc-flap-l { animation: sc-flap .35s ease-in-out infinite alternate; }
+.sc-flap-r { animation: sc-flap .35s ease-in-out infinite alternate; }
+@keyframes sc-flap { from { transform: scaleX(1); } to { transform: scaleX(.35); } }
+@media (prefers-reduced-motion: reduce) {
+  .scene * { animation: none !important; }
+}
+
+/* The sidebar lists each agent's threads, so the windows' own thread panes stay hidden. */
+.agent-window [data-threads] { display: none !important; }
+.drawer-in { animation: drawer-in .22s cubic-bezier(.22,.9,.3,1); }
+@keyframes drawer-in { from { transform: translateX(-100%); } to { transform: none; } }
+/* ---------- The gptys: blink, and act out what the open agent is doing ---------- */
+.gpty-body, .gpty-eyes { transform-box: fill-box; transform-origin: 50% 100%; }
+.gpty-eyes { transform-origin: center; animation: gpty-blink 5.5s infinite; animation-delay: var(--blink-delay, 0s); }
+@keyframes gpty-blink { 0%, 93%, 100% { transform: scaleY(1); } 95% { transform: scaleY(.1); } }
+.gpty-look { transition: transform .18s ease-out; }
+.gpty[data-mood="thinking"] .gpty-look { transform: translate(1.6px, -2.2px); }
+.gpty[data-mood="thinking"] .gpty-body { animation: gpty-ponder 1.6s ease-in-out infinite; }
+@keyframes gpty-ponder { 0%, 100% { transform: rotate(-4deg); } 50% { transform: rotate(4deg); } }
+.gpty[data-mood="typing"] .gpty-body { animation: gpty-hop .5s ease-in-out infinite; }
+@keyframes gpty-hop { 0%, 100% { transform: translateY(0) scale(1, 1); } 40% { transform: translateY(-3px) scale(.97, 1.03); } 80% { transform: translateY(0) scale(1.04, .96); } }
+.gpty[data-mood="error"] .gpty-body { animation: gpty-shake .4s ease-in-out 3; }
+@keyframes gpty-shake { 25% { transform: translateX(-2px); } 75% { transform: translateX(2px); } }
+button:hover > .gpty .gpty-body { animation: gpty-wiggle .5s ease-in-out; }
+@keyframes gpty-wiggle { 30% { transform: rotate(-7deg) scale(1.05); } 65% { transform: rotate(5deg) scale(1.05); } }
+@media (prefers-reduced-motion: reduce) { .gpty * { animation: none !important; } }

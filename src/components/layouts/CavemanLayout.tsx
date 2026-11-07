@@ -53,13 +53,13 @@ export function CavemanLayout({
       ))}
 
       <header className="z-[1] flex shrink-0 items-center justify-between px-5 pt-3 text-[22px] tracking-wide" style={{ color: OCHRE }}>
-        <span>𖡼 CAVE OF OOG 𖡼</span>
+        <span>𖡼 CAVE OF CRAIG 𖡼</span>
         <span className="hidden text-[17px] text-[#8a7a62] sm:inline">year of big mammoth · moon almost round</span>
       </header>
 
       <div className="z-[1] flex min-h-0 flex-1 gap-3 p-3 sm:px-5">
         {/* Walls of the cave */}
-        <aside className="hidden w-48 shrink-0 flex-col rounded-xl bg-black/25 p-2 ring-1 ring-white/5 md:flex">
+        <aside data-threads className="hidden w-48 shrink-0 flex-col rounded-xl bg-black/25 p-2 ring-1 ring-white/5 md:flex">
           <div className="pb-1 text-center text-[17px] tracking-[0.2em]" style={{ color: FAINT }}>
             WALLS
           </div>
@@ -81,7 +81,7 @@ export function CavemanLayout({
         {/* The wall being painted */}
         <section className="flex min-w-0 flex-1 flex-col gap-2">
           <div ref={scroller} className="min-h-0 flex-1 overflow-y-auto rounded-xl bg-black/20 p-3 ring-1 ring-white/5">
-            <Slab who="OOG" them text={costume.greeting} />
+            <Slab who={costume.assistant} them text={costume.greeting} />
             {lines.map((l) => (
               <Slab key={l.id} who={l.role === "user" ? costume.user : costume.assistant} them={l.role === "assistant"} text={l.text} />
             ))}

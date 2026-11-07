@@ -1,22 +1,22 @@
 # gpty.lol
 
-A simple AI chat that changes costumes — 13 of them, from a cave wall (10,000 BC) to the bare machine (2199). Each costume restyles the whole app, down to the window chrome and the wallpaper behind it, and swaps the assistant's personality (system prompt) to match.
+Chat with the gptys: AI agents that each live inside a chat app from another time. Pick one from the sidebar and the chat window turns into its app (MSN Messenger, Skype, a BBS, a cave wall…). Each agent talks, thinks and **only knows the world up to its moment**: Kayleigh on MSN (2005) has never heard of the iPhone, and Craig on the cave wall has never heard of the wheel.
 
-| # | Costume | Chrome |
+| Agent | App | Knows up to |
 |---|---|---|
-| 1 | Cave Wall (10,000 BC) | torchlit rock |
-| 2 | Séance (1888) | a talking board by candlelight |
-| 3 | Midnight BBS (1993) | beige CRT |
-| 4 | mIRC (1999) | Windows 2000 |
-| 5 | ICQ 2000b | Windows 98 |
-| 6 | MSN Messenger (2005) | Windows XP |
-| 7 | Skype (2007) | Windows Vista |
-| 8 | Slack (2014) | OS X Yosemite |
-| 9 | Messenger (2015) | Chrome on Windows 10 |
-| 10 | gpty (no costume) | — |
-| 11 | Terminal (now) | macOS |
-| 12 | North Pole (Dec 24) | the workshop window |
-| 13 | The Machine (2199) | bare metal |
+| Craig | Cave Wall | 10,000 BC |
+| Mortimer | Séance board | 1888 |
+| Dale | Midnight BBS | 1993 |
+| Nick | mIRC | 1999 |
+| Daisy | ICQ 2000b | 2000 |
+| Kayleigh | MSN Messenger | 2005 |
+| Cal | Skype | 2007 |
+| Mark | Facebook | 2008 |
+| Channing | Slack | 2014 |
+| Dottie | Messenger | 2015 |
+| Shelly | Terminal | now |
+| Carol | North Pole workshop | Dec 24 |
+| Cora | The Machine | 2199 |
 
 ## Run
 
@@ -26,25 +26,23 @@ npm install
 npm run dev
 ```
 
-Cycle costumes with the header's ‹ › buttons or the `[` `]` keys, and open the picker with ⌘K (it shows a live preview of every costume answering the same question). **Share** copies a link like `/msn` that opens straight into that costume and unfurls with its own preview card. **About** explains the current costume and shows its system prompt.
-
-Each costume also plays small synthesized sounds (the ICQ uh-oh, the MSN chime, a modem handshake walking into the BBS, three raps entering the séance, sleigh bells at the Pole). The speaker button mutes them.
-
-Trick or treat: chatting in a costume (getting at least one reply) drops its candy into the 🎃 bag in the header. Fill the bag by trying all 13; a full bag gets a share button. On a first visit the wardrobe opens by itself, so newcomers see all thirteen answering the same question.
+The shell is a plain, modern sidebar (the gpty logo and the agents) floating on an illustrated scene from the agent's era, and the chat window is styled after the app. Clicking an agent starts a new chat with it; once you send a message, that chat is saved as a thread with that agent. `gpty.lol/msn` opens a chat with Kayleigh directly.
 
 ## How it fits together
 
-- `src/lib/costumes.ts`: costume data (copy, window size, sample reply, About text).
-- `src/lib/personas.ts`: one system prompt per costume, applied on the server in `src/app/api/chat/route.ts`.
-- `src/lib/threads.ts`: threads in localStorage under an anonymous per-browser id. All storage goes through this module so it can move to IndexedDB or a server later.
-- `src/components/ChatApp.tsx`: header, page backdrop, costume transition (fade out, then fade in with a small bounce), the era-sized window frame and one `useChat` per thread.
-- `src/components/Wardrobe.tsx`: the costume picker. Each card renders the real layout, scaled down and inert.
-- `src/lib/sounds.ts`: Web Audio cues (reply chimes and entrance stingers), no audio files.
-- `src/lib/candy.ts`: the trick-or-treat bag in localStorage.
-- `src/app/[costume]/`: one prerendered page per costume (`/msn`, `/bbs`, …) with its own title and share card (`src/app/og.tsx`).
-- `src/components/layouts/*`: one layout per costume. Each one gets the same props (messages, threads, send/stop) and arranges them the same way (threads on the left, chat on the right) in its own style.
+- `src/lib/agents.ts`: the roster (name, bio, the moment each agent lives in). Each agent wears the costume with the same id.
+- `src/lib/personas.ts`: one system prompt per agent, plus the shared rule that the agent knows nothing after its moment. Applied on the server in `src/app/api/chat/route.ts`.
+- `src/lib/costumes.ts`: what each chat window looks like (app name, year, handles, greeting, window size, About text).
+- `src/lib/threads.ts`: threads in localStorage under an anonymous per-browser id. Each thread belongs to one agent. Threads from before agents existed get filed under the costume they were started in.
+- `src/components/ChatApp.tsx`: the shell (sidebar and full-size chat area), the short bounce when the window changes and one `useChat` per thread.
+- `src/components/AgentSidebar.tsx`: text logo and the agent list.
+- `src/components/Gpty.tsx`: the gptys themselves, flat shapes with eyes. Each agent picks a shape and color in `agents.ts`; the open agent's gpty watches your pointer, then thinks and hops while it replies.
+- `src/components/layouts/*`: one chat window per costume. Each layout still has its own era-styled thread pane (marked `data-threads`). Inside the shell that pane is hidden for now.
+- `src/components/Scenes.tsx`: one illustrated backdrop per agent (sky, a scene along the bottom, floating period details), crossfaded by `Wallpaper.tsx`. Each scene says whether the shell should use light or dark text. The chat window fills the width, so each scene puts its featured pieces under the agent list.
 - `src/components/chrome.tsx`: window chrome (Win98/2000, XP, Vista, macOS, Chrome) and app icons.
 
-Add a costume by adding an entry to `costumes.ts`, a prompt to `personas.ts` and a layout registered in `src/components/layouts/index.ts`. Earlier prototype costumes are in git history (commit `f0cae4c`).
+To add an agent, add a costume to `costumes.ts`, a layout registered in `src/components/layouts/index.ts`, a prompt to `personas.ts`, and an entry to `ROSTER` in `agents.ts`.
 
-Built with Next.js, the Vercel AI SDK, AI Elements and Tailwind, with Kiro, for [Kiroween](https://kiroween.devpost.com/). Made by Dylan.
+The earlier costume-switcher version (a header with ‹ › cycling, the ⌘K wardrobe and the trick-or-treat candy bag) is in git history at commit `4e1ccd8`.
+
+Built with Next.js, the Vercel AI SDK, AI Elements and Tailwind. Made by Dylan.

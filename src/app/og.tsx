@@ -119,7 +119,7 @@ export function homeCard() {
           🎭 gpty<span style={{ color: "rgba(255,255,255,.4)" }}>.lol</span>
         </div>
         <div style={{ fontSize: 38, color: "rgba(255,255,255,.75)", marginTop: 12 }}>
-          What if your AI chatbot shipped in 10,000 BC? Or 1993? One chatbot, 13 costumes.
+          {`What if your AI chatbot shipped in 10,000 BC? Or 1993? One chatbot, ${COSTUMES.length} costumes.`}
         </div>
         <div style={{ display: "flex", flexWrap: "wrap", gap: 14, marginTop: 52 }}>
           {COSTUMES.map((c) => (

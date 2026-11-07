@@ -91,7 +91,7 @@ export function TerminalLayout({
       </div>
 
       <div className="flex min-h-0 flex-1">
-        <aside className="hidden w-56 shrink-0 flex-col border-r border-white/5 md:flex" style={{ background: "rgba(22,22,30,.6)" }}>
+        <aside data-threads className="hidden w-56 shrink-0 flex-col border-r border-white/5 md:flex" style={{ background: "rgba(22,22,30,.6)" }}>
           <div className="flex items-center justify-between px-3 pb-1 pt-3 text-[11px] tracking-widest" style={{ color: T.dim }}>
             SESSIONS
             <button onClick={onNewThread} className="rounded px-1 hover:bg-white/10" style={{ color: T.blue }} title="New session (exit)">

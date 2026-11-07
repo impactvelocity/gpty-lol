@@ -39,7 +39,7 @@ export function CleanLayout({
 
   return (
     <div className="flex h-full overflow-hidden rounded-2xl bg-white font-sans text-zinc-900 shadow-2xl shadow-black/15 ring-1 ring-black/5">
-      <aside className="hidden w-[260px] shrink-0 flex-col bg-[#f9f9f8] md:flex">
+      <aside data-threads className="hidden w-[260px] shrink-0 flex-col bg-[#f9f9f8] md:flex">
         <div className="flex items-center justify-between px-3 py-3">
           <span className="grid h-8 w-8 place-items-center rounded-lg text-zinc-500" aria-hidden>
             <PanelLeft className="h-[18px] w-[18px]" />

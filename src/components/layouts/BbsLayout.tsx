@@ -1,220 +1,1415 @@
 "use client";
 
-import { useState } from "react";
-import { useComposer, useNow, useStickyScroll } from "./hooks";
-import type { LayoutProps } from "./types";
+import { useCallback, useEffect, useLayoutEffect, useMemo, useRef, useState } from "react";
+import { art, Floppy, KnobMark, PixelArt, PowerMark, splashGrid } from "@/components/bbs/art";
+import "@/components/bbs/bbs.css";
+import { useNow } from "./hooks";
+import type { ChatLine, LayoutProps } from "./types";
 
-/* DOS 16-color palette */
-const C = {
-  black: "#000000",
-  blue: "#0000aa",
-  cyan: "#00aaaa",
-  gray: "#aaaaaa",
-  dark: "#555555",
-  lblue: "#5555ff",
-  lgreen: "#55ff55",
-  lcyan: "#55ffff",
-  lred: "#ff5555",
-  lmag: "#ff55ff",
-  yellow: "#ffff55",
-  white: "#ffffff",
+/* ───────── The line ───────── */
+
+const PHONE = "1-555-0193";
+const BAUD = 2400;
+/** 2400 baud is 240 characters a second: fast to read along, slow enough to see. */
+const CPS = BAUD / 10;
+const CONNECT = `CONNECT ${BAUD}/ARQ/V42BIS`;
+
+/**
+ * The first visit dials in, paints the ANSI splash and logs in, once. After
+ * that the screen opens connected. Module state, so it survives switching
+ * threads (each thread remounts the layout).
+ */
+const session = { dialed: false, start: 0, monitorOn: true };
+
+/** When each piece of the first-visit connection appears, in ms. */
+const T = {
+  ok: 280,
+  atdt: 520,
+  ring: 1250,
+  connect: 1900,
+  paint: 2080,
+  paintRow: 105,
+  info: 3540,
+  login: 3700,
+  loginStep: 170,
+  banner: 4450,
+  greet: 4650,
 };
+const SPLASH_ROWS = 13;
 
-const LOGO = [
-  " ██████  ██████  ████████ ██    ██     ██████  ██████  ███████",
-  "██       ██   ██    ██     ██  ██      ██   ██ ██   ██ ██     ",
-  "██   ███ ██████     ██      ████       ██████  ██████  ███████",
-  "██    ██ ██         ██       ██        ██   ██ ██   ██      ██",
-  " ██████  ██         ██       ██        ██████  ██████  ███████",
+/* ───────── What the BBS has in it ───────── */
+
+interface DialEntry {
+  id: string;
+  name: string;
+  number: string;
+  baud: string;
+  last: string;
+  /** What the modem says, in order, with a ms delay before each. */
+  script: { at: number; text: string; tone?: Tone }[];
+  connects?: boolean;
+}
+
+type Tone = "cmd" | "ok" | "warn" | "bad" | "dim" | "hi";
+
+const DIRECTORY: DialEntry[] = [
+  {
+    id: "midnight",
+    name: "MIDNIGHT BBS",
+    number: PHONE,
+    baud: "2400 N81",
+    last: "Today",
+    connects: true,
+    script: [
+      { at: 0, text: `ATDT ${PHONE}`, tone: "cmd" },
+      { at: 650, text: "RINGING" },
+      { at: 1500, text: CONNECT, tone: "ok" },
+      { at: 1750, text: "Welcome back! The SysOp is still here. Type away.", tone: "hi" },
+    ],
+  },
+  {
+    id: "bitbucket",
+    name: "THE BIT BUCKET",
+    number: "1-555-0142",
+    baud: "2400 N81",
+    last: "10-31-93",
+    script: [
+      { at: 0, text: "ATDT 1-555-0142", tone: "cmd" },
+      { at: 900, text: "BUSY", tone: "warn" },
+      { at: 1150, text: "It's always busy. Try again around 3am.", tone: "dim" },
+    ],
+  },
+  {
+    id: "keep",
+    name: "DRAGON'S KEEP",
+    number: "1-555-0177",
+    baud: "14400 N81",
+    last: "10-12-93",
+    script: [
+      { at: 0, text: "ATDT 1-555-0177", tone: "cmd" },
+      { at: 650, text: "RINGING" },
+      { at: 1450, text: "RINGING" },
+      { at: 2250, text: "RINGING" },
+      { at: 3000, text: "NO ANSWER", tone: "warn" },
+      { at: 3250, text: "The SysOp unplugs it when he goes to bed.", tone: "dim" },
+    ],
+  },
+  {
+    id: "library",
+    name: "COUNTY LIBRARY CATALOG",
+    number: "1-555-0110",
+    baud: "1200 E71",
+    last: "09-02-93",
+    script: [
+      { at: 0, text: "ATDT 1-555-0110", tone: "cmd" },
+      { at: 650, text: "RINGING" },
+      { at: 1400, text: "CONNECT 1200", tone: "ok" },
+      { at: 1700, text: "~}{#%^&|@*!~ +++ ]][}{~#  &%@ ~~" },
+      { at: 2050, text: "NO CARRIER", tone: "bad" },
+      { at: 2300, text: "Line noise. Someone picked up the phone.", tone: "dim" },
+    ],
+  },
+  {
+    id: "party",
+    name: "PARTY LINE",
+    number: "1-900-555-0123",
+    baud: "VOICE",
+    last: "Never",
+    script: [
+      { at: 0, text: "ATDT 1-900-555-0123", tone: "cmd" },
+      { at: 700, text: "ERROR", tone: "bad" },
+      { at: 950, text: "900 numbers are blocked on this line. (Thanks, Dad.)", tone: "dim" },
+    ],
+  },
+  {
+    id: "dad",
+    name: "DAD'S WORK - DO NOT DIAL",
+    number: "1-555-0100",
+    baud: "VOICE",
+    last: "Never",
+    script: [
+      { at: 0, text: "ATDT 1-555-0100", tone: "cmd" },
+      { at: 650, text: "RINGING" },
+      { at: 1300, text: "VOICE", tone: "warn" },
+      { at: 1600, text: '"Hello? ...Hello? Is this the modem again?"', tone: "hi" },
+      { at: 2100, text: "NO CARRIER", tone: "bad" },
+    ],
+  },
 ];
-const LOGO_COLORS = [C.lcyan, C.lcyan, C.cyan, C.lblue, C.blue];
+
+const FILES = [
+  { name: "ANSIPK93.ZIP", size: "412K", date: "10-29-93", desc: "Best ANSI art of '93. 40 screens!" },
+  { name: "MODEMFAQ.TXT", size: "38K", date: "09-14-93", desc: "Why does my modem scream? Read this." },
+  { name: "DRAGONTP.ZIP", size: "12K", date: "11-02-93", desc: "How to beat the basement dragon." },
+  { name: "STARFLD.ZIP", size: "330K", date: "08-02-93", desc: "Starfield screen saver. Warp speed!" },
+  { name: "DALEMIX.MOD", size: "1.2M", date: "11-01-93", desc: "Dale's tracker tune. 4 channels of pure fire." },
+  { name: "BBSLIST.TXT", size: "9K", date: "11-05-93", desc: "Every BBS in the 555 area code." },
+];
+
+const DOORS = [
+  { name: "LEGEND OF THE BASEMENT DRAGON", players: 41, says: "Node 2 is already in this door. One dragon at a time. Try again later." },
+  { name: "STARPORT TRADER '93", players: 17, says: "You have used all 5 of your turns for today. Come back tomorrow!" },
+  { name: "GLOBAL WAR", players: 8, says: "Writing DOOR.SYS... ERROR: out of memory. Try loading HIMEM.SYS?" },
+  { name: "MIDNIGHT BLACKJACK", players: 3, says: "Dealer shows 21. You lost 500 gold. The house always wins. The house is Dale's basement." },
+];
+
+const BULLETINS = [
+  "NODE 1 IS NOW 14.4K!! Thanks to everyone who chipped in. (Still on 2400? Upgrade!)",
+  "NO WAREZ. I mean it. -Dale",
+  "BBS is down Sundays 6-8pm. Mom calls Aunt Linda.",
+  "NEW: 40 ANSI screens in File Area 3.",
+  "FidoNet mail goes out at 4am. Be patient.",
+];
+
+/* ───────── What the history shows ───────── */
+
+type NoteKind = "files" | "doors" | "who" | "bulletins" | "page" | "hangup" | "dial" | "say" | "time";
+
+interface Note {
+  id: number;
+  /** Shown after this line (null: right after the greeting). */
+  after: string | null;
+  kind: NoteKind;
+  text?: string;
+  tone?: Tone;
+  dial?: DialEntry;
+}
+
+type Row =
+  | { kind: "msg"; key: string; mine: boolean; text: string; live: boolean }
+  | { kind: "note"; key: string; note: Note };
+
+function toRows(greeting: string, lines: ChatLine[], notes: Note[], fresh: (l: ChatLine) => boolean, intro: boolean): Row[] {
+  const rows: Row[] = [{ kind: "msg", key: "greeting", mine: false, text: greeting, live: intro }];
+  const notesAfter = (id: string | null) => {
+    for (const n of notes) if (n.after === id) rows.push({ kind: "note", key: `n${n.id}`, note: n });
+  };
+  notesAfter(null);
+  for (const l of lines) {
+    rows.push({ kind: "msg", key: l.id, mine: l.role === "user", text: l.text, live: l.role === "assistant" && fresh(l) });
+    notesAfter(l.id);
+  }
+  return rows;
+}
 
 function pad(n: number) {
   return String(n).padStart(2, "0");
 }
 
-/** Beige CRT running a terminal program connected to a 1993 BBS. */
-export function BbsLayout({
-  costume,
-  lines,
-  busy,
-  waiting,
-  error,
-  onSend,
-  threads,
-  activeId,
-  onSelectThread,
-  onNewThread,
-  onDeleteThread,
-}: LayoutProps) {
-  const { value, setValue, onKeyDown } = useComposer(onSend, busy);
-  const scroller = useStickyScroll<HTMLDivElement>(lines);
-  const now = useNow(1000);
-  const [since] = useState(() => Date.now());
-  const up = Math.floor((now - since) / 1000);
-  const online = `${pad(Math.floor(up / 3600))}:${pad(Math.floor(up / 60) % 60)}:${pad(up % 60)}`;
-  const d = new Date(now);
-  const stamp = `${pad(d.getMonth() + 1)}-${pad(d.getDate())}-93 ${pad(d.getHours())}:${pad(d.getMinutes())}`;
-  const active = threads.find((t) => t.id === activeId);
+function reducedMotion() {
+  return typeof window !== "undefined" && window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+}
+
+/* ───────── Monitor knobs ───────── */
+
+const KNOB_KEY = "gpty.bbs.knobs";
+const KNOB_DEFAULT = { bright: 0.5, contrast: 0.5 };
+
+function loadKnobs() {
+  try {
+    const v = JSON.parse(localStorage.getItem(KNOB_KEY) ?? "null");
+    if (v && typeof v.bright === "number" && typeof v.contrast === "number") return v as typeof KNOB_DEFAULT;
+  } catch {}
+  return KNOB_DEFAULT;
+}
+
+/* ───────── The rig ───────── */
+
+type Link = "dialing" | "up" | "down";
+
+/**
+ * Midnight BBS, 1993, remastered: a beige 14" CRT running a terminal program,
+ * dialed into Dale's one-line BBS through the 2400 baud modem on the desk.
+ * The modem's lights are live, replies arrive at 2400 baud, and the monitor's
+ * buttons and knobs all work.
+ */
+export function BbsLayout({ costume, lines, busy, waiting, error, onSend, onStop }: LayoutProps) {
+  const sysop = costume.assistant;
+  const me = costume.user;
+
+  /* Connection */
+
+  // New chats on the first visit dial in; everything else opens connected.
+  const [intro, setIntro] = useState(() => !session.dialed && lines.length === 0 && !reducedMotion());
+  // The greeting types itself in at the end of the dial-in, unless the dial-in was skipped.
+  const [introAtMount] = useState(intro);
+  const [skipped, setSkipped] = useState(false);
+  const [link, setLink] = useState<Link>(() => (intro ? "dialing" : "up"));
+  const [upSince, setUpSince] = useState(() => (intro ? 0 : Date.now()));
+  useEffect(() => {
+    session.dialed = true;
+    if (!session.start) session.start = Date.now();
+  }, []);
+
+  const timers = useRef(new Set<ReturnType<typeof setTimeout>>());
+  const later = useCallback((ms: number, fn: () => void) => {
+    const t = setTimeout(() => {
+      timers.current.delete(t);
+      fn();
+    }, ms);
+    timers.current.add(t);
+    return t;
+  }, []);
+  useEffect(() => {
+    const t = timers.current;
+    return () => t.forEach(clearTimeout);
+  }, []);
+
+  const introTimers = useRef<ReturnType<typeof setTimeout>[]>([]);
+  useEffect(() => {
+    if (!intro) return;
+    introTimers.current = [
+      later(T.connect, () => {
+        setLink("up");
+        setUpSince(Date.now());
+      }),
+      later(T.greet, () => setIntro(false)),
+    ];
+    // Only on mount: skipping clears these.
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
+
+  const skipIntro = useCallback(() => {
+    if (!intro) return;
+    introTimers.current.forEach((t) => {
+      clearTimeout(t);
+      timers.current.delete(t);
+    });
+    setIntro(false);
+    setSkipped(true);
+    setLink("up");
+    setUpSince((s) => s || Date.now());
+  }, [intro]);
+
+  /* History */
+
+  // Replies already on screen when the thread opened stay put; new ones type in at 2400 baud.
+  const [seen] = useState(() => new Set(lines.map((l) => l.id)));
+  const [notes, setNotes] = useState<Note[]>([]);
+  const [cleared, setCleared] = useState<number | null>(null);
+  const rows = useMemo(
+    () => toRows(costume.greeting, lines, notes, (l) => !seen.has(l.id), introAtMount),
+    [costume.greeting, lines, notes, seen, introAtMount],
+  );
+  const shown = cleared === null ? rows : rows.slice(cleared);
+
+  const lastLine = useRef<string | null>(null);
+  useEffect(() => {
+    lastLine.current = lines.at(-1)?.id ?? null;
+  });
+  const seq = useRef(0);
+  const addNote = useCallback((n: Omit<Note, "id" | "after">) => {
+    const id = ++seq.current;
+    setNotes((ns) => [...ns, { ...n, id, after: lastLine.current }]);
+    return id;
+  }, []);
+
+  /* Scrolling: stay pinned to the bottom unless the reader scrolled up. */
+
+  const log = useRef<HTMLDivElement>(null);
+  const inner = useRef<HTMLDivElement>(null);
+  const stuck = useRef(true);
+  useEffect(() => {
+    const el = log.current;
+    const body = inner.current;
+    if (!el || !body) return;
+    const onScroll = () => {
+      stuck.current = el.scrollHeight - el.scrollTop - el.clientHeight < 40;
+    };
+    const ro = new ResizeObserver(() => {
+      if (stuck.current) el.scrollTop = el.scrollHeight;
+    });
+    el.addEventListener("scroll", onScroll, { passive: true });
+    ro.observe(body);
+    el.scrollTop = el.scrollHeight;
+    return () => {
+      el.removeEventListener("scroll", onScroll);
+      ro.disconnect();
+    };
+  }, []);
+  const pin = useCallback(() => {
+    stuck.current = true;
+    const el = log.current;
+    if (el) el.scrollTop = el.scrollHeight;
+  }, []);
+
+  /* Modem lights */
+
+  const [rx, setRx] = useState(false);
+  const [sd, setSd] = useState(false);
+  const sdTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const sending = useCallback((ms = 160) => {
+    setSd(true);
+    if (sdTimer.current) clearTimeout(sdTimer.current);
+    sdTimer.current = setTimeout(() => setSd(false), ms);
+  }, []);
+  useEffect(() => () => {
+    if (sdTimer.current) clearTimeout(sdTimer.current);
+  }, []);
+  const [noteRx, setNoteRx] = useState(0);
+  const receiving = useCallback(
+    (ms: number) => {
+      setNoteRx((n) => n + 1);
+      later(ms, () => setNoteRx((n) => n - 1));
+    },
+    [later],
+  );
+
+  const up = link === "up" && !error;
+  const painting = intro && link === "up";
+  const leds = {
+    HS: "off",
+    AA: "off",
+    CD: up ? "on" : "off",
+    OH: link !== "down" ? "on" : "off",
+    RD: up && (busy || rx || painting || noteRx > 0) ? "flicker" : "off",
+    SD: link !== "down" && sd ? "flicker" : "off",
+    TR: "on",
+    MR: "on",
+  } as const;
+
+  /* Commands */
+
+  const hangUp = useCallback(() => {
+    if (link === "down") {
+      addNote({ kind: "say", text: "You're not on-line. Press ENTER to redial, or Alt-D for the dialing directory.", tone: "dim" });
+      return;
+    }
+    if (busy) onStop();
+    skipIntro();
+    addNote({ kind: "hangup" });
+    sending(500);
+    later(900, () => setLink("down"));
+  }, [link, busy, onStop, skipIntro, addNote, sending, later]);
+
+  const dial = useCallback(
+    (entry: DialEntry) => {
+      if (link === "dialing") return;
+      if (link === "up") {
+        addNote({
+          kind: "say",
+          text: entry.id === "midnight" ? "Already on-line with MIDNIGHT BBS." : "You're on-line with MIDNIGHT BBS. Hang up first (Alt-H).",
+          tone: "dim",
+        });
+        return;
+      }
+      addNote({ kind: "dial", dial: entry });
+      setLink("dialing");
+      sending(400);
+      const end = entry.script.at(-1)!.at;
+      later(entry.connects ? entry.script[2].at : end, () => {
+        setLink(entry.connects ? "up" : "down");
+        if (entry.connects) setUpSince(Date.now());
+      });
+      pin();
+    },
+    [link, addNote, sending, later, pin],
+  );
+  const redial = useCallback(() => dial(DIRECTORY[0]), [dial]);
+
+  const offline = useCallback(() => {
+    addNote({ kind: "say", text: "NO CARRIER", tone: "bad" });
+  }, [addNote]);
+
+  const run = useCallback(
+    (kind: "files" | "doors" | "who" | "bulletins" | "page") => {
+      if (link !== "up") return offline();
+      skipIntro();
+      addNote({ kind });
+      receiving(kind === "page" ? 2600 : 700);
+      pin();
+    },
+    [link, offline, skipIntro, addNote, receiving, pin],
+  );
+
+  const [dialog, setDialog] = useState<"help" | "dir" | null>(null);
+  const input = useRef<HTMLTextAreaElement>(null);
+  const closeDialog = useCallback(() => {
+    setDialog(null);
+    requestAnimationFrame(() => input.current?.focus());
+  }, []);
+
+  const clear = useCallback(() => {
+    setCleared(rows.length);
+    setDialog(null);
+  }, [rows.length]);
+  const scrollBack = useCallback(() => {
+    setCleared(null);
+    setDialog(null);
+    stuck.current = false;
+    requestAnimationFrame(() => log.current?.scrollTo({ top: 0, behavior: reducedMotion() ? "auto" : "smooth" }));
+  }, []);
+
+  /* Monitor */
+
+  const [on, setOn] = useState(session.monitorOn);
+  const [powerAnim, setPowerAnim] = useState<"on" | "off" | null>(null);
+  const togglePower = () => {
+    const next = !on;
+    session.monitorOn = next;
+    setOn(next);
+    setPowerAnim(reducedMotion() ? null : next ? "on" : "off");
+    if (next) requestAnimationFrame(() => input.current?.focus());
+  };
+
+  const glass = useRef<HTMLDivElement>(null);
+  const rig = useRef<HTMLDivElement>(null);
+  const lastDegauss = useRef(0);
+  const degauss = () => {
+    if (!on || Date.now() - lastDegauss.current < 2600 || reducedMotion()) return;
+    lastDegauss.current = Date.now();
+    for (const [el, cls] of [
+      [glass.current, "bbs-degauss"],
+      [rig.current, "bbs-thunk"],
+    ] as const) {
+      if (!el) continue;
+      el.classList.remove(cls);
+      void el.offsetWidth; // restart the animation
+      el.classList.add(cls);
+    }
+  };
+
+  const [knobs, setKnobs] = useState(loadKnobs);
+  const turn = (k: keyof typeof KNOB_DEFAULT, v: number) => {
+    setKnobs((cur) => {
+      const next = { ...cur, [k]: Math.min(1, Math.max(0, v)) };
+      try {
+        localStorage.setItem(KNOB_KEY, JSON.stringify(next));
+      } catch {}
+      return next;
+    });
+  };
+
+  /* Keyboard: Alt shortcuts, Esc, and any key skips the dial-in */
+
+  const keys = useRef({ hangUp, clear, scrollBack, skipIntro, closeDialog, dialog, intro });
+  useEffect(() => {
+    keys.current = { hangUp, clear, scrollBack, skipIntro, closeDialog, dialog, intro };
+  });
+  useEffect(() => {
+    const onKey = (e: KeyboardEvent) => {
+      const k = keys.current;
+      if (k.intro && !["Alt", "Shift", "Control", "Meta"].includes(e.key)) k.skipIntro();
+      if (e.key === "Escape" && k.dialog) {
+        e.preventDefault();
+        k.closeDialog();
+        return;
+      }
+      if (!e.altKey || e.ctrlKey || e.metaKey) return;
+      const act: Record<string, () => void> = {
+        KeyZ: () => setDialog((d) => (d === "help" ? null : "help")),
+        KeyD: () => setDialog((d) => (d === "dir" ? null : "dir")),
+        KeyH: () => {
+          setDialog(null);
+          k.hangUp();
+        },
+        KeyC: k.clear,
+        KeyB: k.scrollBack,
+      };
+      const fn = act[e.code];
+      if (!fn) return;
+      e.preventDefault();
+      fn();
+    };
+    window.addEventListener("keydown", onKey);
+    return () => window.removeEventListener("keydown", onKey);
+  }, []);
+
+  /* Composer */
+
+  const [value, setValue] = useState("");
+  useLayoutEffect(() => {
+    const el = input.current;
+    if (!el) return;
+    el.style.height = "auto";
+    el.style.height = `${Math.min(el.scrollHeight, 96)}px`;
+  }, [value]);
+
+  const send = () => {
+    if (link === "down") return redial();
+    if (link === "dialing" && !intro) return;
+    const t = value.trim();
+    if (!t || busy) return;
+    skipIntro();
+    sending(Math.min(1400, 120 + t.length * 8));
+    onSend(t);
+    setValue("");
+    pin();
+  };
+
+  /* Time limit */
+
+  const onHour = useCallback(() => {
+    addNote({ kind: "time" });
+  }, [addNote]);
+
+  const status =
+    link === "dialing" ? "DIALING" : link === "down" ? "OFF-LINE" : busy || rx || painting ? "RECEIVING" : sd ? "SENDING" : "READY";
+  const nameCols = Math.max(sysop.length, me.length) + 3;
+  const reflection = art("reflection");
+  const plastic = art("plastic");
 
   return (
-    <div className="flex h-full items-center justify-center">
-      {/* Monitor bezel */}
-      <div className="flex h-full w-full max-w-[1120px] flex-col rounded-[38px] bg-gradient-to-b from-[#e6dfcd] via-[#d9d1bd] to-[#bdb39b] p-4 pb-2.5 shadow-[0_30px_80px_rgba(0,0,0,.7),inset_0_2px_rgba(255,255,255,.6),inset_0_-3px_rgba(0,0,0,.15)] md:p-6 md:pb-3">
-        <div className="rounded-[28px] bg-[#2b2925] p-2.5 shadow-[inset_0_3px_10px_rgba(0,0,0,.8)] min-h-0 flex-1">
-          <div className="crt-screen h-full rounded-[22px] bg-[#050805]">
-            <div
-              className="crt-glow relative z-[1] flex h-full flex-col p-3 font-[family-name:var(--font-vt323)] text-[19px] leading-[1.15] md:p-4"
-              style={{ color: C.gray }}
-            >
-              <div className="flex justify-between px-1" style={{ background: C.blue, color: C.white }}>
-                <span>
-                  <span style={{ color: C.yellow }}>{costume.app}</span> ─ Node 1 ─ Chat with SysOp
-                </span>
-                <span className="hidden sm:inline">{stamp}</span>
-              </div>
+    <div className="bbs">
+      <div
+        ref={rig}
+        className="bbs-rig"
+        style={
+          {
+            maxWidth: costume.window.w,
+            maxHeight: costume.window.h,
+            "--bbs-bright": 0.55 + knobs.bright * 0.9,
+            "--bbs-contrast": 0.7 + knobs.contrast * 0.6,
+            "--bbs-glow": 0.35 + knobs.bright * 1.1,
+            ...(plastic ? { "--bbs-plastic": `url(${plastic})` } : {}),
+          } as React.CSSProperties
+        }
+      >
+        <div className="bbs-monitor">
+          <StickyNote user={me} />
 
-              <div className="mt-2 flex min-h-0 flex-1 gap-2">
-                <aside
-                  className="relative hidden w-[30ch] shrink-0 flex-col border-4 border-double px-2 pb-1 pt-3 md:flex"
-                  style={{ borderColor: C.cyan }}
+          <div className="bbs-bevel">
+            <div className="bbs-recess">
+              <div
+                ref={glass}
+                className={`bbs-glass ${powerAnim ? `bbs-power-${powerAnim}` : ""}`}
+                data-power={on ? "on" : "off"}
+                onAnimationEnd={(e) => {
+                  if (e.target === glass.current) glass.current?.classList.remove("bbs-degauss");
+                }}
+              >
+                <div
+                  className={`bbs-screen ${intro ? "bbs-intro" : ""}`}
+                  style={{ "--name": `${nameCols}ch` } as React.CSSProperties}
+                  onPointerDown={skipIntro}
+                  onAnimationEnd={(e) => {
+                    if (e.target === e.currentTarget) setPowerAnim(null);
+                  }}
+                  inert={!on}
                 >
-                  <span className="absolute -top-3 left-1/2 -translate-x-1/2 whitespace-nowrap bg-[#050805] px-1" style={{ color: C.yellow }}>
-                    ╡ MESSAGE BASES ╞
-                  </span>
-                  <button
-                    onClick={onNewThread}
-                    className="text-left hover:brightness-150"
-                    style={{ color: C.lgreen }}
-                  >
-                    [N] {costume.newThread}
-                  </button>
-                  <div className="my-1 border-t border-dashed" style={{ borderColor: C.dark }} />
-                  <div className="min-h-0 flex-1 overflow-y-auto">
-                    {threads
-                      .filter((t) => !t.draft)
-                      .map((t, i) => {
-                        const on = t.id === activeId;
-                        return (
-                          <button
-                            key={t.id}
-                            onClick={() => onSelectThread(t.id)}
-                            className="block w-full truncate text-left uppercase"
-                            style={on ? { background: C.cyan, color: C.black } : { color: C.lcyan }}
-                          >
-                            <span style={on ? undefined : { color: C.white }}>[{i + 1}]</span> {t.title}
-                          </button>
-                        );
-                      })}
-                    {threads.every((t) => t.draft) && (
-                      <div style={{ color: C.dark }}>NO MESSAGES YET.</div>
-                    )}
+                  <div className="bbs-top">
+                    <span className="truncate">
+                      <b>{costume.app}</b>
+                      <span className="max-sm:hidden"> · Node 1 · SysOp Chat</span>
+                    </span>
+                    <span className="flex shrink-0 gap-[2ch]">
+                      <TimeLeft onHour={onHour} />
+                      <Clock />
+                    </span>
                   </div>
-                  {active && !active.draft && (
-                    <button
-                      onClick={() => onDeleteThread(active.id)}
-                      className="mt-1 text-left hover:brightness-150"
-                      style={{ color: C.lred }}
-                    >
-                      [D] DELETE THIS MESSAGE
-                    </button>
-                  )}
-                </aside>
 
-                <section
-                  className="relative flex min-w-0 flex-1 flex-col border-4 border-double px-2 pt-3"
-                  style={{ borderColor: C.lblue }}
-                >
-                  <span className="absolute -top-3 left-3 max-w-[80%] truncate bg-[#050805] px-1" style={{ color: C.lmag }}>
-                    ╡ FROM: {costume.user} ─ TO: {costume.assistant} ─ SUBJ:{" "}
-                    {(active?.title || "CHAT").toUpperCase()} ╞
-                  </span>
-                  <div ref={scroller} className="min-h-0 flex-1 overflow-y-auto pb-2">
-                    <pre
-                      aria-hidden
-                      className="mb-2 overflow-hidden font-[Menlo,ui-monospace,monospace] text-[9px] leading-[1.05] sm:text-[11px]"
-                    >
-                      {LOGO.map((row, i) => (
-                        <div key={i} style={{ color: LOGO_COLORS[i] }}>
-                          {row}
-                        </div>
-                      ))}
-                    </pre>
-                    <div style={{ color: C.lgreen }}>CONNECT 2400/ARQ/V42BIS</div>
-                    <div className="mb-3 whitespace-pre-wrap" style={{ color: C.white }}>
-                      {costume.greeting}
-                    </div>
-                    {lines.map((l) => (
-                      <div key={l.id} className="mb-2 whitespace-pre-wrap break-words">
-                        {l.role === "user" ? (
-                          <>
-                            <span style={{ color: C.lcyan }}>{costume.user}&gt; </span>
-                            <span style={{ color: C.white }}>{l.text}</span>
-                          </>
+                  <div ref={log} className="bbs-log" aria-live="polite">
+                    <div ref={inner} className="bbs-log-inner">
+                      {cleared === null ? (
+                        <Preamble intro={intro} me={me} sysop={sysop} />
+                      ) : (
+                        <button type="button" className="bbs-hint" onClick={scrollBack}>
+                          [Alt-B] Scroll back
+                        </button>
+                      )}
+
+                      {shown.map((r) =>
+                        r.kind === "msg" ? (
+                          <div key={r.key} className={`bbs-msg ${r.mine ? "bbs-mine" : "bbs-theirs"}`}>
+                            <span className="bbs-who">
+                              {r.mine ? me : sysop}
+                              <span className="bbs-arrow"> »</span>
+                            </span>
+                            <span className="bbs-text">
+                              {r.mine ? (
+                                r.text
+                              ) : (
+                                <Baud
+                                  text={r.text}
+                                  live={r.live}
+                                  delay={r.key === "greeting" ? T.greet : 0}
+                                  skip={r.key === "greeting" && skipped}
+                                  streaming={busy && r.key === lines.at(-1)?.id}
+                                  onActive={setRx}
+                                />
+                              )}
+                            </span>
+                          </div>
                         ) : (
-                          <>
-                            <span style={{ color: C.yellow }}>{costume.assistant}&gt; </span>
-                            <span style={{ color: C.gray }}>{l.text}</span>
-                          </>
-                        )}
-                      </div>
-                    ))}
-                    {waiting && (
-                      <div style={{ color: C.yellow }}>
-                        {costume.typing}
-                        <span className="blink">...</span>
-                      </div>
-                    )}
-                    {error && <div style={{ color: C.lred }}>{costume.error}</div>}
+                          <NoteBlock key={r.key} note={r.note} sysop={sysop} me={me} later={later} onRx={receiving} />
+                        ),
+                      )}
+
+                      {waiting && (
+                        <div className="bbs-msg bbs-theirs">
+                          <span className="bbs-who">
+                            {sysop}
+                            <span className="bbs-arrow"> »</span>
+                          </span>
+                          <span className="bbs-text">
+                            <i className="bbs-cursor" />
+                          </span>
+                        </div>
+                      )}
+                      {error && (
+                        <div className="bbs-sys">
+                          <span className="t-bad">{costume.error}</span>
+                          <span className="t-dim"> · The line dropped mid-reply. Send again to retry.</span>
+                        </div>
+                      )}
+                    </div>
                   </div>
-                </section>
-              </div>
 
-              <div className="mt-2 flex items-start gap-2 px-1">
-                <span className="shrink-0" style={{ color: C.lgreen }}>
-                  [{Math.max(0, 59 - Math.floor(up / 60))} min left]{" "}
-                  <span style={{ color: C.white }}>Chat ({costume.user})</span>
-                  <span style={{ color: C.yellow }}> &gt;</span>
-                </span>
-                <textarea
-                  value={value}
-                  onChange={(e) => setValue(e.target.value)}
-                  onKeyDown={onKeyDown}
-                  rows={1}
-                  autoFocus
-                  aria-label="Message"
-                  spellCheck={false}
-                  className="min-w-0 flex-1 resize-none bg-transparent uppercase outline-none"
-                  style={{ color: C.white, caretColor: C.white }}
-                />
-                {!value && <span className="blink -ml-1" style={{ color: C.white }}>█</span>}
-              </div>
+                  <nav className="bbs-keys" aria-label="BBS commands">
+                    {(
+                      [
+                        ["F", "iles", () => run("files")],
+                        ["D", "oors", () => run("doors")],
+                        ["W", "ho's on", () => run("who")],
+                        ["B", "ulletins", () => run("bulletins")],
+                        ["P", "age SysOp", () => run("page")],
+                        ["G", "oodbye", hangUp],
+                      ] as const
+                    ).map(([k, rest, fn]) => (
+                      <button key={k} type="button" className="bbs-key" onClick={fn}>
+                        <span className="bbs-key-k">[{k}]</span>
+                        {rest}
+                      </button>
+                    ))}
+                  </nav>
 
-              <div className="mt-1 flex gap-0 overflow-hidden whitespace-nowrap px-1" style={{ background: C.gray, color: C.black }}>
-                <span>ALT-Z FOR HELP</span>
-                <span className="px-2">│</span>
-                <span>ANSI-BBS</span>
-                <span className="px-2">│</span>
-                <span>2400 N81</span>
-                <span className="px-2">│</span>
-                <span>FDX</span>
-                <span className="hidden px-2 sm:inline">│</span>
-                <span className="hidden sm:inline">{busy ? "RECEIVING" : "IDLE"}</span>
-                <span className="ml-auto">ON-LINE {online}</span>
+                  <div className="bbs-chatbar" aria-hidden>
+                    <span>
+                      CHAT · {sysop} &lt;&gt; {me}
+                    </span>
+                  </div>
+
+                  <div className="bbs-input">
+                    <label htmlFor="bbs-input" className="bbs-who bbs-prompt">
+                      {me}
+                      <span className="bbs-arrow"> »</span>
+                    </label>
+                    {link === "down" && !value && (
+                      <span className="bbs-offline" aria-hidden>
+                        NO CARRIER · ENTER to redial · Alt-D directory
+                      </span>
+                    )}
+                    {intro && !value && (
+                      <span className="bbs-offline t-dim" aria-hidden>
+                        Connecting... press any key to skip
+                      </span>
+                    )}
+                    <textarea
+                      id="bbs-input"
+                      ref={input}
+                      value={value}
+                      onChange={(e) => {
+                        setValue(e.target.value);
+                        sending();
+                      }}
+                      onKeyDown={(e) => {
+                        if (e.key === "Enter" && !e.shiftKey && !e.nativeEvent.isComposing) {
+                          e.preventDefault();
+                          send();
+                        }
+                      }}
+                      rows={1}
+                      autoFocus
+                      spellCheck={false}
+                      autoComplete="off"
+                      aria-label={`Chat with ${sysop}`}
+                      className="bbs-field"
+                      disabled={!on}
+                    />
+                  </div>
+
+                  <div className="bbs-status">
+                    <button type="button" onClick={() => setDialog("help")}>
+                      ALT-Z FOR HELP
+                    </button>
+                    <span className="max-sm:hidden">ANSI-BBS</span>
+                    <span>{BAUD} N81</span>
+                    <span className="max-md:hidden">FDX</span>
+                    <span className={status === "OFF-LINE" ? "bbs-st-bad" : undefined}>{status}</span>
+                    <span className="ml-auto border-l-0">
+                      {link === "up" ? <OnLine since={upSince} /> : "OFF-LINE"}
+                    </span>
+                  </div>
+
+                  {dialog === "help" && (
+                    <Help
+                      onClose={closeDialog}
+                      onPick={(k) => {
+                        if (k === "dir") setDialog("dir");
+                        else if (k === "hang") {
+                          setDialog(null);
+                          hangUp();
+                        } else if (k === "clear") clear();
+                        else if (k === "back") scrollBack();
+                        else closeDialog();
+                      }}
+                    />
+                  )}
+                  {dialog === "dir" && (
+                    <Directory
+                      link={link}
+                      onClose={closeDialog}
+                      onDial={(e) => {
+                        closeDialog();
+                        dial(e);
+                      }}
+                    />
+                  )}
+                </div>
+
+                {/* The tube: scanlines, phosphor mask, refresh roll, curvature, glare, the room in the glass. */}
+                <div className="bbs-fx" aria-hidden>
+                  <i className="bbs-fx-mask" />
+                  <i className="bbs-fx-scan" />
+                  <i className="bbs-fx-roll" />
+                  {reflection ? (
+                    // eslint-disable-next-line @next/next/no-img-element
+                    <img src={reflection} alt="" className="bbs-fx-photo" />
+                  ) : (
+                    <i className="bbs-fx-window" />
+                  )}
+                  <i className="bbs-fx-glare" />
+                  <i className="bbs-fx-curve" />
+                </div>
               </div>
             </div>
           </div>
+
+          <div className="bbs-chin">
+            <div className="bbs-badge">
+              <b>GPTY</b>
+              <span>14&quot; Color VGA</span>
+            </div>
+            <span className="bbs-mpr max-lg:hidden">MPR II · Low Radiation</span>
+            <div className="bbs-controls">
+              <Knob kind="contrast" label="Contrast" value={knobs.contrast} onTurn={(v) => turn("contrast", v)} />
+              <Knob kind="bright" label="Brightness" value={knobs.bright} onTurn={(v) => turn("bright", v)} />
+              <span className="bbs-ctl">
+                <button type="button" className="bbs-push bbs-push-wide" onClick={degauss} disabled={!on} aria-label="Degauss" />
+                <small>Degauss</small>
+              </span>
+              <span className="bbs-ctl">
+                <button
+                  type="button"
+                  className="bbs-push"
+                  onClick={togglePower}
+                  aria-pressed={on}
+                  aria-label={on ? "Turn the monitor off" : "Turn the monitor on"}
+                >
+                  <PowerMark />
+                </button>
+                <small>Power</small>
+              </span>
+              <i className="bbs-power-led" data-on={on} aria-hidden />
+            </div>
+          </div>
         </div>
-        {/* Bezel bottom: badge, knobs and power LED */}
-        <div className="flex items-center justify-between px-6 pt-2 font-sans text-[10px] font-bold tracking-[0.25em] text-[#8a8170]">
-          <span>GPTY · 14&quot; COLOR</span>
-          <span className="flex items-center gap-3">
-            <span className="h-3 w-3 rounded-full bg-gradient-to-b from-[#cfc7b3] to-[#9f9681] shadow-inner" />
-            <span className="h-3 w-3 rounded-full bg-gradient-to-b from-[#cfc7b3] to-[#9f9681] shadow-inner" />
-            <span className="h-2 w-2 rounded-full bg-[#5bff6a] shadow-[0_0_8px_#5bff6a]" />
-          </span>
+
+        <div className="bbs-desk">
+          <button type="button" className="bbs-floppy" onClick={() => setDialog("dir")} title="Dialing directory (Alt-D)">
+            <Floppy label="BBS LIST" />
+          </button>
+          <div className="bbs-stand" aria-hidden>
+            <i className="bbs-neck" />
+            <i className="bbs-base" />
+          </div>
+          <Modem leds={leds} />
         </div>
       </div>
     </div>
+  );
+}
+
+/* ───────── On the screen ───────── */
+
+function Line({ at, intro, children, className = "" }: { at: number; intro: boolean; children: React.ReactNode; className?: string }) {
+  return (
+    <div className={`${intro ? "bbs-at" : ""} ${className}`} style={{ "--at": `${at}ms` } as React.CSSProperties}>
+      {children}
+    </div>
+  );
+}
+
+/** What a terminal shows above the chat: the dial-in, the splash, the login. */
+function Preamble({ intro, me, sysop }: { intro: boolean; me: string; sysop: string }) {
+  const g = splashGrid();
+  const info = [
+    ["Node 1 of 1", "Est. 1991", "FidoNet 1:340/93"],
+    [`SysOp: ${sysop}`, "2,048 files", "24 hrs*"],
+  ];
+  const login: [string, string][] = [
+    ["What is your name? ", me],
+    ["Password: ", "*********"],
+    [`Welcome back, ${me}! You are caller `, "#1,337"],
+    ["Last caller: NIGHT_OWL · Calls today: 12 · ", "Time left: 60 min"],
+  ];
+  return (
+    <div className="bbs-pre">
+      <Line at={0} intro={intro} className="t-cmd">
+        <span className={intro ? "bbs-typed" : ""} style={{ "--n": 3 } as React.CSSProperties}>ATZ</span>
+      </Line>
+      <Line at={T.ok} intro={intro}>OK</Line>
+      <Line at={T.atdt} intro={intro} className="t-cmd">
+        <span className={intro ? "bbs-typed" : ""} style={{ "--n": 15 } as React.CSSProperties}>
+          ATDT {PHONE}
+        </span>
+      </Line>
+      <Line at={T.ring} intro={intro}>RINGING</Line>
+      <Line at={T.connect} intro={intro} className="t-ok">{CONNECT}</Line>
+
+      <div className="bbs-splash" role="img" aria-label="Midnight BBS: a crescent moon over a sleeping town, with one basement window lit.">
+        <PixelArt g={g} className="block h-auto w-full" />
+        {intro &&
+          Array.from({ length: SPLASH_ROWS }, (_, i) => (
+            <span
+              key={i}
+              className="bbs-cover"
+              style={
+                {
+                  top: `${(i / SPLASH_ROWS) * 100}%`,
+                  height: `${100 / SPLASH_ROWS + 0.4}%`,
+                  "--at": `${T.paint + i * T.paintRow}ms`,
+                } as React.CSSProperties
+              }
+            />
+          ))}
+      </div>
+
+      <Line at={T.info} intro={intro} className="bbs-info">
+        {info.map((row, i) => (
+          <div key={i}>
+            {row.map((s, j) => (
+              <span key={j}>
+                {j > 0 && <span className="t-dark"> · </span>}
+                {s}
+              </span>
+            ))}
+          </div>
+        ))}
+        <div className="t-dark">*except when Mom needs the phone</div>
+      </Line>
+
+      <div className="bbs-login">
+        {login.map(([q, a], i) => (
+          <Line key={i} at={T.login + i * T.loginStep} intro={intro}>
+            <span className="t-gray">{q}</span>
+            <span className="t-hi">{a}</span>
+          </Line>
+        ))}
+      </div>
+
+      <Line at={T.banner} intro={intro} className="bbs-banner">
+        <span>*** {sysop} (SysOp) has entered chat mode ***</span>
+      </Line>
+    </div>
+  );
+}
+
+/**
+ * A reply as it comes down the wire: 240 characters a second, with the
+ * cursor riding along. If the model outruns the modem it catches up, so it's
+ * never more than a second or so behind.
+ */
+function Baud({
+  text,
+  live,
+  delay = 0,
+  skip = false,
+  streaming,
+  onActive,
+}: {
+  text: string;
+  live: boolean;
+  delay?: number;
+  skip?: boolean;
+  streaming: boolean;
+  onActive: (on: boolean) => void;
+}) {
+  const [n, setN] = useState(live && !reducedMotion() ? 0 : text.length);
+  const pos = useRef(n);
+  const startAt = useRef(0);
+  const target = text.length;
+  const typing = n < target;
+
+  useEffect(() => {
+    startAt.current = performance.now() + delay;
+    // Once, at mount.
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
+
+  useEffect(() => {
+    if (skip) {
+      pos.current = target;
+      setN(target);
+      return;
+    }
+    if (pos.current >= target) return;
+    let raf = 0;
+    let last = 0;
+    const tick = (t: number) => {
+      if (t < startAt.current) {
+        raf = requestAnimationFrame(tick);
+        return;
+      }
+      const dt = last ? Math.min(0.1, (t - last) / 1000) : 0;
+      last = t;
+      const backlog = target - pos.current;
+      pos.current = Math.min(target, pos.current + Math.max(CPS, backlog / 1.1) * dt);
+      setN(Math.floor(pos.current));
+      if (pos.current < target) raf = requestAnimationFrame(tick);
+    };
+    raf = requestAnimationFrame(tick);
+    return () => cancelAnimationFrame(raf);
+  }, [target, skip]);
+
+  useEffect(() => {
+    if (!typing) return;
+    onActive(true);
+    return () => onActive(false);
+  }, [typing, onActive]);
+
+  return (
+    <>
+      {text.slice(0, n)}
+      {(typing || streaming) && <i className="bbs-cursor" />}
+    </>
+  );
+}
+
+function ToneLine({ text, tone, at }: { text: string; tone?: Tone; at?: number }) {
+  return (
+    <div className={`bbs-step ${tone ? `t-${tone}` : ""}`} style={{ "--at": `${at ?? 0}ms` } as React.CSSProperties}>
+      {text}
+    </div>
+  );
+}
+
+/** Something the BBS or the terminal printed between messages. */
+function NoteBlock({
+  note,
+  sysop,
+  me,
+  later,
+  onRx,
+}: {
+  note: Note;
+  sysop: string;
+  me: string;
+  later: (ms: number, fn: () => void) => void;
+  onRx: (ms: number) => void;
+}) {
+  switch (note.kind) {
+    case "say":
+      return <div className={`bbs-sys t-${note.tone ?? "gray"}`}>{note.text}</div>;
+    case "hangup":
+      return (
+        <div className="bbs-sys">
+          <ToneLine text="+++" tone="cmd" />
+          <ToneLine text="OK" at={350} />
+          <ToneLine text="ATH0" tone="cmd" at={550} />
+          <ToneLine text="NO CARRIER" tone="bad" at={900} />
+          <ToneLine text="Thanks for calling MIDNIGHT BBS! Press ENTER to redial." tone="dim" at={1100} />
+        </div>
+      );
+    case "dial":
+      return (
+        <div className="bbs-sys">
+          {note.dial!.script.map((s, i) => (
+            <ToneLine key={i} text={s.text} tone={s.tone} at={s.at} />
+          ))}
+        </div>
+      );
+    case "page":
+      return (
+        <div className="bbs-sys">
+          <ToneLine text="Paging the SysOp..." tone="hi" />
+          <ToneLine text="*BEEP*" tone="warn" at={500} />
+          <ToneLine text="*BEEP* *BEEP*" tone="warn" at={1100} />
+          <ToneLine text="*BEEP* *BEEP* *BEEP*" tone="warn" at={1700} />
+          <ToneLine text={`${sysop} is already in chat with you. Nice try.`} tone="dim" at={2400} />
+        </div>
+      );
+    case "time":
+      return (
+        <div className="bbs-sys">
+          <ToneLine text="*** TIME LIMIT REACHED ***" tone="bad" />
+          <ToneLine text={`${sysop} added 60 minutes to your time bank. Don't tell anyone.`} tone="hi" at={600} />
+        </div>
+      );
+    case "who":
+      return (
+        <Panel title="Who's On-Line" color="cyan">
+          <table className="bbs-table">
+            <thead>
+              <tr>
+                <th>Node</th>
+                <th>User</th>
+                <th className="max-sm:hidden">Baud</th>
+                <th>Doing</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr>
+                <td>1</td>
+                <td className="t-hi">{me}</td>
+                <td className="max-sm:hidden">2400</td>
+                <td>Chatting with the SysOp</td>
+              </tr>
+              <tr>
+                <td>Con</td>
+                <td className="t-warn">{sysop}</td>
+                <td className="max-sm:hidden">Local</td>
+                <td>Chatting with {me}. Eating cold pizza.</td>
+              </tr>
+              <tr className="t-dark">
+                <td>2</td>
+                <td>-</td>
+                <td className="max-sm:hidden">-</td>
+                <td>Coming soon (needs a second phone line)</td>
+              </tr>
+            </tbody>
+          </table>
+        </Panel>
+      );
+    case "bulletins":
+      return (
+        <Panel title="Bulletins" color="magenta">
+          <ol className="bbs-list">
+            {BULLETINS.map((b, i) => (
+              <li key={i}>
+                <span className="t-warn">{i + 1}</span>
+                <span>{b}</span>
+              </li>
+            ))}
+          </ol>
+        </Panel>
+      );
+    case "files":
+      return <FileArea later={later} onRx={onRx} />;
+    case "doors":
+      return <DoorMenu later={later} onRx={onRx} />;
+  }
+}
+
+function Panel({ title, color, children, extra }: { title: string; color: "cyan" | "magenta" | "yellow" | "green"; children: React.ReactNode; extra?: React.ReactNode }) {
+  return (
+    <section className={`bbs-panel bbs-panel-${color}`}>
+      <header>
+        <span className="bbs-panel-title">{title}</span>
+        {extra && <span className="bbs-panel-extra">{extra}</span>}
+      </header>
+      {children}
+    </section>
+  );
+}
+
+function FileArea({ later, onRx }: { later: (ms: number, fn: () => void) => void; onRx: (ms: number) => void }) {
+  const [got, setGot] = useState<{ name: string; phase: "zmodem" | "abort" } | null>(null);
+  const pick = (name: string) => {
+    if (got) return;
+    setGot({ name, phase: "zmodem" });
+    onRx(2600);
+    later(2600, () => setGot({ name, phase: "abort" }));
+  };
+  return (
+    <Panel title="File Area 3 · ANSI Art & Utilities" color="yellow" extra="Pick a file to download">
+      <table className="bbs-table">
+        <tbody>
+          {FILES.map((f) => (
+            <tr key={f.name}>
+              <td>
+                <button type="button" className="bbs-link" onClick={() => pick(f.name)} disabled={!!got}>
+                  {f.name}
+                </button>
+              </td>
+              <td className="t-gray text-right">{f.size}</td>
+              <td className="t-dark max-md:hidden">{f.date}</td>
+              <td className="max-sm:hidden">{f.desc}</td>
+            </tr>
+          ))}
+        </tbody>
+      </table>
+      {got && (
+        <div className="bbs-xfer">
+          <div>
+            <span className="t-hi">ZMODEM</span> download: <span className="t-warn">{got.name}</span>
+          </div>
+          <div className="bbs-bar" data-done={got.phase === "abort"}>
+            <i />
+          </div>
+          {got.phase === "abort" && (
+            <div className="t-bad">
+              *** Transfer aborted. Your upload/download ratio is 0:1. Upload 1 file for every 3 you take. ***
+            </div>
+          )}
+        </div>
+      )}
+    </Panel>
+  );
+}
+
+function DoorMenu({ later, onRx }: { later: (ms: number, fn: () => void) => void; onRx: (ms: number) => void }) {
+  const [door, setDoor] = useState<{ i: number; done: boolean } | null>(null);
+  const open = (i: number) => {
+    if (door && !door.done) return;
+    setDoor({ i, done: false });
+    onRx(1400);
+    later(1400, () => setDoor({ i, done: true }));
+  };
+  return (
+    <Panel title="Doors · On-line Games" color="green" extra="Pick a door">
+      <ol className="bbs-list">
+        {DOORS.map((d, i) => (
+          <li key={d.name}>
+            <span className="t-warn">{i + 1}</span>
+            <button type="button" className="bbs-link" onClick={() => open(i)}>
+              {d.name}
+            </button>
+            <span className="t-dark max-sm:hidden">({d.players} players)</span>
+          </li>
+        ))}
+      </ol>
+      {door && (
+        <div className="bbs-xfer">
+          <div className="t-gray">
+            Loading <span className="t-hi">{DOORS[door.i].name}</span>
+            {door.done ? "..." : <span className="bbs-dots">...</span>}
+          </div>
+          {door.done && <div className="t-warn">{DOORS[door.i].says}</div>}
+        </div>
+      )}
+    </Panel>
+  );
+}
+
+/* ───────── Dialogs ───────── */
+
+function DosDialog({
+  title,
+  children,
+  footer,
+  onClose,
+  wide,
+}: {
+  title: string;
+  children: React.ReactNode;
+  footer: string;
+  onClose: () => void;
+  wide?: boolean;
+}) {
+  const box = useRef<HTMLDivElement>(null);
+  useEffect(() => {
+    box.current?.querySelector<HTMLButtonElement>("[data-item]")?.focus();
+  }, []);
+  const onKeyDown = (e: React.KeyboardEvent) => {
+    if (e.key !== "ArrowDown" && e.key !== "ArrowUp") return;
+    const items = [...(box.current?.querySelectorAll<HTMLButtonElement>("[data-item]") ?? [])];
+    const i = items.indexOf(document.activeElement as HTMLButtonElement);
+    const next = items[(i + (e.key === "ArrowDown" ? 1 : -1) + items.length) % items.length];
+    next?.focus();
+    e.preventDefault();
+  };
+  return (
+    <div
+      className="bbs-dlg-wrap"
+      onPointerDown={(e) => {
+        if (e.target === e.currentTarget) onClose();
+      }}
+    >
+      <div ref={box} className={`bbs-dlg ${wide ? "bbs-dlg-wide" : ""}`} role="dialog" aria-modal="true" aria-label={title} onKeyDown={onKeyDown}>
+        <div className="bbs-dlg-title">
+          <span>{title}</span>
+        </div>
+        {children}
+        <div className="bbs-dlg-foot">{footer}</div>
+      </div>
+    </div>
+  );
+}
+
+const HELP: { k: string; label: string; id: "dir" | "hang" | "clear" | "back" | "help" }[] = [
+  { k: "Alt-D", label: "Dialing directory", id: "dir" },
+  { k: "Alt-H", label: "Hang up", id: "hang" },
+  { k: "Alt-C", label: "Clear screen", id: "clear" },
+  { k: "Alt-B", label: "Scroll-back buffer", id: "back" },
+  { k: "Alt-Z", label: "This help", id: "help" },
+];
+
+function Help({ onClose, onPick }: { onClose: () => void; onPick: (id: (typeof HELP)[number]["id"]) => void }) {
+  return (
+    <DosDialog title="Command Summary" footer="Esc: close · UNREGISTERED: day 212 of 30" onClose={onClose}>
+      <div className="bbs-dlg-list">
+        {HELP.map((h) => (
+          <button key={h.k} type="button" data-item className="bbs-dlg-item" onClick={() => onPick(h.id)}>
+            <span className="t-warn">{h.k}</span>
+            <span>{h.label}</span>
+          </button>
+        ))}
+      </div>
+      <p className="bbs-dlg-note">GPTERM 3.12 · Shareware. If you use it, please register! ($39)</p>
+    </DosDialog>
+  );
+}
+
+function Directory({ link, onClose, onDial }: { link: Link; onClose: () => void; onDial: (e: DialEntry) => void }) {
+  return (
+    <DosDialog title="Dialing Directory" footer="Enter: dial · Esc: cancel" onClose={onClose} wide>
+      <div className="bbs-dir-head" aria-hidden>
+        <span>#</span>
+        <span>Name</span>
+        <span className="max-sm:hidden">Number</span>
+        <span className="max-md:hidden">Baud</span>
+        <span className="max-md:hidden">Last call</span>
+      </div>
+      <div className="bbs-dlg-list">
+        {DIRECTORY.map((d, i) => (
+          <button key={d.id} type="button" data-item className="bbs-dlg-item bbs-dir-row" onClick={() => onDial(d)}>
+            <span className="t-warn">{i + 1}</span>
+            <span className="truncate">
+              {d.name}
+              {d.id === "midnight" && link === "up" && <span className="t-ok"> *</span>}
+            </span>
+            <span className="max-sm:hidden">{d.number}</span>
+            <span className="max-md:hidden">{d.baud}</span>
+            <span className="max-md:hidden">{d.last}</span>
+          </button>
+        ))}
+      </div>
+    </DosDialog>
+  );
+}
+
+/* ───────── Live bits of the status lines ───────── */
+
+function Clock() {
+  const now = new Date(useNow(15_000));
+  const h = now.getHours() % 12 || 12;
+  return (
+    <span className="max-sm:hidden">
+      {pad(now.getMonth() + 1)}-{pad(now.getDate())}-93 {h}:{pad(now.getMinutes())}
+      {now.getHours() < 12 ? "a" : "p"}
+    </span>
+  );
+}
+
+function OnLine({ since }: { since: number }) {
+  const now = useNow(1000);
+  const s = Math.max(0, Math.floor((now - (since || now)) / 1000));
+  return (
+    <>
+      ON-LINE {pad(Math.floor(s / 3600))}:{pad(Math.floor(s / 60) % 60)}:{pad(s % 60)}
+    </>
+  );
+}
+
+/** Minutes left in today's hour. When it runs out, the SysOp tops it up. */
+function TimeLeft({ onHour }: { onHour: () => void }) {
+  const now = useNow(10_000);
+  const start = session.start || now;
+  const mins = Math.floor((now - start) / 60_000);
+  const hour = Math.floor(mins / 60);
+  // The hour this screen opened in doesn't count; only ones that run out while you watch.
+  const [opened] = useState(hour);
+  const told = useRef(opened);
+  useEffect(() => {
+    if (hour > told.current) {
+      told.current = hour;
+      onHour();
+    }
+  }, [hour, onHour]);
+  return (
+    <span>
+      Time left: <b>{60 - (mins % 60)}</b>
+    </span>
+  );
+}
+
+/* ───────── Props ───────── */
+
+function StickyNote({ user }: { user: string }) {
+  return (
+    <div className="bbs-sticky" aria-hidden>
+      <b>MIDNIGHT BBS</b>
+      <span>555-0193</span>
+      <span>user: {user}</span>
+      <span>pw: swordfish</span>
+      <em>no calls after 11!! -Mom</em>
+    </div>
+  );
+}
+
+const LEDS: [keyof LedState, string][] = [
+  ["HS", "High Speed (off: you're at 2400)"],
+  ["AA", "Auto Answer"],
+  ["CD", "Carrier Detect"],
+  ["OH", "Off Hook"],
+  ["RD", "Receive Data"],
+  ["SD", "Send Data"],
+  ["TR", "Terminal Ready"],
+  ["MR", "Modem Ready"],
+];
+type LedState = Record<"HS" | "AA" | "CD" | "OH" | "RD" | "SD" | "TR" | "MR", "on" | "off" | "flicker">;
+
+/** The external modem. Its lights are the real state of the line. */
+function Modem({ leds }: { leds: LedState }) {
+  return (
+    <div className="bbs-modem" role="img" aria-label={`Modem lights: ${LEDS.filter(([k]) => leds[k] !== "off").map(([k]) => k).join(", ") || "off"}`}>
+      <div className="bbs-modem-top" />
+      <div className="bbs-modem-face">
+        <span className="bbs-modem-brand">
+          DataHawk <b>2400</b>
+        </span>
+        <span className="bbs-modem-leds">
+          {LEDS.map(([k, name]) => (
+            <span key={k} className="bbs-modem-cell" title={name}>
+              <i className="bbs-modem-led" data-state={leds[k]} />
+              <small>{k}</small>
+            </span>
+          ))}
+        </span>
+      </div>
+    </div>
+  );
+}
+
+/** A monitor knob: drag up or down, scroll, or use the arrow keys. Double-click resets. */
+function Knob({ kind, label, value, onTurn }: { kind: "bright" | "contrast"; label: string; value: number; onTurn: (v: number) => void }) {
+  const drag = useRef<{ id: number; y: number; v: number } | null>(null);
+  return (
+    <span className="bbs-ctl">
+      <span
+        role="slider"
+        tabIndex={0}
+        aria-label={label}
+        aria-valuemin={0}
+        aria-valuemax={100}
+        aria-valuenow={Math.round(value * 100)}
+        className="bbs-knob"
+        style={{ "--rot": `${-135 + value * 270}deg` } as React.CSSProperties}
+        onPointerDown={(e) => {
+          e.currentTarget.setPointerCapture(e.pointerId);
+          drag.current = { id: e.pointerId, y: e.clientY, v: value };
+        }}
+        onPointerMove={(e) => {
+          const d = drag.current;
+          if (d?.id === e.pointerId) onTurn(d.v + (d.y - e.clientY) / 140);
+        }}
+        onPointerUp={() => (drag.current = null)}
+        onPointerCancel={() => (drag.current = null)}
+        onWheel={(e) => onTurn(value - e.deltaY / 900)}
+        onDoubleClick={() => onTurn(0.5)}
+        onKeyDown={(e) => {
+          const step = { ArrowUp: 0.05, ArrowRight: 0.05, ArrowDown: -0.05, ArrowLeft: -0.05 }[e.key];
+          if (step === undefined) return;
+          e.preventDefault();
+          onTurn(value + step);
+        }}
+      >
+        <i />
+      </span>
+      <small>
+        <KnobMark kind={kind} />
+      </small>
+    </span>
   );
 }

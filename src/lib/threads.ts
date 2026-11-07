@@ -1,6 +1,7 @@
 "use client";
 
 import { useCallback, useState } from "react";
+import { DEFAULT_AGENT, isAgent } from "./agents";
 import type { ChatMessage } from "./types";
 
 /**
@@ -11,6 +12,7 @@ import type { ChatMessage } from "./types";
 
 const THREADS_KEY = "gpty.threads.v1";
 const ACTIVE_KEY = "gpty.activeThread.v1";
+const AGENT_KEY = "gpty.activeAgent.v1";
 const USER_KEY = "gpty.userId.v1";
 /** Keep storage bounded; oldest threads are dropped first. */
 const MAX_THREADS = 50;
@@ -18,6 +20,8 @@ const MAX_THREADS = 50;
 export interface Thread {
   id: string;
   ownerId: string;
+  /** The agent this thread is with. Every thread belongs to exactly one. */
+  agentId: string;
   title: string;
   createdAt: number;
   updatedAt: number;
@@ -58,10 +62,20 @@ function getUserId() {
   return id;
 }
 
+/** Threads saved before agents existed: file them under the costume they were started in. */
+function agentOf(t: Thread) {
+  if (isAgent(t.agentId)) return t.agentId;
+  const meta = t.messages.find((m) => m.metadata?.agent || m.metadata?.costume)?.metadata;
+  const legacy = meta?.agent ?? meta?.costume;
+  return isAgent(legacy) ? legacy : DEFAULT_AGENT;
+}
+
 function loadThreads(): Thread[] {
   const list = read<Thread[]>(THREADS_KEY, []);
   return Array.isArray(list)
-    ? list.filter((t) => t && typeof t.id === "string" && Array.isArray(t.messages))
+    ? list
+        .filter((t) => t && typeof t.id === "string" && Array.isArray(t.messages))
+        .map((t) => ({ ...t, agentId: agentOf(t) }))
     : [];
 }
 
@@ -81,14 +95,24 @@ export function previewOf(t: Thread) {
   return text.length > 80 ? `${text.slice(0, 79)}…` : text;
 }
 
-export function useThreads() {
+/**
+ * One active agent and one active thread. Opening an agent starts a fresh,
+ * unsaved draft with it; the draft becomes a thread once a message is saved.
+ */
+export function useThreads(initialAgent?: string) {
   // This hook only runs on the client (the app is loaded with ssr: false),
   // so reading localStorage in lazy initializers is safe.
   const [userId] = useState(getUserId);
   const [threads, setThreads] = useState<Thread[]>(loadThreads);
-  const [activeId, setActiveId] = useState<string>(() => {
-    const saved = localStorage.getItem(ACTIVE_KEY);
-    return saved && loadThreads().some((t) => t.id === saved) ? saved : newId("t");
+  const [active, setActive] = useState<{ agentId: string; threadId: string }>(() => {
+    const saved = loadThreads().find((t) => t.id === localStorage.getItem(ACTIVE_KEY));
+    // A link to an agent (/msn) opens a new chat with it, unless the thread
+    // you were last in is already with that agent.
+    if (initialAgent && saved?.agentId !== initialAgent)
+      return { agentId: initialAgent, threadId: newId("t") };
+    if (saved) return { agentId: saved.agentId, threadId: saved.id };
+    const agent = localStorage.getItem(AGENT_KEY);
+    return { agentId: isAgent(agent) ? agent : DEFAULT_AGENT, threadId: newId("t") };
   });
 
   const commit = useCallback((fn: (prev: Thread[]) => Thread[]) => {
@@ -99,13 +123,34 @@ export function useThreads() {
     });
   }, []);
 
-  const select = useCallback((id: string) => {
-    setActiveId(id);
-    write(ACTIVE_KEY, id);
+  const show = useCallback((agentId: string, threadId: string) => {
+    setActive({ agentId, threadId });
+    write(AGENT_KEY, agentId);
+    write(ACTIVE_KEY, threadId);
   }, []);
 
+  /** Resume a saved thread (and switch to its agent). */
+  const select = useCallback(
+    (id: string) => {
+      const t = threads.find((x) => x.id === id);
+      if (t) show(t.agentId, t.id);
+    },
+    [threads, show],
+  );
+
+  const isDraft = !threads.some((t) => t.id === active.threadId);
+
+  /** Start a new chat with an agent. Reuses the open draft if it's already with them. */
+  const openAgent = useCallback(
+    (agentId: string) => {
+      if (isDraft && agentId === active.agentId) return;
+      show(agentId, newId("t"));
+    },
+    [isDraft, active.agentId, show],
+  );
+
   const saveMessages = useCallback(
-    (id: string, messages: ChatMessage[]) => {
+    (id: string, agentId: string, messages: ChatMessage[]) => {
       if (!messages.length) return;
       commit((prev) => {
         const now = Date.now();
@@ -120,6 +165,7 @@ export function useThreads() {
           : {
               id,
               ownerId: userId,
+              agentId,
               title: titleFrom(messages),
               createdAt: now,
               updatedAt: now,
@@ -127,35 +173,27 @@ export function useThreads() {
             };
         return [thread, ...prev.filter((t) => t.id !== id)];
       });
-      write(ACTIVE_KEY, id);
     },
     [commit, userId],
   );
 
-  const isDraft = !threads.some((t) => t.id === activeId);
-
-  const newThread = useCallback(() => {
-    // An unsaved, empty thread is already open: reuse it.
-    if (isDraft) return;
-    select(newId("t"));
-  }, [isDraft, select]);
-
   const deleteThread = useCallback(
     (id: string) => {
       commit((prev) => prev.filter((t) => t.id !== id));
-      if (id === activeId) select(newId("t"));
+      if (id === active.threadId) show(active.agentId, newId("t"));
     },
-    [activeId, commit, select],
+    [active, commit, show],
   );
 
   return {
     userId,
     threads,
-    activeId,
+    agentId: active.agentId,
+    activeId: active.threadId,
     isDraft,
     select,
+    openAgent,
     saveMessages,
-    newThread,
     deleteThread,
   };
 }

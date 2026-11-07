@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import { notFound } from "next/navigation";
 import { Suspense } from "react";
+import { agentEra, getAgent, isAgent } from "@/lib/agents";
 import { COSTUMES, costumeTitle } from "@/lib/costumes";
 import { ClientApp, Splash } from "../ClientApp";
 
@@ -14,8 +15,11 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
   const { costume } = await params;
   const c = COSTUMES.find((x) => x.id === costume);
   if (!c) return {};
-  const title = costumeTitle(c);
-  const description = `${c.tagline} An AI chatbot dressed up as ${c.app}: the look and the personality change together.`;
+  const a = isAgent(c.id) ? getAgent(c.id) : null;
+  const title = a ? `${a.name} · ${agentEra(a)} — gpty.lol` : costumeTitle(c);
+  const description = a
+    ? `Chat with ${a.name}, a gpty who lives in ${c.app} (${c.year}) and only knows the world up to then. ${a.bio}`
+    : `${c.tagline} An AI chatbot dressed up as ${c.app}.`;
   return {
     title,
     description,

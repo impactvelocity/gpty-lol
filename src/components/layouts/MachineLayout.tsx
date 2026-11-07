@@ -75,7 +75,7 @@ export function MachineLayout({
 
       <div className="z-[1] flex min-h-0 flex-1">
         {/* Processes */}
-        <aside className="hidden w-56 shrink-0 flex-col border-r border-[#0a7a35]/40 bg-black/50 p-2 md:flex">
+        <aside data-threads className="hidden w-56 shrink-0 flex-col border-r border-[#0a7a35]/40 bg-black/50 p-2 md:flex">
           <div className="pb-1" style={{ color: DIM }}>
             $ ps --interactive
           </div>

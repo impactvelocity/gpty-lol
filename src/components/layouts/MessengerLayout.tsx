@@ -54,7 +54,7 @@ export function MessengerLayout({
       url={`www.messenger.com/t/${costume.assistant}`}
     >
       <div className="flex h-full font-[Helvetica,Arial,sans-serif] text-[14px] text-[#1d2129]">
-        <aside className="hidden w-[320px] shrink-0 flex-col border-r border-[#e5e5e5] md:flex">
+        <aside data-threads className="hidden w-[320px] shrink-0 flex-col border-r border-[#e5e5e5] md:flex">
           <div className="flex h-[50px] shrink-0 items-center justify-between border-b border-[#e5e5e5] px-3">
             <Settings className="h-5 w-5" style={{ color: BLUE }} aria-hidden />
             <b className="text-[16px]">Messenger</b>
