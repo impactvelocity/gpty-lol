@@ -3,7 +3,8 @@
 import { type KeyboardEvent, type PointerEvent, useEffect, useRef } from "react";
 import type { Agent } from "@/lib/agents";
 import { elfFonts } from "./elf/font";
-import { mxFonts } from "./machine/font";
+import { fyFonts } from "./fury/font";
+import { hlFonts } from "./highlimit/font";
 import { segoe } from "./msn/font";
 import { rounded } from "./skype/font";
 import { slFonts } from "./slots/font";
@@ -13,7 +14,7 @@ import "./songplayer.css";
 
 /**
  * The agent's song, as a bar across the top of its window: play/pause, the
- * (made-up) title and artist, how far in it is, and a visualizer on the right. It wears the
+ * (made-up) song title, how far in it is, and a visualizer on the right. It wears the
  * chrome of the agent's own app (see songplayer.css), and the visualizer is
  * what was on screen in that era.
  */
@@ -52,7 +53,6 @@ export function SongPlayer({ agent, song, onToggle }: { agent: Agent; song: Song
       </button>
       <span className="tune-title">
         <b>{title}</b>
-        {agent.song?.artist && <small>{agent.song.artist}</small>}
       </span>
       {state === "waiting" ? (
         <span className="tune-wait">click anywhere to play</span>
@@ -92,7 +92,7 @@ function clock(s: number) {
 
 /* ─────────────────────────── Visualizers ─────────────────────────── */
 
-type Look = "winamp" | "wmp" | "aero" | "flat" | "karma" | "hash" | "fire" | "spirit" | "scope" | "moon" | "iri" | "led" | "bars";
+type Look = "winamp" | "wmp" | "aero" | "flat" | "karma" | "hash" | "fire" | "spirit" | "scope" | "sunset" | "lights" | "hair" | "led" | "bars";
 
 /**
  * Each agent's app chrome, and its era as a visualizer, plus any typefaces
@@ -109,9 +109,11 @@ const SKINS: Record<string, { skin: string; look: Look; fonts?: string }> = {
   reddit: { skin: "reddit", look: "karma" }, // 2009: orangered on smoked glass; upvotes up, downvotes down
   seance: { skin: "seance", look: "spirit" }, // 1888: no frame, just a faint presence that breathes; a ghostly wisp
   terminal: { skin: "terminal", look: "scope", fonts: mfFonts }, // 1989: the steel cabinet and its amber CRT; the green oscilloscope
-  elf: { skin: "elf", look: "moon", fonts: elfFonts }, // the North Pole: a dark winter night; bars of moonlight
-  machine: { skin: "machine", look: "iri", fonts: mxFonts }, // 2199: the Lattice's violet void, iridescent; chromatic bars
+  fury: { skin: "fury", look: "sunset", fonts: fyFonts }, // 1985: chrome and neon off a VHS cover; bars rising from the Grid's horizon
+  elf: { skin: "elf", look: "lights", fonts: elfFonts }, // the North Pole: her window's pine leather and cream stitch; bars in the string lights' colours
+  machine: { skin: "machine", look: "hair" }, // 2199: white on the Lattice's black; hairlines, the loudest one cyan
   slots: { skin: "slots", look: "led", fonts: slFonts }, // 3 a.m.: dark velvet with a gold edge; the LED meter
+  highlimit: { skin: "highlimit", look: "bars", fonts: hlFonts }, // the high-limit room: green felt and a brass hairline; plain brass bars
 };
 
 const W = 64;
@@ -293,43 +295,66 @@ const DRAW: Record<Look, (f: Frame) => void> = {
     g.stroke();
     g.shadowBlur = 0;
   },
-  moon({ g, freq }) {
-    // Slim bars of moonlight: pale at the top, fading into the dark below, with a soft glow.
+  sunset({ g, freq }) {
+    // Bars rising from a glowing horizon, sun-colored, with their reflection on the Grid below.
+    const n = 12;
+    const bw = W / n;
+    const hz = H * 0.66;
+    const sun = g.createLinearGradient(0, 0, 0, hz);
+    sun.addColorStop(0, "#fff36b");
+    sun.addColorStop(0.5, "#ff9a3c");
+    sun.addColorStop(1, "#ff2e88");
+    g.fillStyle = "#12042a";
+    g.fillRect(0, hz, W, H - hz);
+    g.fillStyle = "rgba(255, 60, 200, 0.35)";
+    for (let x = 3; x < W; x += 6) g.fillRect(x, hz, 1, H - hz);
+    bands(freq, n).forEach((v, i) => {
+      const h = Math.max(1, v * (hz - 1));
+      const x = i * bw + 1;
+      g.fillStyle = sun;
+      g.fillRect(x, hz - h, bw - 2, h);
+      g.globalAlpha = 0.35;
+      g.fillStyle = "#2ef2ff";
+      g.fillRect(x, hz + 1, bw - 2, Math.min(H - hz - 1, h * 0.3));
+      g.globalAlpha = 1;
+    });
+    g.fillStyle = "#ffd1ef";
+    g.shadowColor = "#ff5ac8";
+    g.shadowBlur = 4;
+    g.fillRect(0, hz, W, 1);
+    g.shadowBlur = 0;
+  },
+  lights({ g, freq }) {
+    // Bars in the colours of the string lights over Carol's window, each glowing its own colour.
+    const colors = ["#e4574b", "#e9b24c", "#8fb07c", "#f3b7ad", "#5aaea2"];
     const n = 10;
     const bw = W / n;
-    const light = g.createLinearGradient(0, 0, 0, H);
-    light.addColorStop(0, "rgba(232, 240, 255, 0.95)");
-    light.addColorStop(1, "rgba(140, 170, 225, 0.25)");
-    g.fillStyle = light;
-    g.shadowColor = "rgba(190, 215, 255, 0.6)";
-    g.shadowBlur = 5;
     bands(freq, n).forEach((v, i) => {
       const h = Math.max(2, v * (H - 2));
       const w = bw - 3;
+      const c = colors[i % colors.length];
+      g.fillStyle = c;
+      g.shadowColor = c;
+      g.shadowBlur = 4;
       g.beginPath();
       g.roundRect(i * bw + 1.5, H - h, w, h, [w / 2, w / 2, 1, 1]);
       g.fill();
     });
     g.shadowBlur = 0;
   },
-  iri({ g, freq }) {
-    const colors = ["#ff2bd6", "#b04cff", "#7b2cff", "#4a8dff", "#19f0ff", "#7dfca0", "#c8ff2e"];
-    const n = 12;
+  hair({ g, freq, ink }) {
+    // Hairlines, like a spectrum read off an instrument; the loudest band is the sampled one, in cyan.
+    const n = 16;
     const bw = W / n;
-    bands(freq, n).forEach((v, i) => {
-      const h = Math.max(1.5, v * (H - 2));
-      const x = i * bw + 1.5;
-      const y = (H - h) / 2;
-      // The signal never quite lines up: magenta and cyan ghosts either side.
-      g.globalAlpha = 0.5;
-      g.fillStyle = "#ff2bd6";
-      g.fillRect(x - 1, y, bw - 3, h);
-      g.fillStyle = "#19f0ff";
-      g.fillRect(x + 1, y, bw - 3, h);
-      g.globalAlpha = 1;
-      g.fillStyle = colors[Math.floor((i / n) * colors.length)];
-      g.fillRect(x, y, bw - 3, h);
+    const levels = bands(freq, n);
+    const top = levels.indexOf(Math.max(...levels));
+    levels.forEach((v, i) => {
+      const h = Math.max(1, v * (H - 2));
+      g.globalAlpha = 0.35 + v * 0.65;
+      g.fillStyle = i === top && v > 0.05 ? "#5fdcec" : ink;
+      g.fillRect(Math.round(i * bw + bw / 2 - 0.5), Math.round((H - h) / 2), 1, h);
     });
+    g.globalAlpha = 1;
   },
   led({ g, freq }) {
     g.fillStyle = "#0a0204";

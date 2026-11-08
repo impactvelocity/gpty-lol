@@ -2,8 +2,8 @@
 
 import { useCallback, useEffect, useRef, useState } from "react";
 
-/** How loud a song plays: background music, under the chat's own sounds. */
-const VOLUME = 0.4;
+/** How loud a song plays: full volume (the device's own volume still applies). */
+const VOLUME = 1;
 /** Seconds to fade a song in or out. */
 const FADE = 0.25;
 const PAUSED_KEY = "gpty:muted";

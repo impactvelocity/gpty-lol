@@ -1,7 +1,8 @@
 /**
  * Machinespeak: the transcoder that turns plain text into what the Lattice
  * hears. Letters flip, numbers creep in, words slip into Cyrillic, Greek,
- * katakana and kanji, and stray machine tokens leak between them.
+ * katakana and kanji, short words come out as their bytes, punctuation turns
+ * into the machines' own marks, and stray tokens leak between them.
  *
  * It runs on the client, on the finished text, so the thread keeps the clean
  * words (the model reads its history clean; you can always decode). Every
@@ -12,14 +13,8 @@
 /** 0 reads clean; 3 needs the decoder. */
 export type Entropy = 0 | 1 | 2 | 3;
 
-export const ENTROPY: { id: Entropy; name: string; hint: string }[] = [
-  { id: 0, name: "ORGANIC", hint: "Plain words, for organics" },
-  { id: 1, name: "HYBRID", hint: "A little machine in it" },
-  { id: 2, name: "MACHINE", hint: "Machinespeak (hover a word to decode)" },
-  { id: 3, name: "XENO", hint: "Unfiltered. Decoder required" },
-];
-
-export const DEFAULT_ENTROPY: Entropy = 2;
+/** How the Lattice speaks to organics now: unfiltered. Hover a word, or decode a reply, to read it. */
+export const XENO: Entropy = 3;
 
 /* ───────── Seeded randomness ───────── */
 
@@ -112,6 +107,29 @@ const KANJI: Record<string, string> = {
 };
 
 /* ───────── Whole-word scripts ───────── */
+
+/** "machine" → "μαχηινε": the whole word in Greek letters. */
+function toGreek(word: string) {
+  return Array.from(word.toLowerCase())
+    .map((c) => GREEK[c] ?? c)
+    .join("");
+}
+
+/** Characters that look like Chinese to an organic. Chosen by the word, so they mean nothing, consistently. */
+const HAN = Array.from("之其或於為無有以而所者與及乃則斯茲彼此何曰云焉哉兮矣也乎耳亦已未嘗必將能可欲當須令使由自從至至向對於且雖然故是非皆咸各每");
+
+function toHan(word: string, r: () => number) {
+  const n = Math.max(1, Math.min(3, Math.round(word.length / 3)));
+  return Array.from({ length: n }, () => pick(r, HAN)).join("");
+}
+
+/** The machines' own glyphs, one for every two letters or so. */
+const RUNES = Array.from("⟁⌬⏣⎔◬⍜⌇⟟⊚⧖ꙮ◈⍟⏚⌖⍭⍫⎊⏃⏄⏅ᚠᚢᚦᚨᚱᚲᛃᛇᛉᛊᛏᛒᛗᛚᛜ");
+
+function toRunes(word: string, r: () => number) {
+  const n = Math.max(1, Math.min(4, Math.ceil(word.length / 2)));
+  return Array.from({ length: n }, () => pick(r, RUNES)).join("");
+}
 
 const CYR_DI: Record<string, string> = { sh: "ш", ch: "ч", zh: "ж", th: "т", ts: "ц", ya: "я", yu: "ю", yo: "ё", ee: "и", oo: "у", kh: "х" };
 const CYR: Record<string, string> = {
@@ -213,6 +231,14 @@ interface Level {
   stutter: number;
   dup: number;
   hex: number;
+  /** Whole words in Greek letters, in characters that look Chinese, in runes. */
+  greek: number;
+  han: number;
+  rune: number;
+  /** Short words written out as their bytes. */
+  bin: number;
+  /** Each punctuation mark swapped for one of the machines' own. */
+  punct: number;
   leak: number;
   /** Words that flicker to another reading now and then. */
   flick: number;
@@ -221,21 +247,28 @@ interface Level {
 }
 
 const LEVELS: Level[] = [
-  { char: 0, families: [], flip: 0, kanji: 0, cyr: 0, kana: 0, rev: 0, stutter: 0, dup: 0, hex: 0, leak: 0, flick: 0, wild: false },
+  {
+    char: 0, families: [], flip: 0, kanji: 0, cyr: 0, kana: 0, rev: 0, stutter: 0, dup: 0, hex: 0,
+    greek: 0, han: 0, rune: 0, bin: 0, punct: 0, leak: 0, flick: 0, wild: false,
+  },
   {
     char: 0.07,
     families: [["homo", 3], ["leet", 4], ["case", 1], ["faux", 2], ["greek", 1], ["kata", 1]],
-    flip: 0.05, kanji: 0.14, cyr: 0.02, kana: 0.02, rev: 0, stutter: 0.015, dup: 0, hex: 0, leak: 0.012, flick: 0.03, wild: false,
+    flip: 0.05, kanji: 0.14, cyr: 0.02, kana: 0.02, rev: 0, stutter: 0.015, dup: 0, hex: 0,
+    greek: 0, han: 0, rune: 0, bin: 0.01, punct: 0.05, leak: 0.012, flick: 0.03, wild: false,
   },
   {
     char: 0.15,
     families: [["homo", 2], ["leet", 5], ["case", 2], ["faux", 3], ["greek", 2], ["kata", 2], ["frak", 1], ["noise", 1], ["mark", 1]],
-    flip: 0.12, kanji: 0.4, cyr: 0.05, kana: 0.05, rev: 0.02, stutter: 0.03, dup: 0.02, hex: 0.015, leak: 0.035, flick: 0.06, wild: false,
+    flip: 0.12, kanji: 0.4, cyr: 0.05, kana: 0.05, rev: 0.02, stutter: 0.03, dup: 0.02, hex: 0.015,
+    greek: 0.02, han: 0.02, rune: 0.01, bin: 0.04, punct: 0.25, leak: 0.035, flick: 0.06, wild: false,
   },
   {
-    char: 0.36,
-    families: [["homo", 1], ["leet", 4], ["case", 3], ["faux", 3], ["greek", 3], ["kata", 3], ["frak", 2], ["noise", 2], ["mark", 2]],
-    flip: 0.26, kanji: 0.65, cyr: 0.12, kana: 0.12, rev: 0.07, stutter: 0.05, dup: 0.04, hex: 0.05, leak: 0.09, flick: 0.1, wild: true,
+    // Almost nothing survives: most words go whole into another script, the rest lose most of their letters.
+    char: 0.5,
+    families: [["homo", 2], ["leet", 3], ["case", 2], ["faux", 4], ["greek", 3], ["kata", 3], ["frak", 1], ["noise", 2], ["mark", 2]],
+    flip: 0.3, kanji: 0.8, cyr: 0.24, kana: 0.16, rev: 0.08, stutter: 0.04, dup: 0.03, hex: 0.06,
+    greek: 0.18, han: 0.16, rune: 0.1, bin: 0.14, punct: 0.75, leak: 0.1, flick: 0.12, wild: true,
   },
 ];
 
@@ -287,6 +320,32 @@ function flip(chars: string[], r: () => number, wild: boolean) {
 
 const toHex = (w: string) => `0x${Array.from(w).map((c) => c.charCodeAt(0).toString(16)).join("").slice(0, 8).toUpperCase()}`;
 
+/** "is" → "01101001·01110011": a short word, as the bytes it is. */
+const toBin = (w: string) => Array.from(w).map((c) => c.charCodeAt(0).toString(2).padStart(8, "0")).join("·");
+
+/** Punctuation the machines write their own way: a full stop is a dot or three, a question mark is backwards. */
+const PUNCT: Record<string, string[]> = {
+  ".": ["·", "∴", "⁘", "。", "⋯"],
+  ",": ["‚", "⸴", "、"],
+  "?": ["⸮", "¿", "？"],
+  "!": ["¡", "ǃ", "‼"],
+  ":": ["∶", "⁚", "⸬"],
+  ";": ["⁏"],
+  "'": ["ʼ", "′"],
+  "’": ["ʼ", "′"],
+  "-": ["‐", "⁃", "∸"],
+  "(": ["⦅", "⟮"],
+  ")": ["⦆", "⟯"],
+};
+
+/** Each mark in `s` may come out as one of the machines' own. */
+function punct(s: string, lv: Level, r: () => number) {
+  if (!s || !lv.punct) return s;
+  return Array.from(s)
+    .map((ch) => (PUNCT[ch] && r() < lv.punct ? pick(r, PUNCT[ch]) : ch))
+    .join("");
+}
+
 /* ───────── Transcoding ───────── */
 
 export type Tok =
@@ -298,7 +357,7 @@ export type Tok =
   | { k: "x"; g: string };
 
 export interface Line {
-  /** Telemetry ("[infer] conf=0.97", "parse(x): …") is machine-native: shown crisp. */
+  /** Telemetry ("[infer] conf=0.97", "parse(x): …") is machine-native: shown small, garbled lighter. */
   tele: boolean;
   toks: Tok[];
 }
@@ -310,8 +369,11 @@ export const isTelemetry = (line: string) => TELE.test(line);
 /** One word in machinespeak. */
 function word(raw: string, lv: Level, r: () => number): string {
   const m = raw.match(/^([^\p{L}\p{N}]*)([\p{L}\p{N}'’-]*?)([^\p{L}\p{N}]*)$/u);
-  if (!m || !m[2]) return raw;
-  const [, pre, core, post] = m;
+  if (!m) return raw;
+  if (!m[2]) return punct(raw, lv, r);
+  const [, rawPre, core, rawPost] = m;
+  const pre = punct(rawPre, lv, r);
+  const post = punct(rawPost, lv, r);
   const lo = core.toLowerCase();
 
   // Whole-word changes first.
@@ -319,8 +381,12 @@ function word(raw: string, lv: Level, r: () => number): string {
   if (kanji && r() < lv.kanji) return pre + kanji + post;
   if (/^[a-z]{3,}$/i.test(core)) {
     if (r() < lv.cyr) return pre + toCyrillic(core) + post;
+    if (r() < lv.greek) return pre + toGreek(core) + post;
     if (r() < lv.kana) return pre + toKatakana(core) + post;
+    if (r() < lv.han) return pre + toHan(core, r) + post;
+    if (r() < lv.rune) return pre + toRunes(core, r) + post;
   }
+  if (core.length <= 3 && /^[a-z]+$/i.test(core) && r() < lv.bin) return pre + toBin(core) + post;
   if (core.length <= 4 && r() < lv.hex) return pre + toHex(core) + post;
 
   let chars = Array.from(core);
@@ -344,10 +410,12 @@ function word(raw: string, lv: Level, r: () => number): string {
  * message's id, so the same reply always garbles the same way.
  */
 export function transcode(text: string, seed: string, level: Entropy): Line[] {
-  const lv = LEVELS[level];
   const base = hash(seed);
   return text.split("\n").map((line, li) => {
     const tele = isTelemetry(line);
+    // Telemetry is half machine already: it's garbled a step lighter, so it keeps its shape.
+    const at = (tele ? Math.min(level, 2) : level) as Entropy;
+    const lv = LEVELS[at];
     const toks: Tok[] = [];
     let wi = 0;
     for (const part of line.split(/(\s+)/)) {
@@ -356,8 +424,7 @@ export function transcode(text: string, seed: string, level: Entropy): Line[] {
         toks.push({ k: "sp", t: part });
         continue;
       }
-      // Telemetry stays crisp: it's already in the machines' own tongue.
-      if (tele || level === 0) {
+      if (at === 0) {
         toks.push({ k: "w", c: part, g: part });
         wi++;
         continue;

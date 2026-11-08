@@ -1,6 +1,6 @@
 "use client";
 
-import { ArrowDown, Check, Copy, RotateCw, Volume2, VolumeX } from "lucide-react";
+import { ArrowDown, Check, Copy, RotateCw } from "lucide-react";
 import { Fragment, memo, useCallback, useEffect, useLayoutEffect, useMemo, useRef, useState } from "react";
 import { art, GenImage, Token } from "@/components/slots/art";
 import {
@@ -34,14 +34,17 @@ import {
   withBet,
 } from "@/components/slots/engine";
 import { slFonts } from "@/components/slots/font";
-import { readSound, saveSound, sfx } from "@/components/slots/sound";
+import { sfx, warmSounds } from "@/components/slots/sound";
 import { SymbolArt } from "@/components/slots/symbols";
 import "@/components/slots/slots.css";
 import { SAMPLE_QUESTION } from "@/lib/costumes";
-import { useDesktopDrag, useStickyScroll } from "./hooks";
+import { useStickyScroll } from "./hooks";
 import type { ChatLine, LayoutProps, ThreadItem } from "./types";
 
 /* ───────── The Token Palace, row G, machine #7 ───────── */
+
+/** Casino sounds, kept subtle (see slots/sound.ts). Set to false to silence the machine. */
+const SOUND = true;
 
 const SUGGESTIONS: { sym: Kind; ask: string }[] = [
   { sym: "email", ask: "Write an email asking my boss for a raise" },
@@ -51,6 +54,9 @@ const SUGGESTIONS: { sym: Kind; ask: string }[] = [
   { sym: "poem", ask: "A haiku about my inbox" },
   { sym: "text", ask: SAMPLE_QUESTION },
 ];
+
+/** One of the house prompts, at random: what SPIN pulls when nothing's been typed. */
+const housePrompt = () => SUGGESTIONS[Math.floor(Math.random() * SUGGESTIONS.length)].ask;
 
 /** What the glass on the front of the machine promises. */
 const PAYTABLE: { syms: Sym[]; what: string; pays: string }[] = [
@@ -172,11 +178,10 @@ export function SlotsLayout({
   onNewThread,
   onDeleteThread,
 }: LayoutProps) {
-  const { ref: win, handle } = useDesktopDrag<HTMLDivElement>();
   const input = useRef<HTMLTextAreaElement>(null);
   const slotBox = useRef<HTMLDivElement>(null);
 
-  /* ── Wallet, bet and sound, kept across visits ── */
+  /* ── Wallet and bet, kept across visits ── */
   const [wallet, setWalletState] = useState<Wallet>(readWallet);
   /**
    * Every change is applied to what's saved, not to this window's copy, so a
@@ -202,22 +207,17 @@ export function SlotsLayout({
       localStorage.setItem(BET_KEY, b);
     } catch {}
   };
-  const [sound, setSoundState] = useState(readSound);
-  const soundOn = useRef(sound);
-  useEffect(() => {
-    soundOn.current = sound;
-  }, [sound]);
   const play = useCallback((k: keyof typeof sfx, big = false) => {
-    if (!soundOn.current) return;
+    if (!SOUND) return;
     if (k === "win") sfx.win(big);
     else sfx[k]();
   }, []);
+  useEffect(() => {
+    if (SOUND) warmSounds();
+  }, []);
 
   const [value, setValue] = useState("");
-  const [hint, setHint] = useState(0);
   const [pop, setPop] = useState<null | "insert" | "broke">(null);
-  const [ticket, setTicket] = useState(0);
-  const [drop, setDrop] = useState(0);
   const [away, setAway] = useState(false);
 
   const rows = useMemo(() => toRows(lines, busy), [lines, busy]);
@@ -276,22 +276,13 @@ export function SlotsLayout({
   const again = () => {
     if (lastPrompt) pull(lastPrompt.text);
   };
-  /** The lever pulls whatever's typed, or the last prompt again. */
+  /** The lever pulls whatever's typed, the last prompt again, or, on a fresh machine, one of the house prompts at random. */
   const lever = () => {
     play("lever");
     if (value.trim()) submit();
     else if (lastPrompt) again();
-    else {
-      setHint((h) => h + 1);
-      input.current?.focus();
-    }
+    else pull(housePrompt());
   };
-
-  useEffect(() => {
-    if (!hint) return;
-    const t = setTimeout(() => setHint(0), 1600);
-    return () => clearTimeout(t);
-  }, [hint]);
 
   useEffect(() => {
     if (busy) sawBusy.current = true;
@@ -378,7 +369,6 @@ export function SlotsLayout({
   const insert = (n: number) => {
     setWallet((w) => ({ ...w, bank: w.bank + n }));
     setPop(null);
-    setDrop(Date.now());
     play("coin");
     setTimeout(() => play("coin"), 160);
     setTimeout(() => play("coin"), 320);
@@ -400,15 +390,6 @@ export function SlotsLayout({
     };
   }, [pop]);
 
-  useEffect(() => {
-    if (!ticket) return;
-    const key = (e: KeyboardEvent) => {
-      if (e.key === "Escape") setTicket(0);
-    };
-    document.addEventListener("keydown", key);
-    return () => document.removeEventListener("keydown", key);
-  }, [ticket]);
-
   /* ── The input grows with what you write, up to a point ── */
   useEffect(() => {
     const el = input.current;
@@ -421,14 +402,6 @@ export function SlotsLayout({
   useEffect(() => {
     if (window.matchMedia("(pointer: fine)").matches) input.current?.focus({ preventScroll: true });
   }, []);
-
-  const toggleSound = () => {
-    const on = !sound;
-    setSoundState(on);
-    saveSound(on);
-    soundOn.current = on;
-    if (on) sfx.coin();
-  };
 
   const b = betOf(bet);
   const lastWon = landed?.o.payout ?? 0;
@@ -447,11 +420,11 @@ export function SlotsLayout({
         </filter>
       </svg>
       <div
-        ref={win}
         className="lk-rig"
         data-busy={working || undefined}
         data-result={result}
-        style={{ maxWidth: costume.window.w, maxHeight: costume.window.h }}
+        // As wide as the costume says, and as tall as the room: the screen grows to fill it.
+        style={{ maxWidth: costume.window.w }}
       >
         <div className="lk-cab">
           <div className="lk-glow" aria-hidden />
@@ -466,38 +439,21 @@ export function SlotsLayout({
             ))}
           </aside>
 
-          {/* ───── The marquee: drag the machine by it ───── */}
-          <header className="lk-marquee" {...handle}>
-            <span className="lk-bulbs lk-bulbs-t" aria-hidden />
-            <span className="lk-bulbs lk-bulbs-b" aria-hidden />
+          {/* ───── The marquee ───── */}
+          <header className="lk-marquee">
+            <MarqueeBulbs />
             <div className="lk-mq-l">
-              <button
-                type="button"
-                className="lk-snd"
-                onClick={toggleSound}
-                aria-pressed={sound}
-                aria-label={sound ? "Casino sounds on" : "Casino sounds off"}
-                title={sound ? "Sound: on" : "Sound: off"}
-              >
-                {sound ? <Volume2 /> : <VolumeX />}
-              </button>
-              <span className="lk-mq-tag">
-                <b>ROW G · #7</b>
-                <small>NO CLOCKS</small>
-              </span>
+              <span className="lk-mq-tag">ROW G · NO CLOCKS</span>
               <span className="lk-tilt" data-on={error || undefined}>
                 TILT
               </span>
             </div>
             <div className="lk-mq-c">
               <div className="lk-title">Lucky Prompt</div>
-              <div className="lk-sevens">
-                <i>★</i>7 7 7<i>★</i>
-              </div>
             </div>
             <div className="lk-mq-r">
-              <span className="lk-jack-l">progressive · AGI</span>
               <span className="lk-jack-n">
+                <span className="sr-only">Jackpot </span>
                 <Jackpot base={jackpot} />
               </span>
             </div>
@@ -505,21 +461,16 @@ export function SlotsLayout({
 
           {/* ───── The reels ───── */}
           <div className="lk-bay">
-            <span className="lk-lamp lk-lamp-l" data-on={working || undefined} aria-hidden>
-              1<small>LINE</small>
-            </span>
-            <span className="lk-lamp lk-lamp-r" data-on={bet !== "mini" || undefined} aria-hidden>
-              ×{b.x}
-              <small>BET</small>
-            </span>
+            <JackpotLadder />
             <Reels spinning={spinning} landed={landed} onLanded={onLanded} play={play} />
+            <HotSign />
             {banner && <Banner key={banner.k} o={banner.o} />}
-            <div className="lk-belly" aria-hidden>
-              WIN UP TO <b>1,000,000</b> TOKENS* <span>·</span> *TOKENS HAVE NO CASH VALUE <span>·</span> PLEASE PROMPT RESPONSIBLY
-            </div>
             <div className="sr-only" role="status">
               {banner ? `${headline(banner.o).big} ${headline(banner.o).small}` : spinning ? "Spinning" : ""}
             </div>
+          </div>
+          <div className="lk-belly" aria-hidden>
+            WIN UP TO <b>1,000,000</b> TOKENS* <span>·</span> *TOKENS HAVE NO CASH VALUE <span>·</span> PLEASE PROMPT RESPONSIBLY
           </div>
 
           {/* ───── The screen: pulls and payouts ───── */}
@@ -594,37 +545,15 @@ export function SlotsLayout({
                 {rtp(wallet).toFixed(1)}
                 <small>%</small>
               </Meter>
-              <div className="lk-slot" ref={slotBox}>
-                <button
-                  type="button"
-                  className="lk-insert"
-                  data-hot={broke || undefined}
-                  aria-label="Insert tokens"
-                  title="Insert tokens"
-                  aria-haspopup="dialog"
-                  aria-expanded={!!pop}
-                  onClick={() => setPop((p) => (p ? null : "insert"))}
-                >
-                  <span className="lk-slot-mouth" aria-hidden>
-                    {drop > 0 && <Token key={drop} size={20} className="lk-drop" />}
-                  </span>
-                  <span className="lk-insert-l">
-                    INSERT<small>TOKENS</small>
-                  </span>
-                </button>
-                {pop && <InsertPop broke={pop === "broke"} onInsert={insert} />}
-              </div>
-              <button type="button" className="lk-cashout" onClick={() => setTicket(Date.now())}>
-                CASH
-                <small>OUT</small>
-              </button>
             </div>
 
             <form
               className="lk-composer"
               onSubmit={(e) => {
                 e.preventDefault();
-                submit();
+                // SPIN with nothing typed pulls a house prompt instead of sitting there.
+                if (value.trim()) submit();
+                else lever();
               }}
             >
               <div className="lk-bets">
@@ -635,6 +564,11 @@ export function SlotsLayout({
                   title="Raise the bet (changes nothing about the answer)"
                 >
                   BET ONE
+                  <span className="lk-pips" aria-hidden>
+                    {BETS.map((x, i) => (
+                      <i key={x.id} data-on={i <= BETS.findIndex((y) => y.id === bet) || undefined} />
+                    ))}
+                  </span>
                 </button>
                 <button
                   type="button"
@@ -646,7 +580,7 @@ export function SlotsLayout({
                   MAX BET
                 </button>
               </div>
-              <label className="lk-field" data-hint={hint ? "" : undefined}>
+              <label className="lk-field">
                 <textarea
                   ref={input}
                   rows={1}
@@ -658,62 +592,38 @@ export function SlotsLayout({
                       submit();
                     }
                   }}
-                  placeholder={hint ? "Type a prompt first, high roller" : costume.placeholder}
+                  placeholder={costume.placeholder}
                   aria-label="Your prompt"
                   className="lk-input"
                 />
-                <span className="lk-field-cost" aria-hidden>
-                  {value.trim() ? `−${nextStake.toLocaleString()} tokens to pull` : `${b.label} · ${(stakeOf("", bet)).toLocaleString()} + your words`}
-                </span>
               </label>
-              {busy ? (
-                <button type="button" className="lk-spin" data-stop onClick={onStop} aria-label="Stop" title="Stop">
-                  STOP
-                </button>
-              ) : broke ? (
-                <button type="button" className="lk-spin" data-broke onClick={() => setPop("broke")} title="Out of tokens">
-                  <small>INSERT</small>TOKENS
-                </button>
-              ) : value.trim() || !lastPrompt ? (
-                <button type="submit" className="lk-spin" disabled={!value.trim() || spinning} title="Spin (Enter)">
-                  SPIN
-                </button>
-              ) : (
-                <button type="button" className="lk-spin" data-again onClick={lever} disabled={spinning} title="Pull the same prompt again">
-                  <small>SPIN</small>AGAIN
-                </button>
-              )}
+              <div className="lk-spin-wrap" ref={slotBox}>
+                {busy ? (
+                  <button type="button" className="lk-spin" data-stop onClick={onStop} aria-label="Stop" title="Stop">
+                    STOP
+                  </button>
+                ) : broke ? (
+                  <button type="button" className="lk-spin" data-broke onClick={() => setPop("broke")} title="Out of tokens">
+                    <small>INSERT</small>TOKENS
+                  </button>
+                ) : value.trim() || !lastPrompt ? (
+                  <button type="submit" className="lk-spin" disabled={spinning} title="Spin (Enter)">
+                    SPIN
+                  </button>
+                ) : (
+                  <button type="button" className="lk-spin" data-again onClick={lever} disabled={spinning} title="Pull the same prompt again">
+                    <small>SPIN</small>AGAIN
+                  </button>
+                )}
+                {pop && <InsertPop broke={pop === "broke"} onInsert={insert} />}
+              </div>
             </form>
           </div>
 
           {shower && <Shower key={shower.k} big={shower.big} seed={shower.k} />}
 
-          {ticket > 0 && (
-            <button type="button" className="lk-ticket-wrap" onClick={() => setTicket(0)} aria-label="Put the ticket away">
-              <span key={ticket} className="lk-ticket">
-                <span className="lk-ticket-h">TOKEN PALACE · CASHOUT VOUCHER</span>
-                <span className="lk-ticket-amt">$0.00</span>
-                <span className="lk-ticket-row">
-                  <span>TOKENS</span>
-                  <b>{shownBank.toLocaleString()}</b>
-                </span>
-                <span className="lk-ticket-row">
-                  <span>PULLS</span>
-                  <b>{wallet.pulls.toLocaleString()}</b>
-                </span>
-                <span className="lk-ticket-row">
-                  <span>CASH VALUE</span>
-                  <b>$0.00</b>
-                </span>
-                <span className="lk-ticket-p">Tokens are not redeemable for cash, prizes or a better answer. The machine thanks you.</span>
-                <span className="lk-ticket-bar" aria-hidden />
-                <span className="lk-ticket-void">VOID AFTER 3 AM · VALID NOWHERE</span>
-              </span>
-            </button>
-          )}
         </div>
 
-        <Lever onPull={lever} ready={!working && (!!value.trim() || !!lastPrompt)} disabled={working} />
       </div>
     </div>
   );
@@ -727,7 +637,7 @@ const currentY = (el: HTMLElement) => {
 };
 
 /**
- * Three reels behind glass. Each is a strip of the same nine symbols, five
+ * Three reels behind glass, one symbol showing in each. Each is a strip of the same nine symbols, five
  * copies tall, moved with the Web Animations API: a little wind-up, then a
  * blur, then each one runs down onto its symbol with a clunk, left to right.
  * On a near miss the third reel slows and teases first.
@@ -746,7 +656,6 @@ function Reels({
   const box = useRef<HTMLDivElement>(null);
   const strips = useRef<(HTMLDivElement | null)[]>([]);
   const anims = useRef<(Animation | null)[]>([null, null, null]);
-  const ticker = useRef(0);
   const [stopped, setStopped] = useState(3);
   const [tease, setTease] = useState(false);
   const target = landed?.o.reels ?? IDLE;
@@ -758,6 +667,8 @@ function Reels({
   });
 
   const cellOf = (el: HTMLElement) => (el.firstElementChild as HTMLElement | null)?.offsetHeight || 64;
+  /** Where a cell's top sits when it's centred in the window, however many rows the window shows. */
+  const midOf = (el: HTMLElement, cell: number) => ((el.parentElement?.clientHeight || 3 * cell) - cell) / 2;
 
   /** Puts a reel straight onto its symbol, no animation. */
   const rest = useCallback((i: number, sym: Sym) => {
@@ -765,7 +676,7 @@ function Reels({
     if (!el) return;
     const strip = STRIPS[i];
     const cell = cellOf(el);
-    el.style.transform = `translateY(${cell / 2 - (strip.length + strip.indexOf(sym)) * cell}px)`;
+    el.style.transform = `translateY(${midOf(el, cell) - (strip.length + strip.indexOf(sym)) * cell}px)`;
   }, []);
 
   // Rest where they landed, and stay put through resizes.
@@ -787,8 +698,8 @@ function Reels({
   // Spin.
   useEffect(() => {
     if (!spinning || reduced()) return;
-    clearInterval(ticker.current);
-    ticker.current = window.setInterval(() => play("tick"), 72);
+    const reset = window.setTimeout(() => setStopped(0), 0);
+    play("spinStart");
     STRIPS.forEach((strip, i) => {
       const el = strips.current[i];
       if (!el) return;
@@ -818,6 +729,7 @@ function Reels({
         });
       };
     });
+    return () => clearTimeout(reset);
   }, [spinning, play]);
 
   // Stop, one reel at a time.
@@ -827,7 +739,7 @@ function Reels({
     if (spinning || !landedKey) return;
     const reels = targetRef.current;
     if (!landedFresh || reduced()) {
-      clearInterval(ticker.current);
+      play("spinStop");
       anims.current.forEach((a) => a?.cancel());
       reels.forEach((s, i) => {
         rest(i, s);
@@ -848,7 +760,7 @@ function Reels({
       const n = strip.length;
       const cell = cellOf(el);
       const loop = n * cell;
-      const yEnd = cell / 2 - (n + strip.indexOf(reels[i])) * cell;
+      const yEnd = midOf(el, cell) - (n + strip.indexOf(reels[i])) * cell;
       const yNow = currentY(el);
       const L = (((yEnd - yNow) % loop) + loop) % loop + loop;
       const speed = (loop / TURN_MS) * (slow ? 0.35 : 1);
@@ -870,13 +782,14 @@ function Reels({
         anims.current[i] = null;
         setStopped(i + 1);
         if (i === 2) {
-          clearInterval(ticker.current);
+          play("spinStop");
           setTease(false);
           onLanded();
         }
       };
     };
     const teasing = teaseRef.current;
+    play("spinRundown");
     timers.push(
       window.setTimeout(() => {
         setStopped(0);
@@ -888,6 +801,7 @@ function Reels({
       timers.push(
         window.setTimeout(() => {
           setTease(true);
+          play("spinTease");
           const a = anims.current[2];
           if (a?.updatePlaybackRate) a.updatePlaybackRate(0.35);
           else if (a) a.playbackRate = 0.35;
@@ -897,39 +811,105 @@ function Reels({
     } else {
       timers.push(window.setTimeout(() => stopReel(2, false), 760));
     }
-    return () => timers.forEach(clearTimeout);
+    return () => {
+      timers.forEach(clearTimeout);
+      play("spinStop");
+    };
     // Runs once per landing.
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [spinning, landedKey]);
 
-  useEffect(() => () => clearInterval(ticker.current), []);
+  useEffect(() => () => play("spinStop"), [play]);
 
   const o = landed?.o;
   const hit = (i: number) =>
     !!o && !spinning && stopped === 3 && (o.result === "win" || o.result === "big" ? true : o.result === "near" || o.result === "agi" ? i < 2 : false);
 
+  /** A reel has come to rest; the cell it rests on is the one on the payline. */
+  const restsOn = (i: number) => (!spinning && stopped > i ? STRIPS[i].length + STRIPS[i].indexOf(target[i]) : -1);
+
   return (
-    <div ref={box} className="lk-reels" data-spin={spinning || stopped < 3 || undefined}>
+    <div ref={box} className="lk-reels" data-spin={spinning || stopped < 3 || undefined} data-done={(!spinning && stopped === 3) || undefined}>
       {STRIPS.map((strip, i) => (
-        <div key={i} className="lk-reel" data-tease={(i === 2 && tease) || undefined} data-hit={hit(i) || undefined}>
+        <Fragment key={i}>
+          {/* A strip of chasing LEDs between the reels. */}
+          {i > 0 && <i className="lk-sep" aria-hidden />}
           <div
-            ref={(el) => {
-              strips.current[i] = el;
-            }}
-            className="lk-strip"
+            className="lk-reel"
+            data-tease={(i === 2 && tease) || undefined}
+            data-hit={hit(i) || undefined}
+            data-landed={restsOn(i) >= 0 || undefined}
           >
-            {Array.from({ length: strip.length * 5 }, (_, j) => (
-              <div key={j} className="lk-cell">
-                <SymbolArt sym={strip[j % strip.length]} />
-              </div>
-            ))}
+            <div
+              ref={(el) => {
+                strips.current[i] = el;
+              }}
+              className="lk-strip"
+            >
+              {Array.from({ length: strip.length * 5 }, (_, j) => (
+                <div key={j} className="lk-cell" data-mid={j === restsOn(i) || undefined}>
+                  <SymbolArt sym={strip[j % strip.length]} />
+                  {/* Glints round the symbol that landed on the line. */}
+                  {j === restsOn(i) && (
+                    <span className="lk-glints" aria-hidden>
+                      <i />
+                      <i />
+                      <i />
+                    </span>
+                  )}
+                </div>
+              ))}
+            </div>
           </div>
-        </div>
+        </Fragment>
       ))}
       <span className="lk-payline" aria-hidden>
         <i />
         <i />
       </span>
+    </div>
+  );
+}
+
+/** Left of the reels: the progressive jackpots, as every cabinet has, lit in turn while the reels spin. */
+const LADDER = [
+  { id: "grand", name: "GRAND", n: "1,000,000" },
+  { id: "major", name: "MAJOR", n: "100,000" },
+  { id: "minor", name: "MINOR", n: "10,000" },
+  { id: "mini", name: "MINI", n: "1,000" },
+] as const;
+
+function JackpotLadder() {
+  return (
+    <div className="lk-side lk-side-l" aria-hidden>
+      <span className="lk-side-glow" />
+      <div className="lk-ladder">
+        {LADDER.map((t, i) => (
+          <div key={t.id} className="lk-tier" data-t={t.id} style={{ "--i": i } as React.CSSProperties}>
+            <b>{t.name}</b>
+            <span>{t.n}</span>
+          </div>
+        ))}
+      </div>
+    </div>
+  );
+}
+
+/** Right of the reels: a pink neon HOT over a big 777, tokens flipping either side. */
+function HotSign() {
+  return (
+    <div className="lk-side lk-side-r" aria-hidden>
+      <span className="lk-side-glow" />
+      <div className="lk-hot">
+        <span className="lk-hot-hot">
+          H<span>O</span>T
+        </span>
+        <span className="lk-hot-7">
+          <Token size={40} />
+          <b>777</b>
+          <Token size={40} />
+        </span>
+      </div>
     </div>
   );
 }
@@ -969,96 +949,6 @@ function Shower({ big, seed }: { big: boolean; seed: number }) {
         </span>
       ))}
     </div>
-  );
-}
-
-/* ───────── The lever ───────── */
-
-/**
- * The one arm of the one-armed bandit. Drag the knob down past halfway and
- * let go, or just click it: it ratchets down, fires, and springs back.
- */
-function Lever({ onPull, ready, disabled }: { onPull: () => void; ready: boolean; disabled: boolean }) {
-  const el = useRef<HTMLButtonElement>(null);
-  const drag = useRef<{ id: number; y: number; p: number; moved: boolean } | null>(null);
-  const frame = useRef(0);
-  const fire = useRef(onPull);
-  useEffect(() => {
-    fire.current = onPull;
-  });
-
-  const set = (p: number) => el.current?.style.setProperty("--p", p.toFixed(3));
-  const tween = (from: number, to: number, ms: number, ease: (t: number) => number, done?: () => void) => {
-    cancelAnimationFrame(frame.current);
-    const t0 = performance.now();
-    const step = () => {
-      const t = Math.min(1, (performance.now() - t0) / ms);
-      set(from + (to - from) * ease(t));
-      if (t < 1) frame.current = requestAnimationFrame(step);
-      else done?.();
-    };
-    frame.current = requestAnimationFrame(step);
-  };
-  /** Back up with a little bounce past the top, like a sprung arm. */
-  const springBack = (from: number) =>
-    tween(from, 0, 640, (t) => (t >= 1 ? 1 : 1 - Math.exp(-6 * t) * Math.cos(t * Math.PI * 3)));
-  const pullDown = (from: number) =>
-    tween(from, 1, 170 * (1 - from) + 60, (t) => t * t, () => {
-      fire.current();
-      springBack(1);
-    });
-
-  useEffect(() => () => cancelAnimationFrame(frame.current), []);
-
-  return (
-    <button
-      ref={el}
-      type="button"
-      className="lk-lever"
-      data-ready={ready || undefined}
-      aria-label="Pull the lever"
-      title={disabled ? "Spinning…" : "Pull the lever"}
-      disabled={disabled}
-      onPointerDown={(e) => {
-        if (e.button !== 0 || disabled) return;
-        e.currentTarget.setPointerCapture(e.pointerId);
-        cancelAnimationFrame(frame.current);
-        drag.current = { id: e.pointerId, y: e.clientY, p: 0, moved: false };
-      }}
-      onPointerMove={(e) => {
-        const d = drag.current;
-        if (!d || d.id !== e.pointerId) return;
-        const p = Math.min(1, Math.max(0, (e.clientY - d.y) / 170));
-        if (Math.abs(e.clientY - d.y) > 4) d.moved = true;
-        d.p = p;
-        set(p);
-      }}
-      onPointerUp={(e) => {
-        const d = drag.current;
-        if (!d || d.id !== e.pointerId) return;
-        drag.current = null;
-        if (!d.moved || d.p > 0.5) pullDown(d.p);
-        else springBack(d.p);
-      }}
-      onPointerCancel={() => {
-        const d = drag.current;
-        drag.current = null;
-        if (d) springBack(d.p);
-      }}
-      onClick={(e) => {
-        // Keyboard presses arrive as clicks with no pointer.
-        if (e.detail === 0 && !disabled) pullDown(0);
-      }}
-    >
-      <span className="lk-lever-plate" />
-      <span className="lk-lever-rod lk-lever-up" />
-      <span className="lk-lever-rod lk-lever-down" />
-      <span className="lk-lever-hub" />
-      <span className="lk-lever-knob" />
-      <span className="lk-lever-hint" aria-hidden>
-        PULL
-      </span>
-    </button>
   );
 }
 
@@ -1119,6 +1009,76 @@ function Jackpot({ base }: { base: number }) {
     return () => clearInterval(t);
   }, []);
   return <>{(base + extra).toLocaleString()}</>;
+}
+
+/** How far in from the marquee's edge the bulbs sit (on the gold rim), and roughly how far apart. */
+const BULB_INSET = 4;
+const BULB_GAP = 17;
+
+/**
+ * The marquee's bulbs: one string all the way round its edge, corners
+ * included, dim bulbs with every third one lit and chasing clockwise. Each
+ * bulb is a round-capped zero-length dash along a rounded rectangle the size
+ * of the marquee.
+ */
+function MarqueeBulbs() {
+  const ref = useRef<SVGSVGElement>(null);
+  const [box, setBox] = useState<{ w: number; h: number; rt: number; rb: number } | null>(null);
+  useLayoutEffect(() => {
+    const svg = ref.current;
+    const host = svg?.parentElement;
+    if (!svg || !host) return;
+    const ro = new ResizeObserver(([e]) => {
+      const cs = getComputedStyle(host);
+      setBox({
+        w: e.contentRect.width,
+        h: e.contentRect.height,
+        rt: parseFloat(cs.borderTopLeftRadius) || 0,
+        rb: parseFloat(cs.borderBottomLeftRadius) || 0,
+      });
+    });
+    ro.observe(svg);
+    return () => ro.disconnect();
+  }, []);
+
+  const ring = box && box.w > 4 * BULB_INSET && box.h > 4 * BULB_INSET ? bulbRing(box) : null;
+  return (
+    <svg ref={ref} className="lk-bulbs" aria-hidden style={ring ? ({ "--lk-run": `${-3 * ring.gap}px` } as React.CSSProperties) : undefined}>
+      {ring && box && (
+        <>
+          <filter id="lk-bulb-glow" filterUnits="userSpaceOnUse" x={-12} y={-12} width={box.w + 24} height={box.h + 24}>
+            <feGaussianBlur stdDeviation="2.4" />
+          </filter>
+          <g className="lk-bulbs-dim" strokeDasharray={`0 ${ring.gap}`}>
+            <path d={ring.d} stroke="rgba(80, 40, 0, 0.6)" strokeWidth={7} />
+            <path d={ring.d} stroke="#a8741c" strokeWidth={4.8} />
+            <path d={ring.d} stroke="#ffe9b0" strokeWidth={3.2} />
+          </g>
+          <g className="lk-bulbs-lit" strokeDasharray={`0 ${3 * ring.gap}`}>
+            <path d={ring.d} stroke="rgba(255, 197, 51, 0.8)" strokeWidth={12} filter="url(#lk-bulb-glow)" />
+            <path d={ring.d} stroke="#ffe27a" strokeWidth={6} />
+            <path d={ring.d} stroke="#fff" strokeWidth={3.6} />
+          </g>
+        </>
+      )}
+    </svg>
+  );
+}
+
+/** The bulbs' path, clockwise from the top-left corner, and the spacing that fits a whole number of them. */
+function bulbRing({ w, h, rt, rb }: { w: number; h: number; rt: number; rb: number }) {
+  const i = BULB_INSET;
+  const a = Math.max(0, rt - i);
+  const b = Math.max(0, rb - i);
+  const r = w - i;
+  const z = h - i;
+  const d =
+    `M${i + a} ${i}H${r - a}A${a} ${a} 0 0 1 ${r} ${i + a}V${z - b}A${b} ${b} 0 0 1 ${r - b} ${z}` +
+    `H${i + b}A${b} ${b} 0 0 1 ${i} ${z - b}V${i + a}A${a} ${a} 0 0 1 ${i + a} ${i}Z`;
+  const len = 2 * (w + h - 4 * i) - (4 - Math.PI) * (a + b);
+  // A multiple of three bulbs, so the lit ones chase round without a seam.
+  const n = Math.max(3, Math.round(len / BULB_GAP / 3) * 3);
+  return { d, gap: len / n };
 }
 
 function InsertPop({ broke, onInsert }: { broke: boolean; onInsert: (n: number) => void }) {

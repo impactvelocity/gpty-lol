@@ -4,6 +4,8 @@ import { CavemanActiveRow } from "./caveman/SidebarRow";
 import { ElfActiveRow } from "./elf/SidebarRow";
 import type { Mood } from "./Gpty";
 import { FacebookActiveRow } from "./facebook/SidebarRow";
+import { FuryActiveRow } from "./fury/SidebarRow";
+import { HighLimitActiveRow } from "./highlimit/SidebarRow";
 import { IcqActiveRow } from "./icq/SidebarRow";
 import { IrcActiveRow } from "./irc/SidebarRow";
 import { MachineActiveRow } from "./machine/SidebarRow";
@@ -29,13 +31,17 @@ export interface ActiveRowProps {
  * selected buddy in the contact list, Skype's a selected contact, Facebook's
  * an online friend, reddit's a link on the front page, Slack's the active DM,
  * mIRC's a little Windows 2000 window, Grug's a slab of cave rock, Carol's a
- * gift tag on twine, Shelly's a scrap of mainframe cabinet, Lucky's a little
- * slot machine with its own reels. Agents without one get the plain glass pill.
+ * gift tag on twine, Shelly's a scrap of mainframe cabinet (or, in Firewall
+ * Fury, a scrap of VHS cover), Lucky's a little slot machine with its own
+ * reels (or, in High Limit, a green chip with three tiny ivory reels).
+ * Agents without one get the plain glass pill.
  */
 export const ACTIVE_ROWS: Partial<Record<string, (p: ActiveRowProps) => React.ReactNode>> = {
   bbs: BbsActiveRow,
   caveman: CavemanActiveRow,
   elf: ElfActiveRow,
+  fury: FuryActiveRow,
+  highlimit: HighLimitActiveRow,
   icq: IcqActiveRow,
   irc: IrcActiveRow,
   machine: MachineActiveRow,

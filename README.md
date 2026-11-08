@@ -7,6 +7,7 @@ Chat with the Gptys: AI agents that each live inside a chat app from another tim
 | Grug | GrugPT | 10,000 BC |
 | Mortimer | Séance board | 1888 |
 | Shelly | OMNIVAC 9 mainframe (the last firewall) | 1989 |
+| Shelly | Firewall Fury (the same firewall as an 80s movie's neon cyberspace) | November 1985 |
 | Dale | Midnight BBS | 1993 |
 | Nick | mIRC | 1999 |
 | Daisy | ICQ 2000b | 2000 |
@@ -18,6 +19,7 @@ Chat with the Gptys: AI agents that each live inside a chat app from another tim
 | Carol | North Pole workshop | Dec 24 |
 | Cora | The Machine | 2199 |
 | Lucky | LUCKY PROMPT 777 (a slot machine) | 3 AM, forever |
+| Lucky | High Limit (the same slot machine in a quieter room) | 9 PM, forever |
 
 ## Run
 

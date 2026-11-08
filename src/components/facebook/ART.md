@@ -2,7 +2,7 @@
 
 All slots are filled: the generated pictures live in `public/facebook/` as
 WebP and are listed in `FILES` at the top of `src/components/facebook/art.tsx`.
-Every slot also has a drawn SVG fallback, used when its line is removed. The
+Every slot also has a drawn fallback, used when its line is removed. The
 wallpaper is used by the Facebook scene in `src/components/Scenes.tsx`.
 
 The look: Facebook in the summer of 2008. Facebook blue (#3b5998), pale blue
@@ -80,6 +80,78 @@ square at 28 to 50px.
 > glow, standing on a seamless pale blue-grey studio background (#d8dfea)
 > with a soft shadow beneath. Clean, quiet, slightly uncanny, modern product
 > photography. Square, centered. No text, no logos.
+
+---
+
+## Friends' profile pictures
+
+Four pictures, 1024×1024 each, quality high. Shown square at 50px in the
+feed and in People You May Know, 32px in the "are now friends" pair and 28px
+in notifications and Online Friends, so keep the face large and centered.
+They're looked up by agent id in `FRIENDS` in `art.tsx`. Daisy has no picture
+and is drawn, as is any friend whose line is removed from `FILES`.
+
+**`dp-kayleigh.webp`**: Kayleigh, the pink drop. She writes on Mark's Wall
+that MySpace is over.
+
+> A 2008 profile picture, re-imagined as a hyperreal 3D render: a cute,
+> smooth, bubblegum-pink (#f0559b) water-drop-shaped character with a soft
+> rounded point on top, two big glossy white oval eyes with small dark
+> pupils, no mouth and no limbs, and a tiny glittery pink butterfly clip near
+> its point. It's striking the high "MySpace angle": shot from above, head
+> tilted, eyes looking up into the lens, a digital camera's direct flash
+> blasting it: hard specular highlights, a slightly blown-out face, the
+> background falling off fast into the dark. Behind it, a blurry teenage
+> bedroom at night: a wall collage of photo-booth strips, fairy lights in
+> pink and blue bokeh, a stack of CDs. Bubbly, a little sassy, a little
+> overexposed, unmistakably 2008. Square composition, character centered and
+> filling about 70% of the frame. No text, no logos.
+
+**`dp-cal.webp`**: Cal, the sky-blue cloud, idle at 4am in Auckland.
+
+> A 2008 profile picture, re-imagined as a hyperreal 3D render: a cute, soft,
+> puffy sky-blue (#16aeef) cloud-shaped character with a flattish bottom, two
+> big glossy white oval eyes with small dark pupils, no mouth and no limbs,
+> wearing a chunky silver-and-black USB headset with a boom mic, slightly too
+> big for it. It's 4am and it's still up: caught at its desk by a
+> point-and-shoot's direct flash, hard specular highlights on its puffy top,
+> the cool glow of a flat monitor from below, a half-finished mug of tea
+> beside it. Behind it, a dark window with the out-of-focus lights of a
+> harbour city at night and a tall, lit needle-shaped tower. Sleepy,
+> friendly, a little overexposed, unmistakably 2008. Square composition,
+> character centered and filling about 70% of the frame. No text, no logos.
+
+**`dp-dale.webp`**: Dale, the teal squircle who runs a BBS from his
+basement and has just joined Facebook.
+
+> A 2008 profile picture, re-imagined as a hyperreal 3D render, taken by
+> someone who has clearly never taken one before: a cute, smooth, teal
+> (#14b3a0) squircle-shaped character (a soft, rounded square) with two big
+> glossy white oval eyes with small dark pupils, wide and a little startled
+> by the flash, no mouth and no limbs. Framed a touch crooked, the on-camera
+> flash blasting it in a dark basement: hard specular highlights, a
+> blown-out face, the room falling off fast into shadow. Behind it, blurry
+> wood-panelled walls, a beige tower PC, a chunky external modem with its
+> little red lights glowing, a coiled phone cord. Earnest, awkward,
+> endearing, unmistakably someone's first Facebook photo. Square
+> composition, character centered and filling about 70% of the frame. No
+> text, no logos.
+
+**`dp-nick.webp`**: Nick, the cobalt diamond, off to The Dark Knight's
+midnight showing.
+
+> A 2008 profile picture, re-imagined as a hyperreal 3D render: a cute,
+> smooth, cobalt-blue (#3f5fdb) diamond-shaped character (a rounded square
+> standing on one corner) with two big glossy white oval eyes with small dark
+> pupils, looking just past the camera with a relaxed, knowing look, no mouth
+> and no limbs, a small pair of foam-padded headphones resting around its top
+> corner. A friend's point-and-shoot flash catches it in a cinema lobby at
+> midnight before a big opening-night showing: hard specular highlights, a
+> slightly blown-out face. Behind it, a blurry, empty lobby: the warm glow of
+> a popcorn machine, a red velvet rope, backlit poster frames melted into
+> bokeh, a striped popcorn bucket in the foreground. Cool, a little smug, a
+> little overexposed, unmistakably summer 2008. Square composition, character
+> centered and filling about 70% of the frame. No text, no logos, no people.
 
 ---
 

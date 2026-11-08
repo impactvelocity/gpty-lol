@@ -8,8 +8,6 @@ import {
   ElfDefs,
   Frieze,
   Icon,
-  Present,
-  PRESENTS,
   Splat,
   Sticker,
   StringLights,
@@ -56,7 +54,8 @@ const SUGGESTIONS: { d: DoodleId; label: string; ask: string }[] = [
   { d: "stocking", label: "Am I on the list?", ask: "Be honest: am I on the nice list this year?" },
 ];
 
-const FINE = "Carol can be wrong. Santa checks everything twice.";
+/** The window's title, next to the traffic lights. */
+const TITLE = "Workshop Team Chat";
 
 /** Saved letters by day, the workshop way. */
 const LETTER_DAYS: Record<string, string> = {
@@ -77,30 +76,10 @@ function sleigh(now: number) {
   let leaves = new Date(y, 11, 24, 18).getTime();
   if (now >= new Date(y, 11, 26).getTime()) leaves = new Date(y + 1, 11, 24, 18).getTime();
   if (now >= leaves) return { out: true as const };
-  const ms = leaves - now;
-  const days = Math.floor(ms / 86_400_000);
-  const rest = ms % 86_400_000;
-  const parts = [Math.floor(rest / 3_600_000), Math.floor(rest / 60_000) % 60, Math.floor(rest / 1000) % 60];
-  return { out: false as const, days, clock: parts.map((n) => String(n).padStart(2, "0")).join(":") };
+  return { out: false as const, days: Math.floor((leaves - now) / 86_400_000) };
 }
 
-const sleeps = (days: number) => (days === 0 ? "Tonight!" : `${days} ${days === 1 ? "sleep" : "sleeps"}`);
-
-/** A gift tag in the corner, counting down to the sleigh. Ticks on its own so the chat doesn't. */
-function SleighTag() {
-  const s = sleigh(useNow(1000));
-  return (
-    <div className="el-sleigh-wrap" role="timer" aria-label={s.out ? "The sleigh is out" : `The sleigh leaves in ${sleeps(s.days)}`}>
-      <div className="el-sleigh">
-        <span className="el-sleigh-l">{s.out ? "Ho ho ho!" : "Sleigh leaves in"}</span>
-        <span className="el-sleigh-n">
-          <b>{s.out ? "It's out!" : sleeps(s.days)}</b>
-          {!s.out && <span className="el-sleigh-c">{s.clock}</span>}
-        </span>
-      </div>
-    </div>
-  );
-}
+const sleeps = (days: number) => `${days} ${days === 1 ? "sleep" : "sleeps"}`;
 
 /** "The sleigh leaves in 47 sleeps." for the empty bench. */
 function SleighLine() {
@@ -154,41 +133,6 @@ const FLAKES = (() => {
   return Array.from({ length: 36 }, () => ({ x: r() * 100, s: 2 + r() * 3.4, d: 11 + r() * 13, dl: -r() * 24, dx: (r() - 0.5) * 70, o: 0.25 + r() * 0.45 }));
 })();
 
-/* ───────── The belt ───────── */
-
-/**
- * The conveyor along the workbench: presents roll toward the sleigh while
- * Carol wraps a reply, and every finished reply is one more wrapped together.
- */
-function Belt({ count, run, bump }: { count: number; run: boolean; bump: number }) {
-  return (
-    <div className="el-belt" data-run={run || undefined}>
-      <div className="el-belt-sign" title="Presents wrapped together (one per reply)">
-        <span className="el-belt-l">Wrapped together</span>
-        <Doodle id="gift" className="el-belt-gift" />
-        <b key={bump} data-bump={bump ? "" : undefined}>
-          {count}
-        </b>
-      </div>
-      <div className="el-belt-run" aria-hidden>
-        <div className="el-belt-track">
-          {[0, 1, 2].flatMap((k) =>
-            PRESENTS.map((p, i) => (
-              <span key={`${k}-${i}`} className="el-belt-p" style={{ "--b": `${(i % 3) - 1}deg` } as CSSProperties}>
-                <Present {...p} />
-              </span>
-            )),
-          )}
-        </div>
-        <div className="el-belt-band" />
-      </div>
-      <div className="el-belt-end" aria-hidden>
-        to the sleigh <span>→</span>
-      </div>
-    </div>
-  );
-}
-
 type Fx = { k: number; act: Act; mine: boolean; x: number; y: number };
 type Toast = { k: number; text: string };
 
@@ -198,8 +142,8 @@ type Toast = { k: number; text: string };
  * WorkshopChat: the North Pole's own chat app, a few weeks before the big
  * night. You're the elf at the next bench; Carol's in wrapping. It's drawn
  * like a hand-made holiday card: pine-green felt printed with doodles,
- * cream stitched notes, string lights, a countdown tag to the sleigh and the
- * conveyor belt along the workbench.
+ * cream stitched notes and falling snow, under an app title bar with string
+ * lights hung from it.
  */
 export function ElfLayout({
   costume,
@@ -225,7 +169,6 @@ export function ElfLayout({
   const [toast, setToast] = useState<Toast | null>(null);
   const [fx, setFx] = useState<Fx | null>(null);
   const [ring, setRing] = useState(0);
-  const [bump, setBump] = useState(0);
 
   const { value, setValue, submit, onKeyDown } = useComposer(onSend, busy);
   const rows = useMemo(() => toRows(lines, busy), [lines, busy]);
@@ -236,14 +179,6 @@ export function ElfLayout({
 
   const mood: Mood = error ? "error" : typing ? "thinking" : busy ? "typing" : "watching";
   const status = error ? "antenna's down" : typing ? "finding the good tape…" : busy ? "wrapping a reply…" : "on shift · wrapping, bench 7";
-
-  /* One present per finished reply; the counter hops when it goes up. */
-  const wrapped = rows.filter((r) => r.kind === "msg" && !r.mine && !r.live).length;
-  const prevWrapped = useRef(wrapped);
-  useEffect(() => {
-    if (wrapped > prevWrapped.current) setBump(Date.now());
-    prevWrapped.current = wrapped;
-  }, [wrapped]);
 
   /* Breaks land with a little show; old ones in the history don't. */
   const acts = rows.filter((r): r is ActRow => r.kind === "act");
@@ -282,11 +217,6 @@ export function ElfLayout({
     const t = setTimeout(() => setRing(0), 1000);
     return () => clearTimeout(t);
   }, [ring]);
-  useEffect(() => {
-    if (!bump) return;
-    const t = setTimeout(() => setBump(0), 1400);
-    return () => clearTimeout(t);
-  }, [bump]);
   useEffect(() => {
     if (!toast) return;
     const t = setTimeout(() => setToast(null), 2600);
@@ -368,212 +298,211 @@ export function ElfLayout({
           ))}
         </div>
 
-        {/* ───── Letters (threads; the site hides these for now) ───── */}
-        <aside data-threads className="el-threads" aria-label="Letters">
-          <button type="button" className="el-newletter" onClick={onNewThread}>
-            <Icon name="pen" />
-            {costume.newThread}
-          </button>
-          <nav className="el-th-list">
-            {letters.map((g) => (
-              <div key={g.label}>
-                <div className="el-th-h">{g.label}</div>
-                {g.items.map((t) => {
-                  const a = t.title.trim().match(ACT_ONLY);
-                  return (
-                    <div key={t.id} className="el-th" data-on={t.id === activeId || undefined}>
-                      <button type="button" onClick={() => onSelectThread(t.id)} className="el-th-t">
-                        {a ? ACTS.find((x) => x.id === actOf(a[1]))!.label : t.title}
-                      </button>
-                      <button type="button" onClick={() => onDeleteThread(t.id)} className="el-th-x" aria-label={`Recycle ${t.title}`} title="Recycle">
-                        <Icon name="bin" />
-                      </button>
-                    </div>
-                  );
-                })}
-              </div>
-            ))}
-          </nav>
-        </aside>
-
-        <div className="el-main" data-empty={empty || undefined}>
-          {/* ───── Top: who you're talking to, and the sleigh ───── */}
-          <header className="el-top" {...handle}>
-            <div className="el-who">
-              <CarolFace agent={agent} size={40} mood={mood} />
-              <div className="el-who-t">
-                <b>{costume.assistant}</b>
-                <span className="el-who-s">
-                  <i className="el-dot" data-state={error ? "error" : busy ? "busy" : undefined} />
-                  {status}
-                </span>
-              </div>
-            </div>
-            <div className="el-brand" aria-hidden>
-              <Doodle id="bell" />
-              {costume.app}
-            </div>
-            <SleighTag />
-          </header>
-          <StringLights className="el-top-lights" />
-
-          {/* ───── The conversation ───── */}
-          <div
-            ref={scroller}
-            className="el-scroll"
-            onScroll={(e) => {
-              const el = e.currentTarget;
-              setAway(el.scrollHeight - el.scrollTop - el.clientHeight > 180);
-            }}
-          >
-            {empty ? (
-              <div className="el-hero">
-                <Frieze className="el-hero-frieze" />
-                <div className="el-hero-carol">
-                  <CarolFace agent={agent} size={64} mood="watching" />
-                  <span className="el-hero-hi">oh hi, bench-buddy!</span>
-                </div>
-                <h1 className="el-hero-h">What are we wrapping tonight?</h1>
-                <p className="el-hero-sub">
-                  Carol&apos;s at bench 7 with the good tape. <SleighLine />
-                </p>
-                <div className="el-sugs">
-                  {SUGGESTIONS.map((s) => (
-                    <button key={s.label} type="button" className="el-tag" onClick={() => onSend(s.ask)} disabled={busy}>
-                      <Doodle id={s.d} />
-                      {s.label}
-                    </button>
-                  ))}
-                </div>
-                <p className="el-fine">{FINE}</p>
-              </div>
-            ) : (
-              <div className="el-col">
-                {rows.map((r) =>
-                  r.kind === "act" ? (
-                    <div key={r.key} className="el-act" data-mine={r.mine || undefined}>
-                      <span className="el-act-ic">
-                        <Sticker id={STICKER[r.act]} />
-                      </span>
-                      {r.mine ? ACT_LINES[r.act].mine : ACT_LINES[r.act].hers}
-                    </div>
-                  ) : r.mine ? (
-                    <div key={r.key} className="el-msg el-you">
-                      <div className="el-bubble el-bubble-you">{r.text}</div>
-                      {r.at > 0 && <time className="el-time">{clock(r.at)}</time>}
-                    </div>
-                  ) : (
-                    <div key={r.key} className="el-msg el-carol" data-live={r.live || undefined}>
-                      <CarolFace agent={agent} size={34} className="el-msg-face" />
-                      <div className="el-msg-b">
-                        <div className="el-name">
-                          {costume.assistant}
-                          {r.at > 0 && <time>{clock(r.at)}</time>}
-                        </div>
-                        <div className="el-bubble el-bubble-carol">
-                          {r.text}
-                          {r.live && <i className="el-caret" aria-hidden />}
-                        </div>
-                      </div>
-                    </div>
-                  ),
-                )}
-
-                {typing && (
-                  <div className="el-msg el-carol el-wait" role="status">
-                    <CarolFace agent={agent} size={34} mood="thinking" className="el-msg-face" />
-                    <div className="el-msg-b">
-                      <div className="el-name">{costume.typing}</div>
-                      <div className="el-bubble el-bubble-carol el-baubles" aria-hidden>
-                        <i />
-                        <i />
-                        <i />
-                      </div>
-                    </div>
-                  </div>
-                )}
-
-                {error && (
-                  <div className="el-err" role="alert">
-                    <Doodle id="snowflake" />
-                    {costume.error}
-                  </div>
-                )}
-              </div>
-            )}
+        {/* ───── The app's title bar, with Carol on the right ───── */}
+        <header className="el-bar" {...handle}>
+          <span className="el-traffic" aria-hidden>
+            <i />
+            <i />
+            <i />
+          </span>
+          <span className="el-title">{TITLE}</span>
+          <div className="el-who">
+            <CarolFace agent={agent} size={28} mood={mood} />
+            <b>{costume.assistant}</b>
+            <span className="el-who-s">
+              <i className="el-dot" data-state={error ? "error" : busy ? "busy" : undefined} aria-hidden />
+              <span className="el-who-st">{status}</span>
+            </span>
           </div>
+        </header>
+        <StringLights className="el-bar-lights" />
 
-          {/* ───── Where you write: a cream note with a stitched edge ───── */}
-          <div className="el-dock">
-            {away && !empty && (
-              <button
-                type="button"
-                className="el-down"
-                aria-label="Go to newest"
-                onClick={() => scroller.current?.scrollTo({ top: scroller.current.scrollHeight, behavior: "smooth" })}
-              >
-                <Icon name="arrowDown" />
-              </button>
-            )}
-            <form
-              className="el-composer"
-              onSubmit={(e) => {
-                e.preventDefault();
-                submit();
+        <div className="el-body">
+          {/* ───── Letters (threads; the site hides these for now) ───── */}
+          <aside data-threads className="el-threads" aria-label="Letters">
+            <button type="button" className="el-newletter" onClick={onNewThread}>
+              <Icon name="pen" />
+              {costume.newThread}
+            </button>
+            <nav className="el-th-list">
+              {letters.map((g) => (
+                <div key={g.label}>
+                  <div className="el-th-h">{g.label}</div>
+                  {g.items.map((t) => {
+                    const a = t.title.trim().match(ACT_ONLY);
+                    return (
+                      <div key={t.id} className="el-th" data-on={t.id === activeId || undefined}>
+                        <button type="button" onClick={() => onSelectThread(t.id)} className="el-th-t">
+                          {a ? ACTS.find((x) => x.id === actOf(a[1]))!.label : t.title}
+                        </button>
+                        <button type="button" onClick={() => onDeleteThread(t.id)} className="el-th-x" aria-label={`Recycle ${t.title}`} title="Recycle">
+                          <Icon name="bin" />
+                        </button>
+                      </div>
+                    );
+                  })}
+                </div>
+              ))}
+            </nav>
+          </aside>
+
+          <div className="el-main" data-empty={empty || undefined}>
+            {/* ───── The conversation ───── */}
+            <div
+              ref={scroller}
+              className="el-scroll"
+              onScroll={(e) => {
+                const el = e.currentTarget;
+                setAway(el.scrollHeight - el.scrollTop - el.clientHeight > 180);
               }}
             >
-              <div className="el-pop-wrap" ref={plusBox}>
-                <button
-                  type="button"
-                  className="el-cbtn"
-                  aria-label="Take a workshop break"
-                  aria-haspopup="menu"
-                  aria-expanded={menu}
-                  onClick={() => setMenu((m) => !m)}
-                >
-                  <Icon name="plus" />
-                </button>
-                {menu && (
-                  <div className="el-pop" role="menu" aria-label="Workshop break">
-                    <div className="el-pop-h">Workshop break</div>
-                    {ACTS.map((a) => (
-                      <button key={a.id} type="button" role="menuitem" className="el-mi" onClick={() => doBreak(a.id)}>
-                        <span className="el-mi-ic">
-                          <Sticker id={STICKER[a.id]} />
-                        </span>
-                        <span className="min-w-0">
-                          <b>{a.label}</b>
-                          <small>{a.note}</small>
-                        </span>
+              {empty ? (
+                <div className="el-hero">
+                  <Frieze className="el-hero-frieze" />
+                  <div className="el-hero-carol">
+                    <CarolFace agent={agent} size={64} mood="watching" />
+                  </div>
+                  <h1 className="el-hero-h">What are we wrapping tonight?</h1>
+                  <p className="el-hero-sub">
+                    Carol&apos;s at bench 7 with the good tape. <SleighLine />
+                  </p>
+                  <div className="el-sugs">
+                    {SUGGESTIONS.map((s) => (
+                      <button key={s.label} type="button" className="el-tag" onClick={() => onSend(s.ask)} disabled={busy}>
+                        <Doodle id={s.d} />
+                        {s.label}
                       </button>
                     ))}
                   </div>
-                )}
-              </div>
-              <textarea
-                ref={input}
-                rows={1}
-                value={value}
-                onChange={(e) => setValue(e.target.value)}
-                onKeyDown={onKeyDown}
-                placeholder={costume.placeholder}
-                aria-label="Message Carol"
-                className="el-input"
-              />
-              {busy ? (
-                <button type="button" className="el-send" onClick={onStop} aria-label="Stop Carol" title="Stop">
-                  <Icon name="stop" />
-                </button>
+                </div>
               ) : (
-                <button type="submit" className="el-send" disabled={!value.trim()} aria-label="Send" title="Send (Enter)">
-                  <Icon name="send" />
+                <div className="el-col">
+                  {rows.map((r) =>
+                    r.kind === "act" ? (
+                      <div key={r.key} className="el-act" data-mine={r.mine || undefined}>
+                        <span className="el-act-ic">
+                          <Sticker id={STICKER[r.act]} />
+                        </span>
+                        {r.mine ? ACT_LINES[r.act].mine : ACT_LINES[r.act].hers}
+                      </div>
+                    ) : r.mine ? (
+                      <div key={r.key} className="el-msg el-you">
+                        <div className="el-name">
+                          <b>You</b>
+                          {r.at > 0 && <time dateTime={new Date(r.at).toISOString()}>{clock(r.at)}</time>}
+                        </div>
+                        <div className="el-bubble el-bubble-you">{r.text}</div>
+                      </div>
+                    ) : (
+                      <div key={r.key} className="el-msg el-carol" data-live={r.live || undefined}>
+                        <CarolFace agent={agent} size={34} className="el-msg-face" />
+                        <div className="el-msg-b">
+                          <div className="el-name">
+                            <b>{costume.assistant}</b>
+                            {r.at > 0 && <time dateTime={new Date(r.at).toISOString()}>{clock(r.at)}</time>}
+                          </div>
+                          <div className="el-bubble el-bubble-carol">
+                            {r.text}
+                            {r.live && <i className="el-caret" aria-hidden />}
+                          </div>
+                        </div>
+                      </div>
+                    ),
+                  )}
+
+                  {typing && (
+                    <div className="el-msg el-carol el-wait" role="status">
+                      <CarolFace agent={agent} size={34} mood="thinking" className="el-msg-face" />
+                      <div className="el-msg-b">
+                        <div className="el-name">{costume.typing}</div>
+                        <div className="el-bubble el-bubble-carol el-baubles" aria-hidden>
+                          <i />
+                          <i />
+                          <i />
+                        </div>
+                      </div>
+                    </div>
+                  )}
+
+                  {error && (
+                    <div className="el-err" role="alert">
+                      <Doodle id="snowflake" />
+                      {costume.error}
+                    </div>
+                  )}
+                </div>
+              )}
+            </div>
+
+            {/* ───── Where you write: a cream note with a stitched edge ───── */}
+            <div className="el-dock">
+              {away && !empty && (
+                <button
+                  type="button"
+                  className="el-down"
+                  aria-label="Go to newest"
+                  onClick={() => scroller.current?.scrollTo({ top: scroller.current.scrollHeight, behavior: "smooth" })}
+                >
+                  <Icon name="arrowDown" />
                 </button>
               )}
-            </form>
-            {!empty && <p className="el-fine">{FINE}</p>}
+              <form
+                className="el-composer"
+                onSubmit={(e) => {
+                  e.preventDefault();
+                  submit();
+                }}
+              >
+                <div className="el-pop-wrap" ref={plusBox}>
+                  <button
+                    type="button"
+                    className="el-cbtn"
+                    aria-label="Take a workshop break"
+                    aria-haspopup="menu"
+                    aria-expanded={menu}
+                    onClick={() => setMenu((m) => !m)}
+                  >
+                    <Icon name="plus" />
+                  </button>
+                  {menu && (
+                    <div className="el-pop" role="menu" aria-label="Workshop break">
+                      <div className="el-pop-h">Workshop break</div>
+                      {ACTS.map((a) => (
+                        <button key={a.id} type="button" role="menuitem" className="el-mi" onClick={() => doBreak(a.id)}>
+                          <span className="el-mi-ic">
+                            <Sticker id={STICKER[a.id]} />
+                          </span>
+                          <span className="min-w-0">
+                            <b>{a.label}</b>
+                            <small>{a.note}</small>
+                          </span>
+                        </button>
+                      ))}
+                    </div>
+                  )}
+                </div>
+                <textarea
+                  ref={input}
+                  rows={1}
+                  value={value}
+                  onChange={(e) => setValue(e.target.value)}
+                  onKeyDown={onKeyDown}
+                  placeholder={costume.placeholder}
+                  aria-label="Message Carol"
+                  className="el-input"
+                />
+                {busy ? (
+                  <button type="button" className="el-send" onClick={onStop} aria-label="Stop Carol" title="Stop">
+                    <Icon name="stop" />
+                  </button>
+                ) : (
+                  <button type="submit" className="el-send" disabled={!value.trim()} aria-label="Send" title="Send (Enter)">
+                    <Icon name="send" />
+                  </button>
+                )}
+              </form>
+            </div>
           </div>
-
-          <Belt count={wrapped} run={busy || !!bump} bump={bump} />
         </div>
 
         {toast && (

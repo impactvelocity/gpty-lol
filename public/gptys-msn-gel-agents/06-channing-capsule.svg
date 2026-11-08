@@ -1,0 +1,37 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 48 48" role="img" aria-label="Channing">
+  <defs>
+    <linearGradient id="channing-body" x1="0" y1="0" x2="0" y2="1" gradientUnits="objectBoundingBox">
+      <stop offset="0" stop-color="#b38de6"/>
+      <stop offset="0.52" stop-color="#8a4fd8"/>
+      <stop offset="1" stop-color="#6e3fad"/>
+    </linearGradient>
+    <radialGradient id="channing-glow" cx="0.5" cy="0.72" r="0.64" gradientTransform="translate(0 0.36) scale(1 0.5)">
+      <stop offset="0" stop-color="#af87e4" stop-opacity="0.64"/>
+      <stop offset="0.55" stop-color="#af87e4" stop-opacity="0.3"/>
+      <stop offset="1" stop-color="#af87e4" stop-opacity="0"/>
+    </radialGradient>
+    <linearGradient id="channing-gloss" x1="0" y1="14.5" x2="0" y2="19" gradientUnits="userSpaceOnUse">
+      <stop offset="0" stop-color="#ffffff" stop-opacity="0.9"/>
+      <stop offset="1" stop-color="#ffffff" stop-opacity="0.05"/>
+    </linearGradient>
+    <clipPath id="channing-clip"><path d="M15 12H33A12 12 0 0 1 33 36H15A12 12 0 0 1 15 12Z"/></clipPath>
+    <clipPath id="channing-eye-safe">
+      <path d="M0 0H48V48H0ZM15 19H33V29H15Z" fill-rule="evenodd" clip-rule="evenodd"/>
+    </clipPath>
+  </defs>
+  <g data-role="outline">
+    <path d="M15 12H33A12 12 0 0 1 33 36H15A12 12 0 0 1 15 12Z" fill="none" stroke="#341e52" stroke-width="3" stroke-linejoin="round"/>
+  </g>
+  <g data-role="body">
+    <path d="M15 12H33A12 12 0 0 1 33 36H15A12 12 0 0 1 15 12Z" fill="url(#channing-body)"/>
+  </g>
+  <g data-role="glow" clip-path="url(#channing-clip)">
+    <path d="M7 29C10 34.8 38 34.8 41 29C38 32.1 10 32.1 7 29Z" fill="url(#channing-glow)"/>
+  </g>
+  <g data-role="gloss" clip-path="url(#channing-clip)">
+    <g clip-path="url(#channing-eye-safe)">
+      <path d="M6 23C6.6 17.8 10.1 14.5 15 14.5H33C37.9 14.5 41.4 17.8 42 23C33.5 20.3 14.5 20.3 6 23Z" fill="url(#channing-gloss)"/>
+      <ellipse cx="12.3" cy="16.8" rx="2.1" ry="1" fill="#ffffff"/>
+    </g>
+  </g>
+</svg>

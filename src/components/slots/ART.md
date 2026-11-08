@@ -188,6 +188,93 @@ Shared frame:
   > center ringed by tiny gold bulbs, and the letters "AGI" in bold cream
   > capitals with a dark outline across the disc.
 
+## Image payouts: `gen/gen-<nn>-<name>.webp` → `GEN` in `art.tsx`
+
+When someone asks Lucky for a picture, the payout card shows "your image"
+(`GenImage` in `art.tsx`): today a drawn SVG landscape with a blob that has
+eyes and a six-fingered hand. These replace it with a pool of real pictures,
+one picked by the pull's seed. The caption still shows the user's own prompt,
+so the joke is that you never get quite what you asked for: every picture is
+gorgeous, polished, "AI showcase" quality, and has exactly one thing wrong
+with it. The flaw caption under each line is what the card's meta line should
+say (it replaces the random `FLAWS` entry for that picture).
+
+Only the image payout needs pictures. Code, slides, emails, poems, tables and
+text payouts are the model's real answer, laid out in HTML.
+
+1536×1024 (3:2) or 1024×768 (4:3), quality high, opaque. The card crops to
+4:3, so keep the subject and the flaw in the middle two-thirds. Convert with
+`sips -Z 1024 in.png --out s.png && cwebp -q 86 s.png -o gen-01-cat.webp`.
+
+Shared frame:
+
+> A polished, high-end digital illustration in the style of a showcase image
+> from a modern AI image generator: cinematic lighting, rich saturated color,
+> crisp detail, shallow depth of field, a little too perfect. Everything in
+> the picture is completely convincing except for ONE absurd mistake, which
+> is rendered with the same care and confidence as everything else, as if
+> the artist didn't notice. The mistake should be easy to spot at a glance
+> and funny, never gross or scary. No text unless named below, no logos, no
+> real people, no casino imagery. Scene:
+
+- `gen-01-cat.webp`, flaw caption **helmet: fishbowl (occupied)**
+  > a fluffy orange tabby cat in a tiny white astronaut suit floating above
+  > the moon, Earth glowing blue behind it, stars everywhere. The mistake: its
+  > space helmet is an ordinary round goldfish bowl full of water, and a small
+  > orange goldfish is swimming inside it right beside the cat's calm face.
+- `gen-02-handshake.webp`, flaw caption **✋ 3 hands, 1 deal**
+  > a glossy corporate stock photo of two smiling executives in navy suits
+  > shaking hands across a glass desk in a bright skyscraper office at golden
+  > hour. The mistake: the handshake has three hands in it, all perfectly
+  > clasped, and nobody seems to mind.
+- `gen-03-sunset.webp`, flaw caption **one extra sun**
+  > a dreamy tropical beach at sunset: turquoise water, leaning palm trees, a
+  > wooden pier, pink and gold clouds. The mistake: two suns are setting side
+  > by side on the horizon, each with its own reflection on the water.
+- `gen-04-dog.webp`, flaw caption **teeth: too many, too human**
+  > a regal oil-painting-style portrait of a golden retriever in a Victorian
+  > military jacket with gold epaulettes and medals, posed in front of a
+  > velvet curtain. The mistake: the dog is smiling with a full set of
+  > perfectly straight, gleaming human teeth.
+- `gen-05-pizza.webp`, flaw caption **1 slice: fruit**
+  > mouth-watering food photography of a fresh pepperoni pizza on a wooden
+  > board, steam rising, cheese pulling from a lifted slice, basil leaves. The
+  > mistake: one of the eight slices is a perfectly cut wedge of watermelon,
+  > seeds and all, fitted neatly into the pizza.
+- `gen-06-lake.webp`, flaw caption **reflection: different mountain**
+  > a majestic alpine lake at dawn, mirror-still, a snowy mountain peak and
+  > pine forest reflected in the water, mist on the surface. The mistake: the
+  > reflection in the lake shows a completely different mountain, an erupting
+  > volcano, while the real peak above is calm and snowy.
+- `gen-07-team.webp`, flaw caption **👍 thumbs: 11, people: 5**
+  > a bright, upbeat stock photo of five smiling coworkers in a modern office
+  > giving the camera a thumbs up. The mistake: one woman's hand has two
+  > thumbs, both up, and the man next to her is giving a confident thumbs
+  > sideways.
+- `gen-08-castle.webp`, flaw caption **door: 2nd floor, no stairs**
+  > a fairytale castle on a green hill at sunrise, white towers with blue
+  > roofs, flags, a winding path leading up to it. The mistake: the castle's
+  > grand front door is halfway up the wall on the second floor, with no
+  > stairs, and the path leads straight into the blank wall below it.
+- `gen-09-clock.webp`, flaw caption **clock: 13 o'clock**
+  > a charming European town square with cobblestones, flower boxes, cafe
+  > umbrellas, and an ornate clock tower against a blue sky. The mistake: the
+  > clock face has thirteen numbers around it, evenly spaced, and both hands
+  > point at the 13.
+- `gen-10-horse.webp`, flaw caption **legs: 5 (galloping)**
+  > a white horse galloping along a beach at golden hour, mane flowing, sand
+  > and spray kicked up, cinematic motion. The mistake: the horse has five
+  > legs, all in perfect stride.
+- `gen-11-library.webp`, flaw caption **every book: "Boook"**
+  > a cozy wood-paneled library with tall shelves, a rolling ladder, a
+  > leather armchair and warm lamp light. The mistake: every single book
+  > spine on every shelf has the same title in gold lettering, "BOOOK".
+- `gen-12-robot-chef.webp`, flaw caption **pancake: 33⅓ rpm**
+  > a friendly round chrome robot chef in a tall white hat flipping a pancake
+  > in a sunny kitchen, a stack of pancakes and berries on the counter. The
+  > mistake: the pancake in mid-air is a black vinyl record, flipping with a
+  > perfect golden-brown underside.
+
 ---
 
 ## Drawn (SVG and CSS, no prompt needed)
@@ -196,8 +283,8 @@ These stay vector. They live in `SlotsLayout.tsx`, `art.tsx`, `symbols.tsx`
 and `slots.css`:
 
 - **The cabinet**: cherry lacquer with gold trim and a neon glow on the floor
-  beneath it, the marquee (neon "Lucky Prompt", the red 777, the progressive
-  AGI jackpot on an LED, the TILT lamp), the chasing bulbs, the button deck,
+  beneath it, the marquee (neon "Lucky Prompt", the jackpot on an LED, the
+  TILT lamp, and chasing bulbs all the way round its edge), the button deck,
   the LED meters, the coin slot and the cash-out voucher.
 - **The reels**: three cream drums behind curved glass, motion-blurred while
   they spin (an SVG blur that only smears vertically), stopping left to right
@@ -213,3 +300,30 @@ and `slots.css`:
   cup.
 - **The sidebar chip** (`SidebarRow.tsx`): a little cabinet with chasing
   bulbs and three tiny reels that spin while Lucky answers.
+
+---
+
+## Sound effects: `public/slots/sfx/`
+
+Generated with ElevenLabs Sound Effects v2 (`eleven_text_to_sound_v2`), in the
+flow "Token Palace slot machine SFX". `src/components/slots/sound.ts` plays
+them and falls back to its synthesized sounds while they load, or if one is
+missing. Each was trimmed, faded and loudness-matched (about -16 LUFS, peaks
+under -1 dBFS) with ffmpeg; `LEVEL` in `sound.ts` sets the mix, kept quiet.
+`spin` is a WAV because it loops seamlessly and MP3 pads the start of a file.
+
+| File | Prompt | Settings |
+|---|---|---|
+| `spin.wav` | Mechanical slot machine reels spinning, steady fast soft plastic clicking and gentle whir, close-mic, no music | 2 s, loop, influence 0.6 |
+| `stop.mp3` | Single slot machine reel locking into place, one soft solid mechanical clunk, close-mic | 0.5 s, 0.6 |
+| `lever.mp3` | Slot machine side lever pulled down, quick metal ratchet clicks then a soft spring thunk | 1 s, 0.6 |
+| `coin.mp3` | Single metal casino token dropping into a coin slot, soft bright clink, close-mic | 0.6 s, 0.6 |
+| `win.mp3` | Small slot machine win, short cheerful electronic bell chime arpeggio, gentle, no voice | 1.5 s, 0.5 |
+| `big.mp3` | Slot machine jackpot, ringing bells and a cascade of coins pouring into a metal tray, no voice | 3 s, 0.5 |
+| `near.mp3` | Soft muted trombone playing two descending notes, sad womp womp, short | 1.2 s, 0.6 |
+| `agi.mp3` | Rising electronic synth swell building up, then fizzling out with a soft electrical sputter | 1.8 s, 0.5 |
+| `bust.mp3` | Short soft low electronic buzzer, gentle wrong-answer tone, arcade machine | 0.6 s, 0.6 |
+
+To replace one: export it as MP3, trim the tail, then
+`ffmpeg -i in.mp3 -ac 1 -af "volume=<gain>dB" -b:a 96k public/slots/sfx/<name>.mp3`
+with the gain that brings it to about -16 LUFS.

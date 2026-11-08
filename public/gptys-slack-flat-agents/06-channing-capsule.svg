@@ -1,0 +1,6 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 48 48" overflow="hidden">
+<defs><clipPath id="channing-slack-clip"><path d="M15 12H33A12 12 0 0 1 33 36H15A12 12 0 0 1 15 12Z"/></clipPath><clipPath id="channing-slack-eye-safe"><path d="M0 0H48V48H0ZM15 19H33V29H15Z" fill-rule="evenodd" clip-rule="evenodd"/></clipPath></defs>
+<g data-role="body"><path d="M15 12H33A12 12 0 0 1 33 36H15A12 12 0 0 1 15 12Z" fill="#4d394b"/></g>
+<g data-role="facet" clip-path="url(#channing-slack-clip)"><g clip-path="url(#channing-slack-eye-safe)"><path d="M46 14L14 46H48V14Z" fill="#4b3749"/></g></g>
+<g data-role="spot" clip-path="url(#channing-slack-clip)"><circle cx="8.554" cy="18.522" r="1.4" fill="#ffffff" opacity=".38"/></g>
+</svg>

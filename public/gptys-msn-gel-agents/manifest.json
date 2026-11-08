@@ -1,0 +1,671 @@
+{
+  "era": "MSN Messenger 7.5 / Windows XP, 2005",
+  "viewBox": "0 0 48 48",
+  "preview": "msn-agents-preview.svg",
+  "columns": 4,
+  "rows": 3,
+  "eyes_in_individual_files": false,
+  "eyes_in_preview": false,
+  "characters": [
+    {
+      "file": "01-daisy-flower.svg",
+      "name": "Daisy",
+      "body_color": "#3fbd4c",
+      "eye_line": 24.0,
+      "preview_eye_color": "#ffffff",
+      "silhouette_path": "M28.00 24.00a8.5 8.5 0 1 0 17 0a8.5 8.5 0 1 0 -17 0ZM24.34 32.84a8.5 8.5 0 1 0 17 0a8.5 8.5 0 1 0 -17 0ZM15.50 36.50a8.5 8.5 0 1 0 17 0a8.5 8.5 0 1 0 -17 0ZM6.66 32.84a8.5 8.5 0 1 0 17 0a8.5 8.5 0 1 0 -17 0ZM3.00 24.00a8.5 8.5 0 1 0 17 0a8.5 8.5 0 1 0 -17 0ZM6.66 15.16a8.5 8.5 0 1 0 17 0a8.5 8.5 0 1 0 -17 0ZM15.50 11.50a8.5 8.5 0 1 0 17 0a8.5 8.5 0 1 0 -17 0ZM24.34 15.16a8.5 8.5 0 1 0 17 0a8.5 8.5 0 1 0 -17 0ZM10 24a14 14 0 1 0 28 0a14 14 0 1 0 -28 0Z",
+      "outline_color": "#18481d",
+      "body_gradient_stops": [
+        {
+          "offset": 0,
+          "color": "#82d48b",
+          "opacity": 1
+        },
+        {
+          "offset": 0.52,
+          "color": "#3fbd4c",
+          "opacity": 1
+        },
+        {
+          "offset": 1,
+          "color": "#32973d",
+          "opacity": 1
+        }
+      ],
+      "gloss_gradient_stops": [
+        {
+          "offset": 0,
+          "color": "#ffffff",
+          "opacity": 0.9
+        },
+        {
+          "offset": 1,
+          "color": "#ffffff",
+          "opacity": 0.05
+        }
+      ],
+      "glow_gradient_stops": [
+        {
+          "offset": 0,
+          "color": "#7cd285",
+          "opacity": 0.64
+        },
+        {
+          "offset": 0.55,
+          "color": "#7cd285",
+          "opacity": 0.3
+        },
+        {
+          "offset": 1,
+          "color": "#7cd285",
+          "opacity": 0
+        }
+      ]
+    },
+    {
+      "file": "02-kayleigh-water-drop.svg",
+      "name": "Kayleigh",
+      "body_color": "#f0559b",
+      "eye_line": 29.0,
+      "preview_eye_color": "#ffffff",
+      "silhouette_path": "M24 3C24 3 40 19.5 40 30A16 16 0 0 1 8 30C8 19.5 24 3 24 3Z",
+      "outline_color": "#5b203b",
+      "body_gradient_stops": [
+        {
+          "offset": 0,
+          "color": "#f590be",
+          "opacity": 1
+        },
+        {
+          "offset": 0.52,
+          "color": "#f0559b",
+          "opacity": 1
+        },
+        {
+          "offset": 1,
+          "color": "#c0447c",
+          "opacity": 1
+        }
+      ],
+      "gloss_gradient_stops": [
+        {
+          "offset": 0,
+          "color": "#ffffff",
+          "opacity": 0.9
+        },
+        {
+          "offset": 1,
+          "color": "#ffffff",
+          "opacity": 0.05
+        }
+      ],
+      "glow_gradient_stops": [
+        {
+          "offset": 0,
+          "color": "#f58bbb",
+          "opacity": 0.64
+        },
+        {
+          "offset": 0.55,
+          "color": "#f58bbb",
+          "opacity": 0.3
+        },
+        {
+          "offset": 1,
+          "color": "#f58bbb",
+          "opacity": 0
+        }
+      ]
+    },
+    {
+      "file": "03-cal-cloud.svg",
+      "name": "Cal",
+      "body_color": "#16aeef",
+      "eye_line": 25.0,
+      "preview_eye_color": "#ffffff",
+      "silhouette_path": "M13 38C6.5 38 3 33.5 3 29C3 24 7 20.5 11.5 20.5C12.5 13.5 18 9 24.5 9C31.5 9 36.5 14 37 20.5C41.5 21 45 24.5 45 29.5C45 34.5 41 38 36 38Z",
+      "outline_color": "#08425b",
+      "body_gradient_stops": [
+        {
+          "offset": 0,
+          "color": "#68caf5",
+          "opacity": 1
+        },
+        {
+          "offset": 0.52,
+          "color": "#16aeef",
+          "opacity": 1
+        },
+        {
+          "offset": 1,
+          "color": "#128bbf",
+          "opacity": 1
+        }
+      ],
+      "gloss_gradient_stops": [
+        {
+          "offset": 0,
+          "color": "#ffffff",
+          "opacity": 0.9
+        },
+        {
+          "offset": 1,
+          "color": "#ffffff",
+          "opacity": 0.05
+        }
+      ],
+      "glow_gradient_stops": [
+        {
+          "offset": 0,
+          "color": "#61c8f4",
+          "opacity": 0.64
+        },
+        {
+          "offset": 0.55,
+          "color": "#61c8f4",
+          "opacity": 0.3
+        },
+        {
+          "offset": 1,
+          "color": "#61c8f4",
+          "opacity": 0
+        }
+      ]
+    },
+    {
+      "file": "04-mark-jellybean.svg",
+      "name": "Mark",
+      "body_color": "#6d84b4",
+      "eye_line": 22.0,
+      "preview_eye_color": "#ffffff",
+      "silhouette_path": "M17 7.5C23.5 4 33 5 38.5 10.5C44 16 44.5 25 41 31.5C37.5 38.5 30 43 22.5 42.5C15.5 42 10.5 37.5 11 32C11.3 29 13.6 27.6 12.6 25C11.6 22.4 7.2 21 7 16.5C6.8 12.3 11 9.5 17 7.5Z",
+      "outline_color": "#293244",
+      "body_gradient_stops": [
+        {
+          "offset": 0,
+          "color": "#a0afce",
+          "opacity": 1
+        },
+        {
+          "offset": 0.52,
+          "color": "#6d84b4",
+          "opacity": 1
+        },
+        {
+          "offset": 1,
+          "color": "#576a90",
+          "opacity": 1
+        }
+      ],
+      "gloss_gradient_stops": [
+        {
+          "offset": 0,
+          "color": "#ffffff",
+          "opacity": 0.9
+        },
+        {
+          "offset": 1,
+          "color": "#ffffff",
+          "opacity": 0.05
+        }
+      ],
+      "glow_gradient_stops": [
+        {
+          "offset": 0,
+          "color": "#9cabcc",
+          "opacity": 0.64
+        },
+        {
+          "offset": 0.55,
+          "color": "#9cabcc",
+          "opacity": 0.3
+        },
+        {
+          "offset": 1,
+          "color": "#9cabcc",
+          "opacity": 0
+        }
+      ]
+    },
+    {
+      "file": "05-arthur-alien-head.svg",
+      "name": "Arthur",
+      "body_color": "#ff4500",
+      "eye_line": 27.5,
+      "preview_eye_color": "#ffffff",
+      "silhouette_path": "M5.5 28.5a18.5 12.5 0 1 0 37 0a18.5 12.5 0 1 0 -37 0ZM25.9 17.4C26.7 13.6 29 10.9 32.2 9.4L31.2 7.6C27.4 9.4 24.6 12.6 23.6 17.2ZM30 6a3.6 3.6 0 1 0 7.2 0a3.6 3.6 0 1 0 -7.2 0Z",
+      "outline_color": "#611a00",
+      "body_gradient_stops": [
+        {
+          "offset": 0,
+          "color": "#ff8659",
+          "opacity": 1
+        },
+        {
+          "offset": 0.52,
+          "color": "#ff4500",
+          "opacity": 1
+        },
+        {
+          "offset": 1,
+          "color": "#cc3700",
+          "opacity": 1
+        }
+      ],
+      "gloss_gradient_stops": [
+        {
+          "offset": 0,
+          "color": "#ffffff",
+          "opacity": 0.9
+        },
+        {
+          "offset": 1,
+          "color": "#ffffff",
+          "opacity": 0.05
+        }
+      ],
+      "glow_gradient_stops": [
+        {
+          "offset": 0,
+          "color": "#ff8152",
+          "opacity": 0.64
+        },
+        {
+          "offset": 0.55,
+          "color": "#ff8152",
+          "opacity": 0.3
+        },
+        {
+          "offset": 1,
+          "color": "#ff8152",
+          "opacity": 0
+        }
+      ]
+    },
+    {
+      "file": "06-channing-capsule.svg",
+      "name": "Channing",
+      "body_color": "#8a4fd8",
+      "eye_line": 24.0,
+      "preview_eye_color": "#ffffff",
+      "silhouette_path": "M15 12H33A12 12 0 0 1 33 36H15A12 12 0 0 1 15 12Z",
+      "outline_color": "#341e52",
+      "body_gradient_stops": [
+        {
+          "offset": 0,
+          "color": "#b38de6",
+          "opacity": 1
+        },
+        {
+          "offset": 0.52,
+          "color": "#8a4fd8",
+          "opacity": 1
+        },
+        {
+          "offset": 1,
+          "color": "#6e3fad",
+          "opacity": 1
+        }
+      ],
+      "gloss_gradient_stops": [
+        {
+          "offset": 0,
+          "color": "#ffffff",
+          "opacity": 0.9
+        },
+        {
+          "offset": 1,
+          "color": "#ffffff",
+          "opacity": 0.05
+        }
+      ],
+      "glow_gradient_stops": [
+        {
+          "offset": 0,
+          "color": "#af87e4",
+          "opacity": 0.64
+        },
+        {
+          "offset": 0.55,
+          "color": "#af87e4",
+          "opacity": 0.3
+        },
+        {
+          "offset": 1,
+          "color": "#af87e4",
+          "opacity": 0
+        }
+      ]
+    },
+    {
+      "file": "07-grug-rock.svg",
+      "name": "Grug",
+      "body_color": "#d9662f",
+      "eye_line": 24.0,
+      "preview_eye_color": "#ffffff",
+      "silhouette_path": "M10 34C6 30 6 22 10 18C12 12 18 8 25 9C31 8 37 11 39 17C43 21 44 28 41 33C38 39 31 42 24 41C17 42 13 39 10 34Z",
+      "outline_color": "#522712",
+      "body_gradient_stops": [
+        {
+          "offset": 0,
+          "color": "#e69c78",
+          "opacity": 1
+        },
+        {
+          "offset": 0.52,
+          "color": "#d9662f",
+          "opacity": 1
+        },
+        {
+          "offset": 1,
+          "color": "#ae5226",
+          "opacity": 1
+        }
+      ],
+      "gloss_gradient_stops": [
+        {
+          "offset": 0,
+          "color": "#ffffff",
+          "opacity": 0.9
+        },
+        {
+          "offset": 1,
+          "color": "#ffffff",
+          "opacity": 0.05
+        }
+      ],
+      "glow_gradient_stops": [
+        {
+          "offset": 0,
+          "color": "#e59772",
+          "opacity": 0.64
+        },
+        {
+          "offset": 0.55,
+          "color": "#e59772",
+          "opacity": 0.3
+        },
+        {
+          "offset": 1,
+          "color": "#e59772",
+          "opacity": 0
+        }
+      ]
+    },
+    {
+      "file": "08-mortimer-ghost.svg",
+      "name": "Mortimer",
+      "body_color": "#b4acd9",
+      "eye_line": 21.0,
+      "preview_eye_color": "#ffffff",
+      "silhouette_path": "M9 23C9 14 15.7 7 24 7C32.3 7 39 14 39 23V39C39 41 37 42 35.5 40.5L33 38L30.5 40.5C29 42 27 42 25.5 40.5L24 39L22.5 40.5C21 42 19 42 17.5 40.5L15 38L12.5 40.5C11 42 9 41 9 39Z",
+      "outline_color": "#444152",
+      "body_gradient_stops": [
+        {
+          "offset": 0,
+          "color": "#cec9e6",
+          "opacity": 1
+        },
+        {
+          "offset": 0.52,
+          "color": "#b4acd9",
+          "opacity": 1
+        },
+        {
+          "offset": 1,
+          "color": "#908aae",
+          "opacity": 1
+        }
+      ],
+      "gloss_gradient_stops": [
+        {
+          "offset": 0,
+          "color": "#ffffff",
+          "opacity": 0.9
+        },
+        {
+          "offset": 1,
+          "color": "#ffffff",
+          "opacity": 0.05
+        }
+      ],
+      "glow_gradient_stops": [
+        {
+          "offset": 0,
+          "color": "#ccc7e5",
+          "opacity": 0.64
+        },
+        {
+          "offset": 0.55,
+          "color": "#ccc7e5",
+          "opacity": 0.3
+        },
+        {
+          "offset": 1,
+          "color": "#ccc7e5",
+          "opacity": 0
+        }
+      ]
+    },
+    {
+      "file": "09-shelly-cone.svg",
+      "name": "Shelly",
+      "body_color": "#ff2e88",
+      "eye_line": 30.0,
+      "preview_eye_color": "#2a0016",
+      "silhouette_path": "M24 6C26 6 27.5 7.2 28.6 9L43 36C44.5 39 42.5 42 39 42H9C5.5 42 3.5 39 5 36L19.4 9C20.5 7.2 22 6 24 6Z",
+      "outline_color": "#611134",
+      "body_gradient_stops": [
+        {
+          "offset": 0,
+          "color": "#ff77b2",
+          "opacity": 1
+        },
+        {
+          "offset": 0.52,
+          "color": "#ff2e88",
+          "opacity": 1
+        },
+        {
+          "offset": 1,
+          "color": "#cc256d",
+          "opacity": 1
+        }
+      ],
+      "gloss_gradient_stops": [
+        {
+          "offset": 0,
+          "color": "#ffffff",
+          "opacity": 0.9
+        },
+        {
+          "offset": 1,
+          "color": "#ffffff",
+          "opacity": 0.05
+        }
+      ],
+      "glow_gradient_stops": [
+        {
+          "offset": 0,
+          "color": "#ff71ae",
+          "opacity": 0.64
+        },
+        {
+          "offset": 0.55,
+          "color": "#ff71ae",
+          "opacity": 0.3
+        },
+        {
+          "offset": 1,
+          "color": "#ff71ae",
+          "opacity": 0
+        }
+      ]
+    },
+    {
+      "file": "10-carol-egg.svg",
+      "name": "Carol",
+      "body_color": "#e5383b",
+      "eye_line": 26.0,
+      "preview_eye_color": "#ffffff",
+      "silhouette_path": "M24 4C33 4 40 17 40 28C40 37 33 44 24 44C15 44 8 37 8 28C8 17 15 4 24 4Z",
+      "outline_color": "#571516",
+      "body_gradient_stops": [
+        {
+          "offset": 0,
+          "color": "#ee7e80",
+          "opacity": 1
+        },
+        {
+          "offset": 0.52,
+          "color": "#e5383b",
+          "opacity": 1
+        },
+        {
+          "offset": 1,
+          "color": "#b72d2f",
+          "opacity": 1
+        }
+      ],
+      "gloss_gradient_stops": [
+        {
+          "offset": 0,
+          "color": "#ffffff",
+          "opacity": 0.9
+        },
+        {
+          "offset": 1,
+          "color": "#ffffff",
+          "opacity": 0.05
+        }
+      ],
+      "glow_gradient_stops": [
+        {
+          "offset": 0,
+          "color": "#ed787a",
+          "opacity": 0.64
+        },
+        {
+          "offset": 0.55,
+          "color": "#ed787a",
+          "opacity": 0.3
+        },
+        {
+          "offset": 1,
+          "color": "#ed787a",
+          "opacity": 0
+        }
+      ]
+    },
+    {
+      "file": "11-cora-circle.svg",
+      "name": "Cora",
+      "body_color": "#c8ff2e",
+      "eye_line": 22.0,
+      "preview_eye_color": "#1b0638",
+      "silhouette_path": "M24 4a20 20 0 1 1 0 40a20 20 0 1 1 0-40Z",
+      "outline_color": "#4c6111",
+      "body_gradient_stops": [
+        {
+          "offset": 0,
+          "color": "#dbff77",
+          "opacity": 1
+        },
+        {
+          "offset": 0.52,
+          "color": "#c8ff2e",
+          "opacity": 1
+        },
+        {
+          "offset": 1,
+          "color": "#a0cc25",
+          "opacity": 1
+        }
+      ],
+      "gloss_gradient_stops": [
+        {
+          "offset": 0,
+          "color": "#ffffff",
+          "opacity": 0.9
+        },
+        {
+          "offset": 1,
+          "color": "#ffffff",
+          "opacity": 0.05
+        }
+      ],
+      "glow_gradient_stops": [
+        {
+          "offset": 0,
+          "color": "#daff71",
+          "opacity": 0.64
+        },
+        {
+          "offset": 0.55,
+          "color": "#daff71",
+          "opacity": 0.3
+        },
+        {
+          "offset": 1,
+          "color": "#daff71",
+          "opacity": 0
+        }
+      ]
+    },
+    {
+      "file": "12-lucky-slot-machine.svg",
+      "name": "Lucky",
+      "body_color": "#ffc533",
+      "eye_line": 25.0,
+      "preview_eye_color": "#3b1d00",
+      "silhouette_path": "M11 21C11 13.5 16.5 9 24 9C31.5 9 37 13.5 37 21V38Q37 43 32 43H16Q11 43 11 38ZM36 27H39.2V13H42V31H36ZM37 9.8a3.6 3.6 0 1 1 7.2 0a3.6 3.6 0 1 1 -7.2 0Z",
+      "outline_color": "#614b13",
+      "body_gradient_stops": [
+        {
+          "offset": 0,
+          "color": "#ffd97a",
+          "opacity": 1
+        },
+        {
+          "offset": 0.52,
+          "color": "#ffc533",
+          "opacity": 1
+        },
+        {
+          "offset": 1,
+          "color": "#cc9e29",
+          "opacity": 1
+        }
+      ],
+      "gloss_gradient_stops": [
+        {
+          "offset": 0,
+          "color": "#ffffff",
+          "opacity": 0.9
+        },
+        {
+          "offset": 1,
+          "color": "#ffffff",
+          "opacity": 0.05
+        }
+      ],
+      "glow_gradient_stops": [
+        {
+          "offset": 0,
+          "color": "#ffd874",
+          "opacity": 0.64
+        },
+        {
+          "offset": 0.55,
+          "color": "#ffd874",
+          "opacity": 0.3
+        },
+        {
+          "offset": 1,
+          "color": "#ffd874",
+          "opacity": 0
+        }
+      ]
+    }
+  ]
+}

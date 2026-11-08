@@ -2,16 +2,14 @@
 
 import { type CSSProperties, Fragment, useCallback, useEffect, useMemo, useRef, useState } from "react";
 import {
-  CandleCluster,
   FilmFX,
   Icon,
   type IconName,
-  Moth,
   PlanchetteGlyph,
   rand,
   SeanceDefs,
 } from "@/components/seance/art";
-import { Board, type BoardApi, isWord, type Word } from "@/components/seance/Board";
+import { Board, type BoardApi, isWord, SeeingEye, type Word } from "@/components/seance/Board";
 import "@/components/seance/seance.css";
 import { useComposer, useStickyScroll } from "./hooks";
 import { type ChatLine, type LayoutProps, relativeDay, type ThreadItem } from "./types";
@@ -28,16 +26,17 @@ const MEANS = { mine: ["", "Yes", "No", "Is anyone there?"], his: ["", "Yes", "N
 /** What a newcomer might ask the dead. */
 const ASKS: { icon: IconName; label: string; ask: string }[] = [
   { icon: "eye", label: "Is anyone there?", ask: "Is anyone there?" },
-  { icon: "hat", label: "Who were you in life?", ask: "Who were you in life, spirit?" },
   { icon: "candle", label: "Tell me a ghost story", ask: "Tell me a ghost story." },
   { icon: "heart", label: "Will I find true love?", ask: "Spirit, will I find true love?" },
-  { icon: "quill", label: "London in 1888?", ask: "What is London like in 1888?" },
 ];
 
-const RITES: { n: 1 | 2 | 3; label: string; note: string }[] = [
-  { n: 1, label: "Knock once", note: "Yes" },
-  { n: 2, label: "Knock twice", note: "No" },
-  { n: 3, label: "Knock thrice", note: "Is anyone there?" },
+/** How long the board takes to flicker out once the sitting begins (matches sp-vanish in seance.css). */
+const VANISH_MS = 850;
+
+const RITES: { n: 1 | 2 | 3; label: string }[] = [
+  { n: 1, label: "Knock once" },
+  { n: 2, label: "Knock twice" },
+  { n: 3, label: "Knock thrice" },
 ];
 
 /** Sparks that drift up off the board while a spirit speaks. */
@@ -123,14 +122,14 @@ const plain = (s: string) => s.normalize("NFD").replace(/[̀-ͯ]/g, "").toUpperC
 /**
  * Where the planchette should be, given what has been spelled so far: on
  * the letter just spelled, or on YES, NO or GOODBYE once one of those is
- * spelled as a whole word. Also returns the word being spelled.
+ * spelled as a whole word.
  */
-function reading(body: string): { aim: string; word: string } {
+function reading(body: string): { aim: string } {
   const m = plain(body).match(/([A-Z0-9]+)([^A-Z0-9]*)$/);
-  if (!m) return { aim: "wander", word: "" };
+  if (!m) return { aim: "wander" };
   const [, w, tail] = m;
-  if (tail && isWord(w)) return { aim: w, word: w };
-  return { aim: w.at(-1)!, word: w };
+  if (tail && isWord(w)) return { aim: w };
+  return { aim: w.at(-1)! };
 }
 
 /* ───────── Spelling ───────── */
@@ -158,6 +157,9 @@ function useSpelling(lines: ChatLine[], busy: boolean) {
     const reduce = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
     let n = 0;
     let shown = 0;
+    // Letters a second. It eases toward its target instead of jumping with
+    // each chunk off the network, so the hand never lurches.
+    let rate = 0;
     let prev = performance.now();
     let raf = 0;
     const tick = (now: number) => {
@@ -166,7 +168,9 @@ function useSpelling(lines: ChatLine[], busy: boolean) {
       const { lines: ls, busy: b } = latest.current;
       const total = ls.find((l) => l.id === id)?.text.length ?? 0;
       const behind = total - n;
-      if (behind > 0) n = reduce ? total : Math.min(total, n + (30 + behind * 2.4) * dt);
+      const want = behind > 0 ? Math.min(140, 34 + behind * 1.5) : 0;
+      rate += (want - rate) * Math.min(1, dt * 3);
+      if (behind > 0) n = reduce ? total : Math.min(total, n + Math.max(rate, 12) * dt);
       const whole = Math.floor(n);
       if (whole >= total && !b) {
         setSpell(null);
@@ -187,8 +191,11 @@ function useSpelling(lines: ChatLine[], busy: boolean) {
 
 type Toast = { k: number; text: string };
 
-/** How many of the newest letters are still materializing. */
-const FRESH = 8;
+/**
+ * How many of the newest letters are still materializing. Wide enough that a
+ * letter has finished fading in (sp-ink) before it rejoins the plain text.
+ */
+const FRESH = 36;
 
 /* ───────── The séance ───────── */
 
@@ -232,6 +239,24 @@ export function SeanceLayout({
   );
   const rows = useMemo(() => toRows(shownLines, spell?.id ?? null), [shownLines, spell?.id]);
   const empty = rows.length === 0 && !waiting && !error;
+
+  /*
+   * When the first words are spoken, the board flickers out like a bad
+   * signal before the eye and the words take its place. (Adjusted during
+   * render, so the vanish starts on the same frame the sitting does.)
+   */
+  const [wasEmpty, setWasEmpty] = useState(empty);
+  const [vanishing, setVanishing] = useState(false);
+  if (wasEmpty !== empty) {
+    setWasEmpty(empty);
+    setVanishing(!empty);
+  }
+  useEffect(() => {
+    if (!vanishing) return;
+    const t = setTimeout(() => setVanishing(false), VANISH_MS);
+    return () => clearTimeout(t);
+  }, [vanishing]);
+
   /* Everything before your latest question has drifted back into the dark. */
   const lastAsk = rows.findLastIndex((r) => r.kind === "ask" || (r.kind === "knock" && r.mine));
 
@@ -376,8 +401,6 @@ export function SeanceLayout({
     return out;
   }, [threads]);
 
-  const lit = !closed && !error;
-
   return (
     <div className="seance sp-desk">
       <div
@@ -420,14 +443,18 @@ export function SeanceLayout({
           </nav>
         </aside>
 
-        <div className="sp-main" data-empty={empty || undefined}>
-          {/* ───── The board, levitating between the candles ───── */}
+        <div className="sp-main" data-empty={empty || undefined} data-vanish={vanishing || undefined}>
+          {/*
+            ───── The board, levitating ─────
+            Once the sitting is under way the board steps back (it stays
+            mounted, so the planchette keeps its place) and only its eye
+            watches over the words.
+          */}
           <section className="sp-stage">
+            {!empty && !vanishing && <SeeingEye className="sp-eye-solo" />}
             <div className="sp-float">
               <div className="sp-boardwrap">
-                <Candles side="l" lit={lit} flare={!!spell} />
                 <Board aim={aim} disabled={busy} onWord={onWord} onLetter={onLetter} apiRef={board} />
-                <Candles side="r" lit={lit} flare={!!spell} />
                 <div className="sp-embers" aria-hidden>
                   {EMBERS.map((e, i) => (
                     <span
@@ -453,20 +480,7 @@ export function SeanceLayout({
                 <span className="sp-callout-k sp-callout-err">The circle is broken</span>
               ) : closed ? (
                 <span className="sp-callout-k">The circle is closed</span>
-              ) : read?.word ? (
-                <>
-                  <span className="sp-callout-k">The board spells</span>
-                  <span className="sp-callout-w" key={read.word.length > 12 ? read.word.slice(0, -12) : ""}>
-                    {read.word.length > 12 && <em>…</em>}
-                    {read.word
-                      .slice(-12)
-                      .split("")
-                      .map((c, i) => (
-                        <b key={i}>{c}</b>
-                      ))}
-                  </span>
-                </>
-              ) : waiting || busy ? (
+              ) : spell ? null : waiting || busy ? (
                 <span className="sp-callout-k sp-shimmer">{costume.typing}</span>
               ) : (
                 <span className="sp-callout-k">The circle is open</span>
@@ -499,9 +513,8 @@ export function SeanceLayout({
                     </button>
                   ))}
                 </div>
-                <p className="sp-fine">The departed may err. For matters of the living body, consult a physician.</p>
               </div>
-            ) : (
+            ) : vanishing ? null : (
               <div className="sp-col">
                 {rows.map((r, i) => {
                   const past = i < lastAsk || undefined;
@@ -632,10 +645,7 @@ export function SeanceLayout({
                               <i key={j} />
                             ))}
                           </span>
-                          <span className="sp-mi-l">
-                            <b>{r.label}</b>
-                            <small>{r.note}</small>
-                          </span>
+                          <span className="sp-mi-l">{r.label}</span>
                         </button>
                       ))}
                       <div className="sp-pop-rule" />
@@ -649,10 +659,7 @@ export function SeanceLayout({
                         }}
                       >
                         <Icon name="bell" className="sp-ic sp-mi-ic" />
-                        <span className="sp-mi-l">
-                          <b>Ask for a sign</b>
-                          <small>Ring the little bell</small>
-                        </span>
+                        <span className="sp-mi-l">Ask for a sign</span>
                       </button>
                       <button
                         type="button"
@@ -665,10 +672,7 @@ export function SeanceLayout({
                         }}
                       >
                         <Icon name="door" className="sp-ic sp-mi-ic" />
-                        <span className="sp-mi-l">
-                          <b>Close the circle</b>
-                          <small>Say goodbye</small>
-                        </span>
+                        <span className="sp-mi-l">Close the circle</span>
                       </button>
                     </div>
                   )}
@@ -712,18 +716,6 @@ export function SeanceLayout({
           </div>
         )}
       </div>
-    </div>
-  );
-}
-
-/** Three candles on their saucers beside the board, and a moth that can't keep away. */
-function Candles({ side, lit, flare }: { side: "l" | "r"; lit: boolean; flare: boolean }) {
-  return (
-    <div className="sp-candle" data-side={side} aria-hidden>
-      <CandleCluster side={side} lit={lit} flare={flare} />
-      <span className="sp-moth" data-on={lit || undefined}>
-        <Moth size={15} flap={side === "l" ? 0.18 : 0.21} />
-      </span>
     </div>
   );
 }

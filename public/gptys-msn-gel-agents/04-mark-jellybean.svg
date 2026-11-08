@@ -1,0 +1,37 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 48 48" role="img" aria-label="Mark">
+  <defs>
+    <linearGradient id="mark-body" x1="0" y1="0" x2="0" y2="1" gradientUnits="objectBoundingBox">
+      <stop offset="0" stop-color="#a0afce"/>
+      <stop offset="0.52" stop-color="#6d84b4"/>
+      <stop offset="1" stop-color="#576a90"/>
+    </linearGradient>
+    <radialGradient id="mark-glow" cx="0.5" cy="0.72" r="0.64" gradientTransform="translate(0 0.36) scale(1 0.5)">
+      <stop offset="0" stop-color="#9cabcc" stop-opacity="0.64"/>
+      <stop offset="0.55" stop-color="#9cabcc" stop-opacity="0.3"/>
+      <stop offset="1" stop-color="#9cabcc" stop-opacity="0"/>
+    </radialGradient>
+    <linearGradient id="mark-gloss" x1="0" y1="8" x2="0" y2="17" gradientUnits="userSpaceOnUse">
+      <stop offset="0" stop-color="#ffffff" stop-opacity="0.9"/>
+      <stop offset="1" stop-color="#ffffff" stop-opacity="0.05"/>
+    </linearGradient>
+    <clipPath id="mark-clip"><path d="M17 7.5C23.5 4 33 5 38.5 10.5C44 16 44.5 25 41 31.5C37.5 38.5 30 43 22.5 42.5C15.5 42 10.5 37.5 11 32C11.3 29 13.6 27.6 12.6 25C11.6 22.4 7.2 21 7 16.5C6.8 12.3 11 9.5 17 7.5Z"/></clipPath>
+    <clipPath id="mark-eye-safe">
+      <path d="M0 0H48V48H0ZM15 17H33V27H15Z" fill-rule="evenodd" clip-rule="evenodd"/>
+    </clipPath>
+  </defs>
+  <g data-role="outline">
+    <path d="M17 7.5C23.5 4 33 5 38.5 10.5C44 16 44.5 25 41 31.5C37.5 38.5 30 43 22.5 42.5C15.5 42 10.5 37.5 11 32C11.3 29 13.6 27.6 12.6 25C11.6 22.4 7.2 21 7 16.5C6.8 12.3 11 9.5 17 7.5Z" fill="none" stroke="#293244" stroke-width="3" stroke-linejoin="round"/>
+  </g>
+  <g data-role="body">
+    <path d="M17 7.5C23.5 4 33 5 38.5 10.5C44 16 44.5 25 41 31.5C37.5 38.5 30 43 22.5 42.5C15.5 42 10.5 37.5 11 32C11.3 29 13.6 27.6 12.6 25C11.6 22.4 7.2 21 7 16.5C6.8 12.3 11 9.5 17 7.5Z" fill="url(#mark-body)"/>
+  </g>
+  <g data-role="glow" clip-path="url(#mark-clip)">
+    <path d="M11 35.5C14 41.3 36 41.3 39 35.5C36 38.6 14 38.6 11 35.5Z" fill="url(#mark-glow)"/>
+  </g>
+  <g data-role="gloss" clip-path="url(#mark-clip)">
+    <g clip-path="url(#mark-eye-safe)">
+      <path d="M10.3 16.2C11.4 11.5 18 8.3 23.9 8.1C29 7.9 34.1 10.2 37 14.1C34 19.3 21.8 20.5 13.4 19.1C11.4 18.5 10.5 17.5 10.3 16.2Z" fill="url(#mark-gloss)"/>
+      <ellipse cx="17.5" cy="11.5" rx="2.3" ry="1.25" fill="#ffffff"/>
+    </g>
+  </g>
+</svg>

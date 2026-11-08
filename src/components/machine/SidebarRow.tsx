@@ -1,13 +1,19 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import type { ActiveRowProps } from "@/components/activeRows";
 import { Gpty } from "@/components/Gpty";
 import { mxFonts } from "./font";
-import { garble, noise } from "./garble";
+import { garble, noise, XENO } from "./garble";
 import "./machine.css";
 
-const IDLE = garble("listening. always.", "pick", 2);
+/** What she's doing, in machinespeak like everything else of hers. */
+const SAYS = {
+  idle: garble("listening. always.", "pick", XENO),
+  thinking: garble("sampling", "pick:thinking", XENO),
+  typing: garble("transmitting", "pick:typing", XENO),
+  error: garble("signal lost", "pick:error", XENO),
+};
 
 /** A few characters of static that churn while Cora samples. */
 function Static() {
@@ -21,44 +27,38 @@ function Static() {
 }
 
 /**
- * The open Cora in the sidebar: a chamfered chip with the same turning
- * oil-slick edge as her window, her gpty in a dashed orbit, her name in the
- * machines' display face and a little signal on the right that races while
- * she answers.
+ * The open Cora in the sidebar: a black chip with a hairline edge and two
+ * corner ticks, like registration marks, what she's doing in small mono
+ * machinespeak underneath, and a dot that blinks cyan while she answers.
+ * Open, her gpty goes white and glitches now and then (more while she's busy).
  */
 export function MachineActiveRow({ agent, mood, ...button }: ActiveRowProps) {
   const busy = mood === "thinking" || mood === "typing";
+  const white = useMemo(() => ({ ...agent, look: { ...agent.look, color: "#f2f4f5", eyes: "#000104" } }), [agent]);
   return (
-    <button type="button" {...button} className={`${mxFonts} mx-pick group`}>
-      <span className="mx-pick-av">
-        <Gpty agent={agent} size={32} mood={mood} />
-      </span>
+    <button type="button" {...button} className={`${mxFonts} mx-pick group`} data-busy={busy || undefined}>
+      <Gpty agent={white} size={40} mood={mood} className="mx-pick-gpty" />
       <span className="min-w-0 flex-1">
         <span className="mx-pick-name">
-          {agent.name.toLowerCase()}
-          <small>{agent.costume.year}</small>
+          {agent.name}
+          {/* The machines' own count of the years. */}
+          <small>0001</small>
         </span>
-        <span className="mx-pick-sub" data-busy={busy || undefined} data-error={mood === "error" || undefined}>
+        <span className="mx-pick-sub" data-busy={busy || undefined} data-error={mood === "error" || undefined} aria-hidden>
           {mood === "thinking" ? (
             <>
-              sampling <Static />
+              {SAYS.thinking} <Static />
             </>
           ) : mood === "typing" ? (
-            "transmitting ▮▮▮"
+            SAYS.typing
           ) : mood === "error" ? (
-            "link severed"
+            SAYS.error
           ) : (
-            IDLE
+            SAYS.idle
           )}
         </span>
       </span>
-      <span className="mx-pick-wave" data-busy={busy || undefined} aria-hidden>
-        <i />
-        <i />
-        <i />
-        <i />
-        <i />
-      </span>
+      <span className="mx-pick-dot" data-busy={busy || undefined} aria-hidden />
     </button>
   );
 }

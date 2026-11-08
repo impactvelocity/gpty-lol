@@ -91,6 +91,26 @@ const FLAWS = [
   "clock melted (unrequested)",
 ];
 
+/**
+ * The pictures Lucky "generates": each one gorgeous, and each with exactly one
+ * thing wrong (prompts in ART.md). A pull's seed picks one; the caption under
+ * it names the flaw. Empty the list to fall back to the drawn picture below.
+ */
+const GEN: { src: string; flaw: string }[] = [
+  { src: "/slots/gen/gen-01-cat.webp", flaw: "helmet: fishbowl (occupied)" },
+  { src: "/slots/gen/gen-02-handshake.webp", flaw: "✋ 3 hands, 1 deal" },
+  { src: "/slots/gen/gen-03-sunset.webp", flaw: "one extra sun" },
+  { src: "/slots/gen/gen-04-dog.webp", flaw: "teeth: too many, too human" },
+  { src: "/slots/gen/gen-05-pizza.webp", flaw: "1 slice: fruit" },
+  { src: "/slots/gen/gen-06-lake.webp", flaw: "reflection: different mountain" },
+  { src: "/slots/gen/gen-07-team.webp", flaw: "👍 thumbs: 11, people: 5" },
+  { src: "/slots/gen/gen-08-castle.webp", flaw: "door: 2nd floor, no stairs" },
+  { src: "/slots/gen/gen-09-clock.webp", flaw: "clock: 13 o’clock" },
+  { src: "/slots/gen/gen-10-horse.webp", flaw: "legs: 5 (galloping)" },
+  { src: "/slots/gen/gen-11-library.webp", flaw: "every book: “Boook”" },
+  { src: "/slots/gen/gen-12-robot-chef.webp", flaw: "pancake: 33⅓ rpm" },
+];
+
 const PALETTES = [
   ["#3b2bff", "#ff5fa2", "#ffc46b", "#1f9d6b", "#0c5c4a"],
   ["#0b2a6b", "#3fa9ff", "#bff3ff", "#f2f2f2", "#7d8fb3"],
@@ -146,57 +166,75 @@ export function GenImage({ prompt, seed, fresh }: { prompt: string; seed: string
   }, [fresh]);
   const done = step >= STEPS;
   const u = `gi${hash(seed + prompt).toString(36)}`;
+  /** A generated picture from the pool, if there is one. */
+  const pic = GEN.length ? GEN[hash(`${seed}:${prompt}`) % GEN.length] : null;
 
   return (
     <figure className="lk-img" data-fresh={fresh && !done ? "" : undefined} style={{ "--k": 1 - step / STEPS } as Vars}>
       <div className="lk-img-frame">
-        <svg viewBox="0 0 400 300" className="lk-img-art" preserveAspectRatio="xMidYMid slice" aria-hidden>
-          <defs>
-            <linearGradient id={`${u}sky`} x1="0" y1="0" x2="0" y2="1">
-              <stop offset="0" stopColor={s.pal[0]} />
-              <stop offset=".6" stopColor={s.pal[1]} />
-              <stop offset="1" stopColor={s.pal[2]} />
-            </linearGradient>
-            <radialGradient id={`${u}sun`}>
-              <stop offset="0" stopColor="#fff" />
-              <stop offset=".5" stopColor={s.pal[2]} />
-              <stop offset="1" stopColor={s.pal[2]} stopOpacity="0" />
-            </radialGradient>
-            <filter id={`${u}n`}>
-              <feTurbulence type="fractalNoise" baseFrequency=".9" numOctaves="2" seed="7" />
-              <feColorMatrix values="0 0 0 0 .5  0 0 0 0 .5  0 0 0 0 .5  0 0 0 1.4 -.2" />
-            </filter>
-          </defs>
-          <rect width="400" height="300" fill={`url(#${u}sky)`} />
-          {s.stars.map((st, i) => (
-            <circle key={i} cx={st.x} cy={st.y} r={st.s} fill="#fff" opacity=".7" />
-          ))}
-          <circle cx={s.sun.x} cy={s.sun.y} r={s.sun.r * 2.2} fill={`url(#${u}sun)`} />
-          <circle cx={s.sun.x} cy={s.sun.y} r={s.sun.r} fill="#fff8dc" />
-          <path d={s.far} fill={s.pal[4]} opacity=".85" />
-          <path d={s.near} fill={s.pal[3]} />
-          <path d={s.subject} fill={s.pal[1]} stroke="rgba(0,0,0,.35)" strokeWidth="3" />
-          <ellipse cx="184" cy="160" rx="6" ry="8.5" fill="#1a0610" />
-          <ellipse cx="216" cy="160" rx="6" ry="8.5" fill="#1a0610" />
-          <circle cx="186" cy="157" r="2" fill="#fff" />
-          <circle cx="218" cy="157" r="2" fill="#fff" />
-          {/* An extra hand, waving. Count the fingers. */}
-          <g transform="translate(318 214) rotate(-12)" fill={s.pal[2]} stroke="rgba(0,0,0,.35)" strokeWidth="2">
-            <rect x="-15" y="0" width="30" height="34" rx="12" />
-            {[-13, -7.5, -2, 3.5, 9, 14].map((x, i) => (
-              <rect key={i} x={x - 2.6} y={-18 + Math.abs(x) * 0.4} width="5.2" height="24" rx="2.6" />
+        {pic ? (
+          <>
+            {/* eslint-disable-next-line @next/next/no-img-element */}
+            <img src={pic.src} alt="" className="lk-img-art" draggable={false} />
+            {!done && (
+              <svg viewBox="0 0 400 300" className="lk-img-static" preserveAspectRatio="none" aria-hidden>
+                <filter id={`${u}n`}>
+                  <feTurbulence type="fractalNoise" baseFrequency=".9" numOctaves="2" seed="7" />
+                  <feColorMatrix values="0 0 0 0 .5  0 0 0 0 .5  0 0 0 0 .5  0 0 0 1.4 -.2" />
+                </filter>
+                <rect width="400" height="300" filter={`url(#${u}n)`} className="lk-img-noise" />
+              </svg>
+            )}
+          </>
+        ) : (
+          <svg viewBox="0 0 400 300" className="lk-img-art" preserveAspectRatio="xMidYMid slice" aria-hidden>
+            <defs>
+              <linearGradient id={`${u}sky`} x1="0" y1="0" x2="0" y2="1">
+                <stop offset="0" stopColor={s.pal[0]} />
+                <stop offset=".6" stopColor={s.pal[1]} />
+                <stop offset="1" stopColor={s.pal[2]} />
+              </linearGradient>
+              <radialGradient id={`${u}sun`}>
+                <stop offset="0" stopColor="#fff" />
+                <stop offset=".5" stopColor={s.pal[2]} />
+                <stop offset="1" stopColor={s.pal[2]} stopOpacity="0" />
+              </radialGradient>
+              <filter id={`${u}n`}>
+                <feTurbulence type="fractalNoise" baseFrequency=".9" numOctaves="2" seed="7" />
+                <feColorMatrix values="0 0 0 0 .5  0 0 0 0 .5  0 0 0 0 .5  0 0 0 1.4 -.2" />
+              </filter>
+            </defs>
+            <rect width="400" height="300" fill={`url(#${u}sky)`} />
+            {s.stars.map((st, i) => (
+              <circle key={i} cx={st.x} cy={st.y} r={st.s} fill="#fff" opacity=".7" />
             ))}
-          </g>
-          {!done && <rect width="400" height="300" filter={`url(#${u}n)`} className="lk-img-noise" />}
-        </svg>
+            <circle cx={s.sun.x} cy={s.sun.y} r={s.sun.r * 2.2} fill={`url(#${u}sun)`} />
+            <circle cx={s.sun.x} cy={s.sun.y} r={s.sun.r} fill="#fff8dc" />
+            <path d={s.far} fill={s.pal[4]} opacity=".85" />
+            <path d={s.near} fill={s.pal[3]} />
+            <path d={s.subject} fill={s.pal[1]} stroke="rgba(0,0,0,.35)" strokeWidth="3" />
+            <ellipse cx="184" cy="160" rx="6" ry="8.5" fill="#1a0610" />
+            <ellipse cx="216" cy="160" rx="6" ry="8.5" fill="#1a0610" />
+            <circle cx="186" cy="157" r="2" fill="#fff" />
+            <circle cx="218" cy="157" r="2" fill="#fff" />
+            {/* An extra hand, waving. Count the fingers. */}
+            <g transform="translate(318 214) rotate(-12)" fill={s.pal[2]} stroke="rgba(0,0,0,.35)" strokeWidth="2">
+              <rect x="-15" y="0" width="30" height="34" rx="12" />
+              {[-13, -7.5, -2, 3.5, 9, 14].map((x, i) => (
+                <rect key={i} x={x - 2.6} y={-18 + Math.abs(x) * 0.4} width="5.2" height="24" rx="2.6" />
+              ))}
+            </g>
+            {!done && <rect width="400" height="300" filter={`url(#${u}n)`} className="lk-img-noise" />}
+          </svg>
+        )}
         <span className="lk-img-step" aria-hidden>
-          {done ? "1024 × 1024" : `denoising ${step}/${STEPS}`}
+          {done ? (pic ? "1536 × 1024" : "1024 × 1024") : `denoising ${step}/${STEPS}`}
         </span>
       </div>
       <figcaption className="lk-img-cap">
         <span className="lk-img-prompt">“{prompt}”</span>
         <span className="lk-img-meta">
-          <span className="lk-img-flaw">{s.flaw}</span>
+          <span className="lk-img-flaw">{pic?.flaw ?? s.flaw}</span>
           <span>seed {s.n}</span>
         </span>
       </figcaption>

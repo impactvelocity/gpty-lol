@@ -1,0 +1,6 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 48 48" overflow="hidden">
+<defs><clipPath id="arthur-slack-clip"><path d="M5.5 28.5a18.5 12.5 0 1 0 37 0a18.5 12.5 0 1 0 -37 0ZM25.9 17.4C26.7 13.6 29 10.9 32.2 9.4L31.2 7.6C27.4 9.4 24.6 12.6 23.6 17.2ZM30 6a3.6 3.6 0 1 0 7.2 0a3.6 3.6 0 1 0 -7.2 0Z"/></clipPath><clipPath id="arthur-slack-eye-safe"><path d="M0 0H48V48H0ZM15 22.5H33V32.5H15Z" fill-rule="evenodd" clip-rule="evenodd"/></clipPath></defs>
+<g data-role="body"><path d="M5.5 28.5a18.5 12.5 0 1 0 37 0a18.5 12.5 0 1 0 -37 0ZM25.9 17.4C26.7 13.6 29 10.9 32.2 9.4L31.2 7.6C27.4 9.4 24.6 12.6 23.6 17.2ZM30 6a3.6 3.6 0 1 0 7.2 0a3.6 3.6 0 1 0 -7.2 0Z" fill="#e8732a"/></g>
+<g data-role="facet" clip-path="url(#arthur-slack-clip)"><g clip-path="url(#arthur-slack-eye-safe)"><path d="M46 14L14 46H48V14Z" fill="#dd6e2a"/></g></g>
+<g data-role="spot" clip-path="url(#arthur-slack-clip)"><circle cx="10.46" cy="24.376" r="1.4" fill="#ffffff" opacity=".38"/></g>
+</svg>

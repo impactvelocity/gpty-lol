@@ -1,0 +1,326 @@
+{
+  "sprite": "icq-agents-sprite.svg",
+  "sheet_size": [
+    128,
+    96
+  ],
+  "columns": 4,
+  "rows": 3,
+  "cell_size": 32,
+  "icon_size": 16,
+  "baseline": 14,
+  "agents": [
+    {
+      "agent": "daisy",
+      "shape": "flower",
+      "body": "#3fbd4c",
+      "file": "01-daisy-flower.svg",
+      "symbol": "daisy",
+      "cell": {
+        "x": 0,
+        "y": 0,
+        "width": 32,
+        "height": 32
+      },
+      "art": {
+        "x": 8,
+        "y": 8,
+        "width": 16,
+        "height": 16
+      },
+      "palette": {
+        "outline": "#15401a",
+        "body": "#3fbd4c",
+        "highlight": "#90d997",
+        "shade": "#30903a"
+      },
+      "pixel_count": 148
+    },
+    {
+      "agent": "kayleigh",
+      "shape": "water-drop",
+      "body": "#f0559b",
+      "file": "02-kayleigh-water-drop.svg",
+      "symbol": "kayleigh",
+      "cell": {
+        "x": 32,
+        "y": 0,
+        "width": 32,
+        "height": 32
+      },
+      "art": {
+        "x": 40,
+        "y": 8,
+        "width": 16,
+        "height": 16
+      },
+      "palette": {
+        "outline": "#521d35",
+        "body": "#f0559b",
+        "highlight": "#f69cc5",
+        "shade": "#b64176"
+      },
+      "pixel_count": 116
+    },
+    {
+      "agent": "cal",
+      "shape": "cloud",
+      "body": "#16aeef",
+      "file": "03-cal-cloud.svg",
+      "symbol": "cal",
+      "cell": {
+        "x": 64,
+        "y": 0,
+        "width": 32,
+        "height": 32
+      },
+      "art": {
+        "x": 72,
+        "y": 8,
+        "width": 16,
+        "height": 16
+      },
+      "palette": {
+        "outline": "#073b51",
+        "body": "#16aeef",
+        "highlight": "#78d0f6",
+        "shade": "#1184b6"
+      },
+      "pixel_count": 118
+    },
+    {
+      "agent": "mark",
+      "shape": "jellybean",
+      "body": "#6d84b4",
+      "file": "04-mark-jellybean.svg",
+      "symbol": "mark",
+      "cell": {
+        "x": 96,
+        "y": 0,
+        "width": 32,
+        "height": 32
+      },
+      "art": {
+        "x": 104,
+        "y": 8,
+        "width": 16,
+        "height": 16
+      },
+      "palette": {
+        "outline": "#252d3d",
+        "body": "#6d84b4",
+        "highlight": "#aab8d4",
+        "shade": "#536489"
+      },
+      "pixel_count": 110
+    },
+    {
+      "agent": "arthur",
+      "shape": "alien-head",
+      "body": "#ff4500",
+      "file": "05-arthur-alien-head.svg",
+      "symbol": "arthur",
+      "cell": {
+        "x": 0,
+        "y": 32,
+        "width": 32,
+        "height": 32
+      },
+      "art": {
+        "x": 8,
+        "y": 40,
+        "width": 16,
+        "height": 16
+      },
+      "palette": {
+        "outline": "#571700",
+        "body": "#ff4500",
+        "highlight": "#ff936b",
+        "shade": "#c23400"
+      },
+      "pixel_count": 98
+    },
+    {
+      "agent": "channing",
+      "shape": "capsule",
+      "body": "#8a4fd8",
+      "file": "06-channing-capsule.svg",
+      "symbol": "channing",
+      "cell": {
+        "x": 32,
+        "y": 32,
+        "width": 32,
+        "height": 32
+      },
+      "art": {
+        "x": 40,
+        "y": 40,
+        "width": 16,
+        "height": 16
+      },
+      "palette": {
+        "outline": "#2f1b49",
+        "body": "#8a4fd8",
+        "highlight": "#bb99e8",
+        "shade": "#693ca4"
+      },
+      "pixel_count": 120
+    },
+    {
+      "agent": "grug",
+      "shape": "rock",
+      "body": "#d9662f",
+      "file": "07-grug-rock.svg",
+      "symbol": "grug",
+      "cell": {
+        "x": 64,
+        "y": 32,
+        "width": 32,
+        "height": 32
+      },
+      "art": {
+        "x": 72,
+        "y": 40,
+        "width": 16,
+        "height": 16
+      },
+      "palette": {
+        "outline": "#4a2310",
+        "body": "#d9662f",
+        "highlight": "#e9a686",
+        "shade": "#a54e24"
+      },
+      "pixel_count": 152
+    },
+    {
+      "agent": "mortimer",
+      "shape": "ghost",
+      "body": "#b4acd9",
+      "file": "08-mortimer-ghost.svg",
+      "symbol": "mortimer",
+      "cell": {
+        "x": 96,
+        "y": 32,
+        "width": 32,
+        "height": 32
+      },
+      "art": {
+        "x": 104,
+        "y": 40,
+        "width": 16,
+        "height": 16
+      },
+      "palette": {
+        "outline": "#3d3a4a",
+        "body": "#b4acd9",
+        "highlight": "#d4cfe9",
+        "shade": "#8983a5"
+      },
+      "pixel_count": 150
+    },
+    {
+      "agent": "shelly",
+      "shape": "cone",
+      "body": "#ff2e88",
+      "file": "09-shelly-cone.svg",
+      "symbol": "shelly",
+      "cell": {
+        "x": 0,
+        "y": 64,
+        "width": 32,
+        "height": 32
+      },
+      "art": {
+        "x": 8,
+        "y": 72,
+        "width": 16,
+        "height": 16
+      },
+      "palette": {
+        "outline": "#57102e",
+        "body": "#ff2e88",
+        "highlight": "#ff86ba",
+        "shade": "#c22367"
+      },
+      "pixel_count": 122
+    },
+    {
+      "agent": "carol",
+      "shape": "egg",
+      "body": "#e5383b",
+      "file": "10-carol-egg.svg",
+      "symbol": "carol",
+      "cell": {
+        "x": 32,
+        "y": 64,
+        "width": 32,
+        "height": 32
+      },
+      "art": {
+        "x": 40,
+        "y": 72,
+        "width": 16,
+        "height": 16
+      },
+      "palette": {
+        "outline": "#4e1314",
+        "body": "#e5383b",
+        "highlight": "#f08c8d",
+        "shade": "#ae2b2d"
+      },
+      "pixel_count": 136
+    },
+    {
+      "agent": "cora",
+      "shape": "circle",
+      "body": "#c8ff2e",
+      "file": "11-cora-circle.svg",
+      "symbol": "cora",
+      "cell": {
+        "x": 64,
+        "y": 64,
+        "width": 32,
+        "height": 32
+      },
+      "art": {
+        "x": 72,
+        "y": 72,
+        "width": 16,
+        "height": 16
+      },
+      "palette": {
+        "outline": "#445710",
+        "body": "#c8ff2e",
+        "highlight": "#dfff86",
+        "shade": "#98c223"
+      },
+      "pixel_count": 156
+    },
+    {
+      "agent": "lucky",
+      "shape": "slot-machine",
+      "body": "#ffc533",
+      "file": "12-lucky-slot-machine.svg",
+      "symbol": "lucky",
+      "cell": {
+        "x": 96,
+        "y": 64,
+        "width": 32,
+        "height": 32
+      },
+      "art": {
+        "x": 104,
+        "y": 72,
+        "width": 16,
+        "height": 16
+      },
+      "palette": {
+        "outline": "#574311",
+        "body": "#ffc533",
+        "highlight": "#ffdd89",
+        "shade": "#c29627"
+      },
+      "pixel_count": 135
+    }
+  ]
+}

@@ -1,0 +1,37 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 48 48" role="img" aria-label="Kayleigh">
+  <defs>
+    <linearGradient id="kayleigh-body" x1="0" y1="0" x2="0" y2="1" gradientUnits="objectBoundingBox">
+      <stop offset="0" stop-color="#f590be"/>
+      <stop offset="0.52" stop-color="#f0559b"/>
+      <stop offset="1" stop-color="#c0447c"/>
+    </linearGradient>
+    <radialGradient id="kayleigh-glow" cx="0.5" cy="0.72" r="0.64" gradientTransform="translate(0 0.36) scale(1 0.5)">
+      <stop offset="0" stop-color="#f58bbb" stop-opacity="0.64"/>
+      <stop offset="0.55" stop-color="#f58bbb" stop-opacity="0.3"/>
+      <stop offset="1" stop-color="#f58bbb" stop-opacity="0"/>
+    </radialGradient>
+    <linearGradient id="kayleigh-gloss" x1="0" y1="5.5" x2="0" y2="24" gradientUnits="userSpaceOnUse">
+      <stop offset="0" stop-color="#ffffff" stop-opacity="0.9"/>
+      <stop offset="1" stop-color="#ffffff" stop-opacity="0.05"/>
+    </linearGradient>
+    <clipPath id="kayleigh-clip"><path d="M24 3C24 3 40 19.5 40 30A16 16 0 0 1 8 30C8 19.5 24 3 24 3Z"/></clipPath>
+    <clipPath id="kayleigh-eye-safe">
+      <path d="M0 0H48V48H0ZM15 24H33V34H15Z" fill-rule="evenodd" clip-rule="evenodd"/>
+    </clipPath>
+  </defs>
+  <g data-role="outline">
+    <path d="M24 3C24 3 40 19.5 40 30A16 16 0 0 1 8 30C8 19.5 24 3 24 3Z" fill="none" stroke="#5b203b" stroke-width="3" stroke-linejoin="round"/>
+  </g>
+  <g data-role="body">
+    <path d="M24 3C24 3 40 19.5 40 30A16 16 0 0 1 8 30C8 19.5 24 3 24 3Z" fill="url(#kayleigh-body)"/>
+  </g>
+  <g data-role="glow" clip-path="url(#kayleigh-clip)">
+    <path d="M12 39C15 44.8 33 44.8 36 39C33 42.1 15 42.1 12 39Z" fill="url(#kayleigh-glow)"/>
+  </g>
+  <g data-role="gloss" clip-path="url(#kayleigh-clip)">
+    <g clip-path="url(#kayleigh-eye-safe)">
+      <path d="M24 6.8C27 10 32.2 16.6 34.3 21.4C29 24.2 19 24.2 13.7 21.4C15.8 16.6 21 10 24 6.8Z" fill="url(#kayleigh-gloss)"/>
+      <ellipse cx="21.5" cy="13.2" rx="1.35" ry="2.1" fill="#ffffff"/>
+    </g>
+  </g>
+</svg>

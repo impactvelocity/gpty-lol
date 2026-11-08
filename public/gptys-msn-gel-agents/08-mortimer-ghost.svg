@@ -1,0 +1,37 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 48 48" role="img" aria-label="Mortimer">
+  <defs>
+    <linearGradient id="mortimer-body" x1="0" y1="0" x2="0" y2="1" gradientUnits="objectBoundingBox">
+      <stop offset="0" stop-color="#cec9e6"/>
+      <stop offset="0.52" stop-color="#b4acd9"/>
+      <stop offset="1" stop-color="#908aae"/>
+    </linearGradient>
+    <radialGradient id="mortimer-glow" cx="0.5" cy="0.72" r="0.64" gradientTransform="translate(0 0.36) scale(1 0.5)">
+      <stop offset="0" stop-color="#ccc7e5" stop-opacity="0.64"/>
+      <stop offset="0.55" stop-color="#ccc7e5" stop-opacity="0.3"/>
+      <stop offset="1" stop-color="#ccc7e5" stop-opacity="0"/>
+    </radialGradient>
+    <linearGradient id="mortimer-gloss" x1="0" y1="9.5" x2="0" y2="16" gradientUnits="userSpaceOnUse">
+      <stop offset="0" stop-color="#ffffff" stop-opacity="0.9"/>
+      <stop offset="1" stop-color="#ffffff" stop-opacity="0.05"/>
+    </linearGradient>
+    <clipPath id="mortimer-clip"><path d="M9 23C9 14 15.7 7 24 7C32.3 7 39 14 39 23V39C39 41 37 42 35.5 40.5L33 38L30.5 40.5C29 42 27 42 25.5 40.5L24 39L22.5 40.5C21 42 19 42 17.5 40.5L15 38L12.5 40.5C11 42 9 41 9 39Z"/></clipPath>
+    <clipPath id="mortimer-eye-safe">
+      <path d="M0 0H48V48H0ZM15 16H33V26H15Z" fill-rule="evenodd" clip-rule="evenodd"/>
+    </clipPath>
+  </defs>
+  <g data-role="outline">
+    <path d="M9 23C9 14 15.7 7 24 7C32.3 7 39 14 39 23V39C39 41 37 42 35.5 40.5L33 38L30.5 40.5C29 42 27 42 25.5 40.5L24 39L22.5 40.5C21 42 19 42 17.5 40.5L15 38L12.5 40.5C11 42 9 41 9 39Z" fill="none" stroke="#444152" stroke-width="3" stroke-linejoin="round"/>
+  </g>
+  <g data-role="body">
+    <path d="M9 23C9 14 15.7 7 24 7C32.3 7 39 14 39 23V39C39 41 37 42 35.5 40.5L33 38L30.5 40.5C29 42 27 42 25.5 40.5L24 39L22.5 40.5C21 42 19 42 17.5 40.5L15 38L12.5 40.5C11 42 9 41 9 39Z" fill="url(#mortimer-body)"/>
+  </g>
+  <g data-role="glow" clip-path="url(#mortimer-clip)">
+    <path d="M13 35C16 40.8 32 40.8 35 35C32 38.1 16 38.1 13 35Z" fill="url(#mortimer-glow)"/>
+  </g>
+  <g data-role="gloss" clip-path="url(#mortimer-clip)">
+    <g clip-path="url(#mortimer-eye-safe)">
+      <path d="M11.8 21C12.5 14.5 17.5 9.5 24 9.5C30.5 9.5 35.5 14.5 36.2 21C31.1 18.4 16.9 18.4 11.8 21Z" fill="url(#mortimer-gloss)"/>
+      <ellipse cx="18.5" cy="12.8" rx="2" ry="1.25" fill="#ffffff"/>
+    </g>
+  </g>
+</svg>

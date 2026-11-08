@@ -1,0 +1,326 @@
+{
+  "theme": "North Pole \u2014 snowy felt",
+  "folder": "public/gptys-elf-felt-agents/",
+  "character_count": 12,
+  "viewBox": "0 0 48 48",
+  "face_free_exports": true,
+  "transparent_background": true,
+  "previews": {
+    "faceless": "preview-faceless.svg",
+    "eyes_only_in_optional_preview": "preview-with-eyes.svg"
+  },
+  "characters": [
+    {
+      "number": 1,
+      "name": "Daisy",
+      "shape": "flower",
+      "file": "01-daisy-flower.svg",
+      "source_body_color": "#3fbd4c",
+      "format": "vector",
+      "colors_used": [
+        "#496339",
+        "#558249",
+        "#5f9a55",
+        "#82b07a",
+        "#d6e2e8",
+        "#f8f0e1",
+        "#fdf8ef"
+      ],
+      "recommended_eye_color": "#f8f0e1",
+      "element_count": 30,
+      "eye_line": 24.0,
+      "eye_centers_x": [
+        19,
+        29
+      ],
+      "eyes_in_file": false,
+      "source_silhouette_sha256": "8cd62887200c8534ac16caf8027a4ac23333a3549a4eebcfcf26270663b6c179"
+    },
+    {
+      "number": 2,
+      "name": "Kayleigh",
+      "shape": "water-drop",
+      "file": "02-kayleigh-water-drop.svg",
+      "source_body_color": "#f0559b",
+      "format": "vector",
+      "colors_used": [
+        "#3a2b20",
+        "#955961",
+        "#c17482",
+        "#d6e2e8",
+        "#e2899a",
+        "#e8a3b0",
+        "#fdf8ef"
+      ],
+      "recommended_eye_color": "#3a2b20",
+      "element_count": 30,
+      "eye_line": 29.0,
+      "eye_centers_x": [
+        19,
+        29
+      ],
+      "eyes_in_file": false,
+      "source_silhouette_sha256": "f75e78dc2eb0e34e6c20e072260696bac89d21ebeafb077cefc26f464bc78e70"
+    },
+    {
+      "number": 3,
+      "name": "Cal",
+      "shape": "cloud",
+      "file": "03-cal-cloud.svg",
+      "source_body_color": "#16aeef",
+      "format": "vector",
+      "colors_used": [
+        "#3a2b20",
+        "#576f80",
+        "#6a93ae",
+        "#78aed0",
+        "#96c0da",
+        "#d6e2e8",
+        "#fdf8ef"
+      ],
+      "recommended_eye_color": "#3a2b20",
+      "element_count": 30,
+      "eye_line": 25.0,
+      "eye_centers_x": [
+        19,
+        29
+      ],
+      "eyes_in_file": false,
+      "source_silhouette_sha256": "86a1a12e85fa507a71aaa2f919c73f29e050bf9a15506dd5a7b912c02547730f"
+    },
+    {
+      "number": 4,
+      "name": "Mark",
+      "shape": "jellybean",
+      "file": "04-mark-jellybean.svg",
+      "source_body_color": "#6d84b4",
+      "format": "vector",
+      "colors_used": [
+        "#444c62",
+        "#4e6283",
+        "#56739c",
+        "#7b92b2",
+        "#d6e2e8",
+        "#f8f0e1",
+        "#fdf8ef"
+      ],
+      "recommended_eye_color": "#f8f0e1",
+      "element_count": 30,
+      "eye_line": 22.0,
+      "eye_centers_x": [
+        19,
+        29
+      ],
+      "eyes_in_file": false,
+      "source_silhouette_sha256": "be2cfc6c894c8c95d85cd9a007dcdb6fcf14552218b44282c5aa9282bb8c7d9a"
+    },
+    {
+      "number": 5,
+      "name": "Arthur",
+      "shape": "alien-head",
+      "file": "05-arthur-alien-head.svg",
+      "source_body_color": "#ff4500",
+      "format": "vector",
+      "colors_used": [
+        "#965025",
+        "#c3682c",
+        "#d6e2e8",
+        "#e47a32",
+        "#ea975f",
+        "#f8f0e1",
+        "#fdf8ef"
+      ],
+      "recommended_eye_color": "#f8f0e1",
+      "element_count": 30,
+      "eye_line": 27.5,
+      "eye_centers_x": [
+        19,
+        29
+      ],
+      "eyes_in_file": false,
+      "source_silhouette_sha256": "e40450d087e993290f0e5f1a04d1cb9f1be0d245c3d0769f6e8d728e8bde4a36"
+    },
+    {
+      "number": 6,
+      "name": "Channing",
+      "shape": "capsule",
+      "file": "06-channing-capsule.svg",
+      "source_body_color": "#8a4fd8",
+      "format": "vector",
+      "colors_used": [
+        "#603e61",
+        "#764e82",
+        "#875a9a",
+        "#a17eb0",
+        "#d6e2e8",
+        "#f8f0e1",
+        "#fdf8ef"
+      ],
+      "recommended_eye_color": "#f8f0e1",
+      "element_count": 30,
+      "eye_line": 24.0,
+      "eye_centers_x": [
+        19,
+        29
+      ],
+      "eyes_in_file": false,
+      "source_silhouette_sha256": "de5b5d5108413659e00c220a0547ee845925b86f819dcdc838cfcbd03e73f51a"
+    },
+    {
+      "number": 7,
+      "name": "Grug",
+      "shape": "rock",
+      "file": "07-grug-rock.svg",
+      "source_body_color": "#d9662f",
+      "format": "vector",
+      "colors_used": [
+        "#73472a",
+        "#915a34",
+        "#a8693c",
+        "#bb8a67",
+        "#d6e2e8",
+        "#f8f0e1",
+        "#fdf8ef"
+      ],
+      "recommended_eye_color": "#f8f0e1",
+      "element_count": 30,
+      "eye_line": 24.0,
+      "eye_centers_x": [
+        19,
+        29
+      ],
+      "eyes_in_file": false,
+      "source_silhouette_sha256": "292afa52d3222795fd6713de57c6382bbf2e5d5fb739f0b129ef7e545a4e1f5f"
+    },
+    {
+      "number": 8,
+      "name": "Mortimer",
+      "shape": "ghost",
+      "file": "08-mortimer-ghost.svg",
+      "source_body_color": "#b4acd9",
+      "format": "vector",
+      "colors_used": [
+        "#3a2b20",
+        "#998c82",
+        "#c7bdb0",
+        "#d6e2e8",
+        "#e9e1d3",
+        "#eee8dd",
+        "#fdf8ef"
+      ],
+      "recommended_eye_color": "#3a2b20",
+      "element_count": 30,
+      "eye_line": 21.0,
+      "eye_centers_x": [
+        19,
+        29
+      ],
+      "eyes_in_file": false,
+      "source_silhouette_sha256": "bc54c2329df6c77b4811edca65d2fcdb0340bdf43b4978ee7c680acbfbec8208"
+    },
+    {
+      "number": 9,
+      "name": "Shelly",
+      "shape": "cone",
+      "file": "09-shelly-cone.svg",
+      "source_body_color": "#ff2e88",
+      "format": "vector",
+      "colors_used": [
+        "#8d3848",
+        "#b5465e",
+        "#d4506f",
+        "#d6e2e8",
+        "#dd768f",
+        "#f8f0e1",
+        "#fdf8ef"
+      ],
+      "recommended_eye_color": "#f8f0e1",
+      "element_count": 30,
+      "eye_line": 30.0,
+      "eye_centers_x": [
+        19,
+        29
+      ],
+      "eyes_in_file": false,
+      "source_silhouette_sha256": "db43c1e42bdd758b98502b031503ac10b2a6549d944be81dd39462cddb776634"
+    },
+    {
+      "number": 10,
+      "name": "Carol",
+      "shape": "egg",
+      "file": "10-carol-egg.svg",
+      "source_body_color": "#e5383b",
+      "format": "vector",
+      "colors_used": [
+        "#862a22",
+        "#ac3128",
+        "#c8372d",
+        "#d4635b",
+        "#d6e2e8",
+        "#f8f0e1",
+        "#fdf8ef"
+      ],
+      "recommended_eye_color": "#f8f0e1",
+      "element_count": 30,
+      "eye_line": 26.0,
+      "eye_centers_x": [
+        19,
+        29
+      ],
+      "eyes_in_file": false,
+      "source_silhouette_sha256": "80ecb087f3c37650de590873833a3aedc7ac9a9f085c441ddc739dee7d3c1a56"
+    },
+    {
+      "number": 11,
+      "name": "Cora",
+      "shape": "circle",
+      "file": "11-cora-circle.svg",
+      "source_body_color": "#c8ff2e",
+      "format": "vector",
+      "colors_used": [
+        "#3a2b20",
+        "#70793b",
+        "#8da24b",
+        "#a3c058",
+        "#b7ce7d",
+        "#d6e2e8",
+        "#fdf8ef"
+      ],
+      "recommended_eye_color": "#3a2b20",
+      "element_count": 30,
+      "eye_line": 22.0,
+      "eye_centers_x": [
+        19,
+        29
+      ],
+      "eyes_in_file": false,
+      "source_silhouette_sha256": "563f106b9f44c05c619623961b135aa3ab81e2c307914085bede2c89d9a41694"
+    },
+    {
+      "number": 12,
+      "name": "Lucky",
+      "shape": "slot-machine",
+      "file": "12-lucky-slot-machine.svg",
+      "source_body_color": "#ffc533",
+      "format": "vector",
+      "colors_used": [
+        "#3a2b20",
+        "#956f32",
+        "#c19340",
+        "#d6e2e8",
+        "#e2ae4a",
+        "#e8c072",
+        "#fdf8ef"
+      ],
+      "recommended_eye_color": "#3a2b20",
+      "element_count": 30,
+      "eye_line": 25.0,
+      "eye_centers_x": [
+        19,
+        29
+      ],
+      "eyes_in_file": false,
+      "source_silhouette_sha256": "ece3c967c9970a1579d4cf3f1ee7d2018ea76487ab4c1bfd2bb057627f12ac03"
+    }
+  ]
+}

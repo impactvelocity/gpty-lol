@@ -1,6 +1,6 @@
 "use client";
 
-import { ArrowUpRight, Info } from "lucide-react";
+import { ArrowUpRight } from "lucide-react";
 import { AGENTS, type Agent, agentEra } from "@/lib/agents";
 import { ACTIVE_ROWS } from "./activeRows";
 import { Gpty, type Mood } from "./Gpty";
@@ -11,17 +11,18 @@ export function AgentAvatar({ agent, size = 40, mood = "idle" }: { agent: Agent;
 }
 
 const REPO = "https://github.com/impactvelocity/gpty-lol";
-const HACKATHON = "https://kiroween.devpost.com/";
 
-/** A Kiro-style ghost in the current text color; the eyes are cut out. */
+/** A Kiro-style ghost (24 × 24, evenodd): the eyes are cut out. */
+export const KIRO_GHOST_PATH =
+  "M13 3C17.5 3 20 6 20 10C20 13.5 19.5 16 20.5 18.5C21 19.8 19.8 20.6 18.6 20C17.5 19.5 16.5 19.4 15.6 20.3C13.8 22 11 22 9.3 20.4C7.6 21.6 4.6 21.8 3.6 20.6C5.5 19.4 6.2 17 6.3 14C6.4 11.5 6 9 6.6 7.4C7.6 4.6 10 3 13 3ZM9.9 10.6a1.25 1.75 0 1 0 2.5 0a1.25 1.75 0 1 0 -2.5 0ZM14.3 10.6a1.25 1.75 0 1 0 2.5 0a1.25 1.75 0 1 0 -2.5 0Z";
+export const HACKATHON = "https://kiroween.devpost.com/";
+
+/** A Kiro-style ghost in the current text color. */
 function KiroGhost() {
   return (
     <span className="grid h-9 w-9 shrink-0 place-items-center">
       <svg viewBox="0 0 24 24" className="h-[22px] w-[22px]" fill="currentColor" aria-hidden>
-        <path
-          fillRule="evenodd"
-          d="M13 3C17.5 3 20 6 20 10C20 13.5 19.5 16 20.5 18.5C21 19.8 19.8 20.6 18.6 20C17.5 19.5 16.5 19.4 15.6 20.3C13.8 22 11 22 9.3 20.4C7.6 21.6 4.6 21.8 3.6 20.6C5.5 19.4 6.2 17 6.3 14C6.4 11.5 6 9 6.6 7.4C7.6 4.6 10 3 13 3ZM9.9 10.6a1.25 1.75 0 1 0 2.5 0a1.25 1.75 0 1 0 -2.5 0ZM14.3 10.6a1.25 1.75 0 1 0 2.5 0a1.25 1.75 0 1 0 -2.5 0Z"
-        />
+        <path fillRule="evenodd" d={KIRO_GHOST_PATH} />
       </svg>
     </span>
   );
@@ -35,11 +36,38 @@ function GitHubMark({ className }: { className?: string }) {
   );
 }
 
-export function Logo() {
+/**
+ * The gpty wordmark, dressed for whichever agent is open: every agent has its
+ * own in public/logos, and the Meet page (or an unknown id) wears normal.webp.
+ * Each one carries its own outline, so it reads on any scene as it is.
+ */
+export function Logo({ id }: { id?: string }) {
+  const src = `/logos/${id && AGENTS.some((a) => a.id === id) ? id : "normal"}.webp`;
   return (
-    <span className="text-[14px] font-semibold tracking-wider">
-      gpty<span className="text-[var(--shell-muted)]">.lol</span>
-    </span>
+    // eslint-disable-next-line @next/next/no-img-element
+    <img src={src} alt="gpty.lol" width={60} height={24} draggable={false} className="block h-6 w-auto select-none" />
+  );
+}
+
+/**
+ * The logo as the way home: a real link to /meet (so it opens in a new tab
+ * with ⌘/Ctrl or the middle button), but a plain click switches in place.
+ */
+export function LogoLink({ id, onMeet }: { id?: string; onMeet: () => void }) {
+  return (
+    <a
+      href="/meet"
+      aria-label="gpty.lol: Meet the Gptys"
+      title="Meet the Gptys"
+      onClick={(e) => {
+        if (e.button !== 0 || e.metaKey || e.ctrlKey || e.shiftKey || e.altKey) return;
+        e.preventDefault();
+        onMeet();
+      }}
+      className="-m-1 rounded-lg p-1 transition-transform duration-150 hover:scale-[1.04] active:scale-[0.97]"
+    >
+      <Logo id={id} />
+    </a>
   );
 }
 
@@ -62,7 +90,6 @@ export function AgentSidebar({
   mood,
   onOpenAgent,
   onMeet,
-  onAbout,
 }: {
   agentId: string;
   isDraft: boolean;
@@ -72,14 +99,12 @@ export function AgentSidebar({
   /** What the open agent is doing; the others rest. */
   mood: Mood;
   onOpenAgent: (id: string) => void;
-  onAbout: () => void;
 }) {
-  const current = AGENTS.find((a) => a.id === agentId);
   return (
     <div className="flex h-full flex-col">
-      {/* The name and two icons, 24px down: level with the top of the chat window beside it. */}
+      {/* The logo and GitHub, 24px down: level with the top of the chat window beside it. */}
       <div className="mb-3 mt-6 flex h-8 shrink-0 items-center justify-between pl-6 pr-3">
-        <Logo />
+        <LogoLink id={meet ? undefined : agentId} onMeet={onMeet} />
         <div className="flex items-center gap-0.5 text-[var(--shell-text)]">
           <a
             href={REPO}
@@ -91,26 +116,18 @@ export function AgentSidebar({
           >
             <GitHubMark className="h-[17px] w-[17px]" />
           </a>
-          <button
-            onClick={onAbout}
-            aria-label={`About ${current?.name ?? "this Gpty"}`}
-            title={`About ${current?.name ?? "this Gpty"}`}
-            className="grid h-8 w-8 place-items-center rounded-lg transition-colors hover:bg-[var(--shell-hover)] hover:text-[var(--shell-text)]"
-          >
-            <Info className="h-[18px] w-[18px]" />
-          </button>
         </div>
       </div>
 
       {/* What gptys are: opens a page beside the sidebar. */}
-      <div className="mx-3 shrink-0 border-b border-[var(--shell-ring)] pb-3">
+      <div className="mx-3 shrink-0">
         <button
           onClick={onMeet}
           aria-current={meet ? "page" : undefined}
-          className={`group flex w-full items-center gap-3.5 rounded-2xl px-3 py-2 text-left transition-[background-color,box-shadow] duration-200 ${
+          className={`group flex w-full items-center gap-3.5 rounded-2xl px-3 py-2 text-left ring-1 ring-[var(--shell-ring)] transition-[background-color,box-shadow] duration-200 ${
             meet
-              ? "bg-[var(--shell-active)] shadow-[var(--shell-shadow)] ring-1 ring-[var(--shell-ring)] backdrop-blur-md"
-              : "hover:bg-[var(--shell-hover)]"
+              ? "bg-[var(--shell-active)] shadow-[var(--shell-shadow)] backdrop-blur-md"
+              : "shell-kiro backdrop-blur-sm"
           }`}
         >
           <Family />
@@ -121,17 +138,12 @@ export function AgentSidebar({
       <nav className="no-scrollbar min-h-0 flex-1 overflow-y-auto px-3 pb-3 pt-3" aria-label="Agents">
         <ul className="space-y-0.5">
           {/* Hidden agents stay out of the list unless one is open (e.g. via its URL). */}
-          {AGENTS.filter((a) => !a.hidden || a.id === agentId).flatMap((a, i, shown) => {
-            // A hairline between the real chat apps and the stylized worlds (Grug on).
-            const divider = a.themed && i > 0 && !shown[i - 1].themed && (
-              <li key={`${a.id}-divider`} role="separator" aria-hidden className="mx-3 my-2 h-px bg-[var(--shell-ring)]" />
-            );
+          {AGENTS.filter((a) => !a.hidden || a.id === agentId).map((a) => {
             const open = !meet && a.id === agentId;
             // The open agent can dress its row as its own app.
             const Themed = open ? ACTIVE_ROWS[a.id] : undefined;
             if (Themed) {
-              return [
-                divider,
+              return (
                 <li key={a.id}>
                   <Themed
                     agent={a}
@@ -140,11 +152,10 @@ export function AgentSidebar({
                     aria-current={isDraft ? "page" : undefined}
                     title={`New chat with ${a.name}`}
                   />
-                </li>,
-              ];
+                </li>
+              );
             }
-            return [
-              divider,
+            return (
               <li key={a.id}>
                 <button
                   onClick={() => onOpenAgent(a.id)}
@@ -153,7 +164,7 @@ export function AgentSidebar({
                   className={`group flex w-full items-center gap-3.5 rounded-2xl px-3 py-2 text-left transition-[background-color,box-shadow] duration-200 ${
                     open
                       ? "bg-[var(--shell-active)] shadow-[var(--shell-shadow)] ring-1 ring-[var(--shell-ring)] backdrop-blur-md"
-                      : "hover:bg-[var(--shell-hover)]"
+                      : "hover:bg-[var(--shell-hover)] hover:backdrop-blur-sm"
                   }`}
                 >
                   <AgentAvatar agent={a} mood={open ? mood : "idle"} />
@@ -165,19 +176,19 @@ export function AgentSidebar({
                     </span>
                   </span>
                 </button>
-              </li>,
-            ];
+              </li>
+            );
           })}
         </ul>
       </nav>
 
       {/* Made for the Kiroween hackathon. */}
-      <div className="mx-3 shrink-0 border-t border-[var(--shell-ring)] py-3">
+      <div className="mx-3 shrink-0 py-3">
         <a
           href={HACKATHON}
           target="_blank"
           rel="noreferrer"
-          className="group flex w-full items-center gap-3 rounded-2xl px-3 py-2 text-left transition-colors hover:bg-[var(--shell-hover)]"
+          className="shell-kiro group flex w-full items-center gap-3 rounded-2xl px-3 py-2 text-left backdrop-blur-sm"
         >
           <KiroGhost />
           <span className="min-w-0 flex-1 truncate text-[14px] font-medium tracking-wide">Built for Kiroween</span>

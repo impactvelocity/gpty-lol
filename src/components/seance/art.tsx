@@ -20,7 +20,7 @@ export type ArtSlot = "wallpaper" | "sun" | "moon" | "eye";
  * public/seance/; remove it to go back to the drawing.
  */
 const FILES: Partial<Record<ArtSlot, string>> = {
-  // wallpaper: "/seance/wallpaper.webp",
+  wallpaper: "/seance/wallpaper.webp",
   // sun: "/seance/sun.webp",
   // moon: "/seance/moon.webp",
   // eye: "/seance/eye.webp",
@@ -308,20 +308,6 @@ export function Moth({ size = 16, flap = 0.2 }: { size?: number; flap?: number }
 
 /* ───────── Old film ───────── */
 
-const SPECKS = Array.from({ length: 18 }, (_, i) => {
-  const r = rand(300 + i * 7);
-  return {
-    x: r() * 100,
-    y: r() * 100,
-    s: 1.5 + r() * 3.5,
-    dur: (2.2 + r() * 5).toFixed(2),
-    delay: (-r() * 7).toFixed(2),
-    dark: r() > 0.55,
-    o: (0.18 + r() * 0.25).toFixed(2),
-    shape: `${40 + r() * 60}% ${30 + r() * 70}% ${45 + r() * 55}% ${35 + r() * 65}%`,
-  };
-});
-
 const DUST = Array.from({ length: 40 }, (_, i) => {
   const r = rand(900 + i * 13);
   return {
@@ -333,18 +319,27 @@ const DUST = Array.from({ length: 40 }, (_, i) => {
   };
 });
 
+/** Scratches down the film: steady, each drifting a hair sideways on a slow clock. */
 const SCRATCHES = [
-  { x: 9, top: 0, h: 74, rot: 0.6, o: 0.05, dur: 3.1 },
-  { x: 88.5, top: 16, h: 84, rot: -0.8, o: 0.05, dur: 3.7 },
-  { x: 41, top: 56, h: 44, rot: 0.2, o: 0.03, dur: 5.2 },
-  { x: 74, top: 2, h: 20, rot: 58, o: 0.04, dur: 6.1 },
+  { x: 9, top: 0, h: 74, rot: 0.6, o: 0.1, dur: 23 },
+  { x: 88.5, top: 16, h: 84, rot: -0.8, o: 0.1, dur: 29 },
+  { x: 41, top: 56, h: 44, rot: 0.2, o: 0.07, dur: 37 },
+  { x: 74, top: 2, h: 20, rot: 58, o: 0.06, dur: 31 },
+];
+
+/** Long lines running the height of the frame, wandering slowly across it. */
+const FILM_LINES = [
+  { from: 18, to: 27, o: 0.13, dur: 26 },
+  { from: 64, to: 57, o: 0.1, dur: 34 },
+  { from: 83, to: 90, o: 0.08, dur: 41 },
 ];
 
 /**
- * Old-film effects over the whole séance, text included, all kept faint:
- * dust, specks that flash for a frame, scratches that skip, a running line
- * and a slow warm light leak. Pointer-transparent. (The grain is in the
- * room behind: blended in here, it would show as a grey box.)
+ * Old-film effects over the whole séance, text included, kept faint and
+ * steady (nothing flashes): dust, scratches, long projector lines that
+ * wander slowly across the frame, and a slow warm light leak.
+ * Pointer-transparent. (The grain is in the room behind: blended in here,
+ * it would show as a grey box.)
  */
 export function FilmFX() {
   return (
@@ -352,31 +347,18 @@ export function FilmFX() {
       {DUST.map((d, i) => (
         <span key={i} className="sp-film-dust" style={{ left: `${d.x}%`, top: `${d.y}%`, width: d.s, height: d.s * 0.8, borderRadius: d.shape, opacity: d.o }} />
       ))}
-      {SPECKS.map((d, i) => (
-        <span
-          key={i}
-          className="sp-film-speck"
-          style={
-            {
-              left: `${d.x}%`,
-              top: `${d.y}%`,
-              width: d.s,
-              height: d.s * 0.8,
-              borderRadius: d.shape,
-              background: d.dark ? "#000" : BONE,
-              "--o": d.o,
-              animationDuration: `${d.dur}s`,
-              animationDelay: `${d.delay}s`,
-            } as CSSProperties
-          }
-        />
-      ))}
       {SCRATCHES.map((s, i) => (
         <span key={i} className="sp-film-scratch" style={{ left: `${s.x}%`, top: `${s.top}%`, height: `${s.h}%`, transform: `rotate(${s.rot}deg)`, opacity: s.o }}>
-          <i style={{ animationDuration: `${s.dur}s`, animationDelay: `${(-i * 0.7).toFixed(1)}s` }} />
+          <i style={{ animationDuration: `${s.dur}s`, animationDelay: `${(-i * 5).toFixed(1)}s` }} />
         </span>
       ))}
-      <span className="sp-film-line" />
+      {FILM_LINES.map((l, i) => (
+        <span
+          key={i}
+          className="sp-film-line"
+          style={{ "--from": `${l.from}%`, "--to": `${l.to}%`, opacity: l.o, animationDuration: `${l.dur}s`, animationDelay: `${-i * 9}s` } as CSSProperties}
+        />
+      ))}
       <div className="sp-film-leak" />
     </div>
   );

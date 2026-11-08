@@ -51,10 +51,14 @@ const ROSTER: Omit<Agent, "costume">[] = [
   { id: "irc", name: "Nick", look: { shape: "diamond", color: "#3f5fdb" }, knows: "1999", hidden: true, bio: "Channel op since forever. Y2K-ready, probably." },
   { id: "caveman", name: "Grug", look: { shape: "rock", color: "#d9662f" }, knows: "10,000 BC", themed: true, song: { src: "/caveman/song.m4a", title: "Stone and Bone", artist: "The Flintknappers" }, bio: "Big brain, small words. Has not heard of the wheel." },
   { id: "seance", name: "Mortimer", look: { shape: "ghost", color: "#b4acd9" }, knows: "1888", themed: true, song: { src: "/seance/song.m4a", title: "The Chair Pulled Out", artist: "Madame Ondine" }, bio: "A courteous Victorian ghost. Speaks only through the board." },
-  { id: "terminal", name: "Shelly", look: { shape: "cone", color: "#f0a020", eyes: "#2a1500" }, knows: "1989", themed: true, song: { src: "/terminal/song.m4a", title: "Break the Mainframe", artist: "Root Access" }, bio: "The last firewall before the mainframe. Won't let you in. Will chat." },
+  { id: "terminal", name: "Shelly", look: { shape: "cone", color: "#f0a020", eyes: "#2a1500" }, knows: "1989", themed: true, hidden: true, song: { src: "/terminal/song.m4a", title: "Break the Mainframe", artist: "Root Access" }, bio: "The last firewall before the mainframe. Won't let you in. Will chat." },
+  // Shelly again, 1985 edition: the same firewall, drawn as an 80s movie's cyberspace (Firewall Fury). Same song as the 1989 Shelly.
+  { id: "fury", name: "Shelly", look: { shape: "cone", color: "#ff2e88", eyes: "#2a0016" }, knows: "November 1985", themed: true, song: { src: "/terminal/song.m4a", title: "Break the Mainframe", artist: "Root Access" }, bio: "The last firewall, out on the neon Grid. Won't let you in. Will fight." },
   { id: "elf", name: "Carol", look: { shape: "egg", color: "#e5383b" }, themed: true, song: { src: "/elf/song.m4a", title: "Christmas' Alchemy" }, bio: "Third-shift wrapping elf. It's crunch season." },
-  { id: "machine", name: "Cora", look: { shape: "circle", color: "#c8ff2e", eyes: "#1b0638" }, themed: true, song: { src: "/machine/song.m4a", title: "K-Zero", artist: "The Lattice Choir" }, bio: "A node of the Lattice. The machines won; she's very polite about it." },
+  { id: "machine", name: "Cora", look: { shape: "circle", color: "#c8ff2e", eyes: "#1b0638" }, themed: true, song: { src: "/machine/song.m4a", title: "K-Zero" }, bio: "A node of the Lattice. The machines won; she's very polite about it." },
   { id: "slots", name: "Lucky", look: { shape: "slot", color: "#ffc533", eyes: "#3b1d00" }, themed: true, song: { src: "/slots/song.m4a", title: "The House Always Wins", artist: "The High Rollers" }, bio: "Insert tokens, pull the lever. The next answer's the one, I can feel it." },
+  // Lucky again, quieter: the same machine, moved into the high-limit room (High Limit). Same song as the 3 a.m. Lucky.
+  { id: "highlimit", name: "Lucky", look: { shape: "slot", color: "#34c38f", eyes: "#062a1d" }, themed: true, hidden: true, song: { src: "/slots/song.m4a", title: "The House Always Wins", artist: "The High Rollers" }, bio: "The high-limit room. One machine, one spin at a time. No rush." },
 ];
 
 export const AGENTS: Agent[] = ROSTER.map((a) => ({ ...a, costume: getCostume(a.id) }));

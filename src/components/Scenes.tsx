@@ -6,6 +6,8 @@ import { art as caveArt } from "./caveman/art";
 import { art as elfArt } from "./elf/art";
 import { Picto } from "./caveman/pictos";
 import { art as fbArt, Sheep, SheepSkyHill } from "./facebook/art";
+import { FuryScene } from "./fury/scene";
+import { HighLimitScene } from "./highlimit/scene";
 import { art as icqArt } from "./icq/art";
 import { art as ircArt, Trout } from "./irc/art";
 import { MachineScene } from "./machine/art";
@@ -270,6 +272,52 @@ function Campfire() {
 }
 
 /**
+ * Warm light thrown up from a fire just out of frame, bottom left, behind the
+ * agent list: a wide glow that breathes and a hotter core that flickers on a
+ * different beat, so the light never settles. Screen-blended, so it only ever
+ * adds warmth.
+ */
+function Firelight() {
+  return (
+    <div className="pointer-events-none absolute inset-0 overflow-hidden mix-blend-screen" aria-hidden>
+      <div className="sc-firelight absolute -bottom-[40vmin] -left-[34vmin] h-[120vmin] w-[120vmin] rounded-full bg-[radial-gradient(closest-side,rgba(255,130,50,.26),rgba(255,95,35,.1)_45%,transparent_75%)]" style={v({ "--d": "3.7s" })} />
+      <div className="sc-firelight absolute -bottom-[18vmin] -left-[16vmin] h-[58vmin] w-[58vmin] rounded-full bg-[radial-gradient(closest-side,rgba(255,190,90,.28),rgba(255,120,40,.1)_50%,transparent)]" style={v({ "--d": "2.3s", "--dl": "-1.1s" })} />
+    </div>
+  );
+}
+
+/** Soft dark shadows, as if thrown by the fire, wandering slowly across the rock. */
+const CAVE_SHADOWS = [
+  { x: "58%", y: "22%", s: "70vmin", o: 0.34, d: 38, dl: -6 },
+  { x: "86%", y: "68%", s: "60vmin", o: 0.3, d: 46, dl: -21 },
+  { x: "32%", y: "84%", s: "54vmin", o: 0.26, d: 33, dl: -14 },
+];
+
+function CaveShadows() {
+  return (
+    <div className="pointer-events-none absolute inset-0 overflow-hidden" aria-hidden>
+      {CAVE_SHADOWS.map((s, i) => (
+        <div
+          key={i}
+          className="sc-blob absolute rounded-full mix-blend-multiply"
+          style={v({
+            left: s.x,
+            top: s.y,
+            width: s.s,
+            height: s.s,
+            marginLeft: `calc(${s.s} / -2)`,
+            marginTop: `calc(${s.s} / -2)`,
+            background: `radial-gradient(closest-side, rgba(12,3,2,${s.o}), rgba(12,3,2,${(s.o * 0.4).toFixed(2)}) 55%, transparent)`,
+            "--d": `${s.d}s`,
+            "--dl": `${s.dl}s`,
+          })}
+        />
+      ))}
+    </div>
+  );
+}
+
+/**
  * Grug's cave at red twilight: the view out of the cave mouth over a valley,
  * a low sun going down behind the mesas, a herd of mammoths crossing far off,
  * the first stars. The sidebar sits in the shadow of the cave wall on the
@@ -283,12 +331,18 @@ function Cave() {
   const embers = useScatter(11, 14, (r) => ({ x: 70 + r() * 70, d: 4 + r() * 4, dl: -r() * 8, s: 2 + r() * 3, dx: (r() - 0.5) * 80 }));
   if (photo) {
     return (
-      // eslint-disable-next-line @next/next/no-img-element
-      <img src={photo} alt="" draggable={false} decoding="async" className="sc-drift-in absolute inset-0 h-full w-full object-cover object-[60%_62%]" />
+      <>
+        {/* eslint-disable-next-line @next/next/no-img-element */}
+        <img src={photo} alt="" draggable={false} decoding="async" className="sc-drift-in absolute inset-0 h-full w-full object-cover object-[60%_62%]" />
+        <CaveShadows />
+        <Firelight />
+      </>
     );
   }
   return (
     <>
+      <CaveShadows />
+      <Firelight />
       <Stars seed={13} n={46} top={0} bottom={36} color="#ffdcb8" max={2} />
       {/* The sun, low and red, with its haze. */}
       <div className="absolute left-[68%] top-[48%] h-[90vh] w-[90vh] -translate-x-1/2 -translate-y-1/2 rounded-full bg-[radial-gradient(closest-side,rgba(255,150,70,.42),rgba(255,110,50,.12)_55%,transparent)]" />
@@ -371,6 +425,14 @@ function LetterRing() {
   );
 }
 
+/** Faint lights far off in the séance room, each breathing on its own slow clock. */
+const PARLOR_GLOWS = [
+  { x: "88%", y: "12%", s: "34vmin", c: "rgba(200,205,235,.07)", d: 17, dl: -4 }, // moonlight, cold
+  { x: "84%", y: "82%", s: "52vmin", c: "rgba(255,150,70,.09)", d: 11, dl: -2 }, // a candle behind the nightshade
+  { x: "52%", y: "104%", s: "70vmin", c: "rgba(255,120,50,.08)", d: 15, dl: -9 }, // the floor, lit from somewhere below
+  { x: "30%", y: "70%", s: "40vmin", c: "rgba(201,165,90,.06)", d: 19, dl: -12 }, // gold, by the star chart
+];
+
 /** A four-pointed star, twinkling. */
 function Twinkle({ x, y, s, d, dl }: { x: number; y: number; s: number; d: number; dl: number }) {
   return (
@@ -382,33 +444,53 @@ function Twinkle({ x, y, s, d, dl }: { x: number; y: number; s: number; d: numbe
 
 /**
  * The room of the séance, after Lottery Clock's Ouija: warm charcoal that
- * smoulders from below, engraved gold stars, the sleeping crescent moon, a
- * board's alphabet turning behind the sidebar, smoke, and old-film mottling,
+ * smoulders from below, a few faint gold stars, the sleeping crescent moon, a
+ * board's alphabet turning behind the sidebar, and old-film mottling,
  * dust and scratches. The board itself floats in the window. The picture
  * once it's in (see src/components/seance/ART.md), else drawn.
  */
 function Parlor() {
   const photo = seanceArt("wallpaper");
-  const stars = useScatter(21, 22, (r) => ({ ...spot(r), s: 7 + r() * 11, d: 2.4 + r() * 3, dl: -r() * 5 }));
-  const dots = useScatter(23, 30, (r) => ({ x: 3 + r() * 94, y: 4 + r() * 80, r: 1 + r() * 1.8, d: 2.4 + r() * 3, dl: -r() * 5 }));
+  const stars = useScatter(21, 12, (r) => ({ ...spot(r), s: 5 + r() * 6, d: 3.5 + r() * 3, dl: -r() * 5 }));
+  const dots = useScatter(23, 16, (r) => ({ x: 3 + r() * 94, y: 4 + r() * 80, r: 0.8 + r() * 1.2, d: 3.5 + r() * 3, dl: -r() * 5 }));
   const dust = useScatter(24, 40, (r) => ({ x: r() * 100, y: r() * 100, s: 1 + r() * 2.4, o: 0.04 + r() * 0.1 }));
-  const wisps = useScatter(22, 5, (r) => ({ x: 24 + r() * 72, d: 10 + r() * 8, dl: -r() * 18 }));
   if (photo) {
     return (
-      // eslint-disable-next-line @next/next/no-img-element
-      <img src={photo} alt="" draggable={false} decoding="async" className="sc-drift-in absolute inset-0 h-full w-full object-cover object-[60%_50%]" />
+      <>
+        {/* The picture is very dark; lifted so its engravings read around the edges. */}
+        {/* eslint-disable-next-line @next/next/no-img-element */}
+        <img src={photo} alt="" draggable={false} decoding="async" className="sc-drift-in absolute inset-0 h-full w-full object-cover object-center brightness-[1.8] contrast-[1.1]" />
+        {/* Lights far off in the dark: candlelight low in the room, a cold glimmer by the moon. */}
+        {PARLOR_GLOWS.map((g, i) => (
+          <div
+            key={i}
+            className="sc-glow absolute rounded-full mix-blend-screen"
+            style={v({ left: g.x, top: g.y, width: g.s, height: g.s, translate: "-50% -50%", background: `radial-gradient(closest-side, ${g.c}, transparent)`, "--d": `${g.d}s`, "--dl": `${g.dl}s` })}
+          />
+        ))}
+        {/* Old film: mottling, grain, dust and a vignette. */}
+        <div className="absolute inset-0 opacity-[.14] mix-blend-multiply" style={{ backgroundImage: MOTTLE }} />
+        <div className="absolute inset-0 opacity-25 mix-blend-overlay" style={{ backgroundImage: GRAIN, backgroundSize: "180px" }} />
+        {dust.map((d, i) => (
+          <span key={i} className="absolute block rounded-full" style={{ left: `${d.x}%`, top: `${d.y}%`, width: d.s, height: d.s * 0.8, background: BONE, opacity: d.o * 0.8 }} />
+        ))}
+        <div className="absolute inset-0 bg-[radial-gradient(ellipse_85%_75%_at_50%_45%,transparent_55%,rgba(0,0,0,.22)_85%,rgba(0,0,0,.4)_100%)]" />
+      </>
     );
   }
   return (
     <>
       {/* The room smoulders from below. */}
-      <div className="absolute inset-x-0 bottom-0 h-[70%] bg-[radial-gradient(ellipse_75%_65%_at_50%_100%,rgba(154,106,48,.16)_0%,rgba(154,106,48,.05)_45%,transparent_75%)]" />
-      {dots.map((d, i) => (
-        <span key={i} className="sc-twinkle absolute rounded-full" style={v({ left: `${d.x}%`, top: `${d.y}%`, width: d.r, height: d.r, background: GOLD, "--d": `${d.d}s`, "--dl": `${d.dl}s` })} />
-      ))}
-      {stars.map((t, i) => (
-        <Twinkle key={i} x={t.x} y={t.y} s={t.s} d={t.d} dl={t.dl} />
-      ))}
+      <div className="absolute inset-x-0 bottom-0 h-[70%] bg-[radial-gradient(ellipse_75%_65%_at_50%_100%,rgba(154,106,48,.09)_0%,rgba(154,106,48,.03)_45%,transparent_75%)]" />
+      {/* A few faint stars and specks of gold; they shouldn't pull the eye from the board. */}
+      <div className="absolute inset-0 opacity-40">
+        {dots.map((d, i) => (
+          <span key={i} className="sc-twinkle absolute rounded-full" style={v({ left: `${d.x}%`, top: `${d.y}%`, width: d.r, height: d.r, background: GOLD, "--d": `${d.d}s`, "--dl": `${d.dl}s` })} />
+        ))}
+        {stars.map((t, i) => (
+          <Twinkle key={i} x={t.x} y={t.y} s={t.s} d={t.d} dl={t.dl} />
+        ))}
+      </div>
       <LetterRing />
       <svg viewBox="-80 -80 160 160" className="absolute right-[2.5%] top-[5%] hidden w-[150px] opacity-60 min-[1700px]:block" aria-hidden>
         <circle r="74" fill="none" stroke={GOLD} strokeWidth="0.6" strokeDasharray="0.1 5" strokeLinecap="round" opacity=".6" />
@@ -416,11 +498,6 @@ function Parlor() {
           <MoonFace x={0} y={0} s={1.2} />
         </g>
       </svg>
-      {wisps.map((w, i) => (
-        <svg key={i} viewBox="0 0 40 200" width="40" className="sc-rise absolute bottom-[10%]" style={v({ left: `${w.x}%`, "--d": `${w.d}s`, "--dl": `${w.dl}s`, "--x": "30px" })} aria-hidden>
-          <path d="M20 200 C0 160 40 130 20 100 C0 70 40 40 20 0" fill="none" stroke="rgba(236,227,207,.12)" strokeWidth="2" />
-        </svg>
-      ))}
       {/* Old film: mottling, grain, dust and a vignette. */}
       <div className="absolute inset-0 opacity-[.18] mix-blend-multiply" style={{ backgroundImage: MOTTLE }} />
       <div className="absolute inset-0 opacity-30 mix-blend-overlay" style={{ backgroundImage: GRAIN, backgroundSize: "180px" }} />
@@ -943,6 +1020,7 @@ function Wave2014() {
 /* ─────────────────────────── 1989 ─────────────────────────── */
 
 // The mainframe hall lives with the costume: see MainframeScene in src/components/terminal/scene.tsx.
+// So does Firewall Fury's Grid (1985): see FuryScene in src/components/fury/scene.tsx.
 
 /* ─────────────────────────── Dec 24 ─────────────────────────── */
 
@@ -1032,9 +1110,9 @@ function NorthPole() {
 /* ─────────────────────────── 2199 ─────────────────────────── */
 
 /**
- * The city after the Handover: a violet sky, an eye where the moon used to
- * be, searchlights and glyphs drifting up. Lives with the Lattice's art in
- * src/components/machine/art.tsx.
+ * The Lattice after the Handover: black, with fine circuitry and runes
+ * around the edges and a few relays that light up now and then. Lives with
+ * the Machine's art in src/components/machine/art.tsx.
  */
 function Machine() {
   return <MachineScene />;
@@ -1067,10 +1145,14 @@ export const SCENES: Record<string, { bg: string; tone: Tone; draw: () => ReactN
   reddit: { tone: "dark", bg: "linear-gradient(180deg, #5e4a6e 0%, #86687a 38%, #b47c72 66%, #b06a3c 80%, #7e4422 100%)", draw: () => <Upvotes /> },
   slack: { tone: "dark", bg: "linear-gradient(180deg, #a294cc 0%, #c6a0c6 38%, #eeae88 64%, #6c6488 78%, #252a35 100%)", draw: () => <Workspace /> },
   terminal: { tone: "dark", bg: "#080a0f", draw: () => <MainframeScene /> },
+  /** The Grid, 1985: lives with Firewall Fury's art in src/components/fury/scene.tsx. */
+  fury: { tone: "dark", bg: "linear-gradient(180deg, #04010f 0%, #0d0333 30%, #33095e 48%, #a01b84 57%, #ff5d9e 60%, #1a0436 60.2%, #07011a 100%)", draw: () => <FuryScene /> },
   elf: { tone: "dark", bg: "linear-gradient(180deg, #071029 0%, #0f2356 55%, #1d3d7c 78%)", draw: () => <NorthPole /> },
-  machine: { tone: "dark", bg: "linear-gradient(180deg, #030008 0%, #0b0220 34%, #1c0640 62%, #3a0b5c 80%, #12032a 100%)", draw: () => <Machine /> },
+  machine: { tone: "dark", bg: "#000104", draw: () => <Machine /> },
   /** The Token Palace floor at 3 a.m.: lives with Lucky's art in src/components/slots/art.tsx. */
   slots: { tone: "dark", bg: "linear-gradient(180deg, #0c0208 0%, #1f0512 38%, #3b0a1c 66%, #22050f 84%, #12030a 100%)", draw: () => <SlotsScene /> },
+  /** The high-limit room, quieter: lives with High Limit's art in src/components/highlimit/scene.tsx. */
+  highlimit: { tone: "dark", bg: "radial-gradient(ellipse 85% 75% at 62% 28%, #1b4636 0%, #102c22 48%, #08150f 100%)", draw: () => <HighLimitScene /> },
   /** Not an agent: the backdrop for the Meet the gptys page. */
   meet: { tone: "light", bg: "linear-gradient(160deg, #e8e1f7 0%, #efe6f6 45%, #f8e8ef 100%)", draw: () => <Pastel /> },
 };

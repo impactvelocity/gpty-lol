@@ -1,0 +1,10 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 48 48">
+<defs><clipPath id="channing6-rd-clip"><path d="M15 12H33A12 12 0 0 1 33 36H15A12 12 0 0 1 15 12Z"/></clipPath><clipPath id="channing6-rd-face"><path transform="translate(24 24) scale(0.95) translate(-24 -24)" d="M15 12H33A12 12 0 0 1 33 36H15A12 12 0 0 1 15 12Z"/></clipPath></defs>
+<g transform="translate(24 24) scale(0.95) translate(-24 -24)">
+<g data-role="shadow" transform="translate(0 1.8)"><path d="M15 12H33A12 12 0 0 1 33 36H15A12 12 0 0 1 15 12Z" fill="#3b1626" fill-opacity=".38" stroke="#3b1626" stroke-opacity=".38" stroke-width="3.6" stroke-linejoin="round"/></g>
+<g data-role="ink"><path d="M15 12H33A12 12 0 0 1 33 36H15A12 12 0 0 1 15 12Z" fill="none" stroke="#1a1a1b" stroke-width="3.6" stroke-linejoin="round"/></g>
+<g data-role="body"><path d="M15 12H33A12 12 0 0 1 33 36H15A12 12 0 0 1 15 12Z" fill="#7e42b0"/></g>
+<g data-role="light" clip-path="url(#channing6-rd-clip)"><path d="M15 12H33A12 12 0 0 1 33 36H15A12 12 0 0 1 15 12Z" fill="#8a4fd8" transform="translate(-0.6 -2.6)"/></g>
+</g>
+<g data-role="face" clip-path="url(#channing6-rd-face)"><ellipse cx="24" cy="24.4" rx="9.4" ry="6.5" fill="#ffffff"/><ellipse cx="24" cy="24.4" rx="9.4" ry="6.5" fill="none" stroke="#1a1a1b" stroke-opacity=".22" stroke-width=".8"/></g>
+</svg>

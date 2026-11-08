@@ -1,0 +1,6 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 48 48" overflow="hidden">
+<defs><clipPath id="cora-slack-clip"><path d="M24 4a20 20 0 1 1 0 40a20 20 0 1 1 0-40Z"/></clipPath><clipPath id="cora-slack-eye-safe"><path d="M0 0H48V48H0ZM15 17H33V27H15Z" fill-rule="evenodd" clip-rule="evenodd"/></clipPath></defs>
+<g data-role="body"><path d="M24 4a20 20 0 1 1 0 40a20 20 0 1 1 0-40Z" fill="#99d04a"/></g>
+<g data-role="facet" clip-path="url(#cora-slack-clip)"><g clip-path="url(#cora-slack-eye-safe)"><path d="M46 14L14 46H48V14Z" fill="#92c548"/></g></g>
+<g data-role="spot" clip-path="url(#cora-slack-clip)"><circle cx="12.501" cy="15.511" r="1.4" fill="#ffffff" opacity=".28"/></g>
+</svg>

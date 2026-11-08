@@ -1,0 +1,6 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 48 48" overflow="hidden">
+<defs><clipPath id="carol-slack-clip"><path d="M24 4C33 4 40 17 40 28C40 37 33 44 24 44C15 44 8 37 8 28C8 17 15 4 24 4Z"/></clipPath><clipPath id="carol-slack-eye-safe"><path d="M0 0H48V48H0ZM15 21H33V31H15Z" fill-rule="evenodd" clip-rule="evenodd"/></clipPath></defs>
+<g data-role="body"><path d="M24 4C33 4 40 17 40 28C40 37 33 44 24 44C15 44 8 37 8 28C8 17 15 4 24 4Z" fill="#eb4d5c"/></g>
+<g data-role="facet" clip-path="url(#carol-slack-clip)"><g clip-path="url(#carol-slack-eye-safe)"><path d="M46 14L14 46H48V14Z" fill="#df4a59"/></g></g>
+<g data-role="spot" clip-path="url(#carol-slack-clip)"><circle cx="21.161" cy="9.338" r="1.4" fill="#ffffff" opacity=".38"/></g>
+</svg>

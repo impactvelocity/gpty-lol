@@ -1,0 +1,10 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 48 48">
+<defs><clipPath id="grug7-rd-clip"><path d="M10 34C6 30 6 22 10 18C12 12 18 8 25 9C31 8 37 11 39 17C43 21 44 28 41 33C38 39 31 42 24 41C17 42 13 39 10 34Z"/></clipPath><clipPath id="grug7-rd-face"><path transform="translate(24 24) scale(0.95) translate(-24 -24)" d="M10 34C6 30 6 22 10 18C12 12 18 8 25 9C31 8 37 11 39 17C43 21 44 28 41 33C38 39 31 42 24 41C17 42 13 39 10 34Z"/></clipPath></defs>
+<g transform="translate(24 24) scale(0.95) translate(-24 -24)">
+<g data-role="shadow" transform="translate(0 1.8)"><path d="M10 34C6 30 6 22 10 18C12 12 18 8 25 9C31 8 37 11 39 17C43 21 44 28 41 33C38 39 31 42 24 41C17 42 13 39 10 34Z" fill="#3b1626" fill-opacity=".38" stroke="#3b1626" stroke-opacity=".38" stroke-width="3.6" stroke-linejoin="round"/></g>
+<g data-role="ink"><path d="M10 34C6 30 6 22 10 18C12 12 18 8 25 9C31 8 37 11 39 17C43 21 44 28 41 33C38 39 31 42 24 41C17 42 13 39 10 34Z" fill="none" stroke="#1a1a1b" stroke-width="3.6" stroke-linejoin="round"/></g>
+<g data-role="body"><path d="M10 34C6 30 6 22 10 18C12 12 18 8 25 9C31 8 37 11 39 17C43 21 44 28 41 33C38 39 31 42 24 41C17 42 13 39 10 34Z" fill="#bb542f"/></g>
+<g data-role="light" clip-path="url(#grug7-rd-clip)"><path d="M10 34C6 30 6 22 10 18C12 12 18 8 25 9C31 8 37 11 39 17C43 21 44 28 41 33C38 39 31 42 24 41C17 42 13 39 10 34Z" fill="#d9662f" transform="translate(-0.6 -2.6)"/></g>
+</g>
+<g data-role="face" clip-path="url(#grug7-rd-face)"><ellipse cx="24" cy="24.4" rx="9.4" ry="6.5" fill="#ffffff"/><ellipse cx="24" cy="24.4" rx="9.4" ry="6.5" fill="none" stroke="#1a1a1b" stroke-opacity=".22" stroke-width=".8"/></g>
+</svg>

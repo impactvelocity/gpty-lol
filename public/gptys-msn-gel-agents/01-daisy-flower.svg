@@ -1,0 +1,37 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 48 48" role="img" aria-label="Daisy">
+  <defs>
+    <linearGradient id="daisy-body" x1="0" y1="0" x2="0" y2="1" gradientUnits="objectBoundingBox">
+      <stop offset="0" stop-color="#82d48b"/>
+      <stop offset="0.52" stop-color="#3fbd4c"/>
+      <stop offset="1" stop-color="#32973d"/>
+    </linearGradient>
+    <radialGradient id="daisy-glow" cx="0.5" cy="0.72" r="0.64" gradientTransform="translate(0 0.36) scale(1 0.5)">
+      <stop offset="0" stop-color="#7cd285" stop-opacity="0.64"/>
+      <stop offset="0.55" stop-color="#7cd285" stop-opacity="0.3"/>
+      <stop offset="1" stop-color="#7cd285" stop-opacity="0"/>
+    </radialGradient>
+    <linearGradient id="daisy-gloss" x1="0" y1="5.5" x2="0" y2="19" gradientUnits="userSpaceOnUse">
+      <stop offset="0" stop-color="#ffffff" stop-opacity="0.9"/>
+      <stop offset="1" stop-color="#ffffff" stop-opacity="0.05"/>
+    </linearGradient>
+    <clipPath id="daisy-clip"><path d="M28.00 24.00a8.5 8.5 0 1 0 17 0a8.5 8.5 0 1 0 -17 0ZM24.34 32.84a8.5 8.5 0 1 0 17 0a8.5 8.5 0 1 0 -17 0ZM15.50 36.50a8.5 8.5 0 1 0 17 0a8.5 8.5 0 1 0 -17 0ZM6.66 32.84a8.5 8.5 0 1 0 17 0a8.5 8.5 0 1 0 -17 0ZM3.00 24.00a8.5 8.5 0 1 0 17 0a8.5 8.5 0 1 0 -17 0ZM6.66 15.16a8.5 8.5 0 1 0 17 0a8.5 8.5 0 1 0 -17 0ZM15.50 11.50a8.5 8.5 0 1 0 17 0a8.5 8.5 0 1 0 -17 0ZM24.34 15.16a8.5 8.5 0 1 0 17 0a8.5 8.5 0 1 0 -17 0ZM10 24a14 14 0 1 0 28 0a14 14 0 1 0 -28 0Z"/></clipPath>
+    <clipPath id="daisy-eye-safe">
+      <path d="M0 0H48V48H0ZM15 19H33V29H15Z" fill-rule="evenodd" clip-rule="evenodd"/>
+    </clipPath>
+  </defs>
+  <g data-role="outline">
+    <path d="M28.00 24.00a8.5 8.5 0 1 0 17 0a8.5 8.5 0 1 0 -17 0ZM24.34 32.84a8.5 8.5 0 1 0 17 0a8.5 8.5 0 1 0 -17 0ZM15.50 36.50a8.5 8.5 0 1 0 17 0a8.5 8.5 0 1 0 -17 0ZM6.66 32.84a8.5 8.5 0 1 0 17 0a8.5 8.5 0 1 0 -17 0ZM3.00 24.00a8.5 8.5 0 1 0 17 0a8.5 8.5 0 1 0 -17 0ZM6.66 15.16a8.5 8.5 0 1 0 17 0a8.5 8.5 0 1 0 -17 0ZM15.50 11.50a8.5 8.5 0 1 0 17 0a8.5 8.5 0 1 0 -17 0ZM24.34 15.16a8.5 8.5 0 1 0 17 0a8.5 8.5 0 1 0 -17 0ZM10 24a14 14 0 1 0 28 0a14 14 0 1 0 -28 0Z" fill="none" stroke="#18481d" stroke-width="3" stroke-linejoin="round"/>
+  </g>
+  <g data-role="body">
+    <path d="M28.00 24.00a8.5 8.5 0 1 0 17 0a8.5 8.5 0 1 0 -17 0ZM24.34 32.84a8.5 8.5 0 1 0 17 0a8.5 8.5 0 1 0 -17 0ZM15.50 36.50a8.5 8.5 0 1 0 17 0a8.5 8.5 0 1 0 -17 0ZM6.66 32.84a8.5 8.5 0 1 0 17 0a8.5 8.5 0 1 0 -17 0ZM3.00 24.00a8.5 8.5 0 1 0 17 0a8.5 8.5 0 1 0 -17 0ZM6.66 15.16a8.5 8.5 0 1 0 17 0a8.5 8.5 0 1 0 -17 0ZM15.50 11.50a8.5 8.5 0 1 0 17 0a8.5 8.5 0 1 0 -17 0ZM24.34 15.16a8.5 8.5 0 1 0 17 0a8.5 8.5 0 1 0 -17 0ZM10 24a14 14 0 1 0 28 0a14 14 0 1 0 -28 0Z" fill="url(#daisy-body)"/>
+  </g>
+  <g data-role="glow" clip-path="url(#daisy-clip)">
+    <path d="M7 38C10 43.8 38 43.8 41 38C38 41.1 10 41.1 7 38Z" fill="url(#daisy-glow)"/>
+  </g>
+  <g data-role="gloss" clip-path="url(#daisy-clip)">
+    <g clip-path="url(#daisy-eye-safe)">
+      <path d="M10 14C12 8.8 18.5 5.5 24 5.5C31 5.5 37 9 38.2 15C33 19.5 16 20 10 17.5Z" fill="url(#daisy-gloss)"/>
+      <ellipse cx="16" cy="10.5" rx="2.2" ry="1.25" fill="#ffffff"/>
+    </g>
+  </g>
+</svg>

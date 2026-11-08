@@ -8,13 +8,13 @@ import { type Agent, agentEra, getAgent, isAgent } from "@/lib/agents";
 import { messageText, previewOf, useThreads } from "@/lib/threads";
 import type { ChatMessage } from "@/lib/types";
 import { AboutModal } from "./AboutModal";
-import { AgentSidebar, Logo } from "./AgentSidebar";
+import { AgentSidebar, LogoLink } from "./AgentSidebar";
 import { MeetPage } from "./MeetPage";
 import { toneOf } from "./Scenes";
 import { SongPlayer } from "./SongPlayer";
 import { usePaused, useSong } from "./useSong";
 import { Wallpaper } from "./Wallpaper";
-import type { Mood } from "./Gpty";
+import { GptyTheme, type Mood } from "./Gpty";
 import { LAYOUTS } from "./layouts";
 import { WINDOW_APPEAR } from "./layouts/hooks";
 import { NUDGE } from "./layouts/MsnLayout";
@@ -130,75 +130,74 @@ export function ChatApp({ costume: fromRoute }: { costume?: string }) {
       mood={mood}
       onOpenAgent={onOpenAgent}
       onMeet={onMeet}
-      onAbout={() => {
-        setDrawer(false);
-        setAboutOpen(true);
-      }}
     />
   );
 
   return (
-    <div
-      data-tone={toneOf(meet ? MEET : agent.id)}
-      className="shell relative isolate flex h-dvh overflow-hidden font-[family-name:var(--font-geist-sans)] text-[var(--shell-text)] antialiased"
-    >
-      <Wallpaper current={meet ? MEET : agent.id} />
-      <aside className="hidden w-[300px] shrink-0 md:block">
-        {sidebar}
-      </aside>
+    // Every gpty on screen dresses for the open agent's theme (Daisy turns them all to pixels).
+    <GptyTheme value={meet ? undefined : agent.id}>
+      <div
+        data-tone={toneOf(meet ? MEET : agent.id)}
+        className="shell relative isolate flex h-dvh overflow-hidden font-[family-name:var(--font-geist-sans)] text-[var(--shell-text)] antialiased"
+      >
+        <Wallpaper current={meet ? MEET : agent.id} />
+        <aside className="hidden w-[300px] shrink-0 md:block">
+          {sidebar}
+        </aside>
 
-      {/* Mobile drawer */}
-      {drawer && (
-        <div className="fixed inset-0 z-40 md:hidden">
-          <button aria-label="Close menu" className="absolute inset-0 bg-black/40" onClick={() => setDrawer(false)} />
-          <aside className="drawer-in absolute inset-y-0 left-0 w-[284px] max-w-[85vw] bg-[var(--shell-drawer)] shadow-2xl backdrop-blur-2xl">
-            {sidebar}
-          </aside>
-        </div>
-      )}
+        {/* Mobile drawer */}
+        {drawer && (
+          <div className="fixed inset-0 z-40 md:hidden">
+            <button aria-label="Close menu" className="absolute inset-0 bg-black/40" onClick={() => setDrawer(false)} />
+            <aside className="drawer-in absolute inset-y-0 left-0 w-[284px] max-w-[85vw] bg-[var(--shell-drawer)] shadow-2xl backdrop-blur-2xl">
+              {sidebar}
+            </aside>
+          </div>
+        )}
 
-      <main className="relative flex min-w-0 flex-1 flex-col">
-        {/* Phones have no room for the sidebar: a menu button opens it as a drawer. */}
-        <header className="flex h-12 shrink-0 items-center gap-1 px-2 md:hidden">
-          <button
-            onClick={() => setDrawer(true)}
-            aria-label="Open agents"
-            className="grid h-9 w-9 place-items-center rounded-lg text-[var(--shell-muted)] hover:bg-[var(--shell-hover)] hover:text-[var(--shell-text)]"
-          >
-            <Menu className="h-5 w-5" />
-          </button>
-          <Logo />
-        </header>
-        <div className="flex min-h-0 flex-1 flex-col px-2 pb-2 md:p-6">
-          {/* The agent's song: a bar as wide as its window, level with the logo. */}
-          {song && (
-            <div className="tune-row mx-auto mb-2 flex w-full shrink-0 md:mb-3" style={{ maxWidth: agent.costume.window.w }}>
-              <SongPlayer agent={agent} song={song} onToggle={togglePaused} />
-            </div>
-          )}
-          <div ref={stageRef} className="min-h-0 flex-1">
-            {meet && <MeetPage onOpenAgent={onOpenAgent} />}
-            {/* The chat stays mounted under the page, so a reply in progress isn't lost. */}
-            <div className={meet ? "hidden" : "h-full"}>
-              <ChatView
-                key={store.activeId}
-                threadId={store.activeId}
-                initial={initial}
-                agent={agent}
-                onSave={store.saveMessages}
-                threads={items}
-                onSelectThread={onSelectThread}
-                onNewThread={() => onOpenAgent(agent.id)}
-                onDeleteThread={deleteThread}
-                onMood={setMood}
-              />
+        <main className="relative flex min-w-0 flex-1 flex-col">
+          {/* Phones have no room for the sidebar: a menu button opens it as a drawer. */}
+          <header className="flex h-12 shrink-0 items-center gap-1 px-2 md:hidden">
+            <button
+              onClick={() => setDrawer(true)}
+              aria-label="Open agents"
+              className="grid h-9 w-9 place-items-center rounded-lg text-[var(--shell-muted)] hover:bg-[var(--shell-hover)] hover:text-[var(--shell-text)]"
+            >
+              <Menu className="h-5 w-5" />
+            </button>
+            <LogoLink id={meet ? undefined : agent.id} onMeet={onMeet} />
+          </header>
+          <div className="flex min-h-0 flex-1 flex-col px-2 pb-2 md:p-6">
+            {/* The agent's song: a bar as wide as its window, level with the logo. */}
+            {song && (
+              <div className="tune-row mx-auto mb-2 flex w-full shrink-0 md:mb-3" style={{ maxWidth: agent.costume.window.w }}>
+                <SongPlayer agent={agent} song={song} onToggle={togglePaused} />
+              </div>
+            )}
+            <div ref={stageRef} className="min-h-0 flex-1">
+              {meet && <MeetPage onOpenAgent={onOpenAgent} />}
+              {/* The chat stays mounted under the page, so a reply in progress isn't lost. */}
+              <div className={meet ? "hidden" : "h-full"}>
+                <ChatView
+                  key={store.activeId}
+                  threadId={store.activeId}
+                  initial={initial}
+                  agent={agent}
+                  onSave={store.saveMessages}
+                  threads={items}
+                  onSelectThread={onSelectThread}
+                  onNewThread={() => onOpenAgent(agent.id)}
+                  onDeleteThread={deleteThread}
+                  onMood={setMood}
+                />
+              </div>
             </div>
           </div>
-        </div>
-      </main>
+        </main>
 
-      <AboutModal open={aboutOpen} onClose={() => setAboutOpen(false)} agent={agent} />
-    </div>
+        <AboutModal open={aboutOpen} onClose={() => setAboutOpen(false)} agent={agent} />
+      </div>
+    </GptyTheme>
   );
 }
 

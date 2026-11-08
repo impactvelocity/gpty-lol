@@ -24,7 +24,8 @@ export function IcqActiveRow({ agent, mood, ...button }: ActiveRowProps) {
       */}
       <span className="icq-pick-icon">
         <span>
-          <Gpty agent={agent} size={30} mood={mood} />
+          {/* 32px: two screen pixels per pixel of Daisy's 16×16 icon, so it stays crisp. */}
+          <Gpty agent={agent} size={32} mood={mood} />
         </span>
       </span>
       <span className="min-w-0 flex-1">

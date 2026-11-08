@@ -91,9 +91,8 @@ corner of the board beside NO, about 170px wide. Replaces the drawn moon.
 ## The all-seeing eye: `eye.webp`
 
 1536×1024, quality high, **background: transparent**. Sits at the top
-center of the board, about 220×150px. Note: the drawn eye follows your
-pointer and watches the planchette; a picture can't, so only use this if
-it's worth losing that.
+center of the board, about 220×150px. The drawn eye looks straight out and
+blinks; a picture can't blink.
 
 > An all-seeing eye in the style of an antique occult engraving: a single
 > wide almond-shaped eye looking straight ahead, with a detailed iris of
@@ -199,8 +198,7 @@ These stay vector. They live in `art.tsx` and `Board.tsx`:
 - **The planchette**: smoked glass, a heart with an eye whose iris is a
   lens; whatever is under it is shown magnified (a clipped copy of the
   letters).
-- **The eye at the top**: follows your pointer and watches the planchette
-  while it spells; it blinks.
+- **The eye at the top**: looks straight out, and blinks.
 - **Candles and moths** (`CandleCluster`, `Moth`): three candles a side on
   gold saucers, with flames that flare while he spells, pools of light,
   smoke once they're snuffed, and a moth circling each cluster.

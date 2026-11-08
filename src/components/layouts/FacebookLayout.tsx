@@ -11,6 +11,7 @@ import {
   Favicon,
   FbDefs,
   Finger,
+  friendArt,
   Pencil,
   type PhotoId,
   PhotoScene,
@@ -973,8 +974,13 @@ function MarkPicture({ agent, mood, size }: { agent: Agent; mood: Mood; size: nu
   );
 }
 
-/** A friend's picture: the other gptys, each on their own color. */
+/** A friend's picture: their photo if there is one, else their gpty on its own color. */
 function FriendPicture({ agent }: { agent: Agent }) {
+  const src = friendArt(agent.id);
+  if (src) {
+    // eslint-disable-next-line @next/next/no-img-element
+    return <img src={src} alt="" />;
+  }
   return (
     <span className="fb-dp-gpty fb-dp-friend" style={{ "--tint": agent.look.color } as React.CSSProperties}>
       <Gpty agent={agent} size={36} />

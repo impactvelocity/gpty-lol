@@ -1,0 +1,38 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 48 48" role="img" aria-label="Arthur">
+  <defs>
+    <linearGradient id="arthur-body" x1="0" y1="0" x2="0" y2="1" gradientUnits="objectBoundingBox">
+      <stop offset="0" stop-color="#ff8659"/>
+      <stop offset="0.52" stop-color="#ff4500"/>
+      <stop offset="1" stop-color="#cc3700"/>
+    </linearGradient>
+    <radialGradient id="arthur-glow" cx="0.5" cy="0.72" r="0.64" gradientTransform="translate(0 0.36) scale(1 0.5)">
+      <stop offset="0" stop-color="#ff8152" stop-opacity="0.64"/>
+      <stop offset="0.55" stop-color="#ff8152" stop-opacity="0.3"/>
+      <stop offset="1" stop-color="#ff8152" stop-opacity="0"/>
+    </radialGradient>
+    <linearGradient id="arthur-gloss" x1="0" y1="18.5" x2="0" y2="22.5" gradientUnits="userSpaceOnUse">
+      <stop offset="0" stop-color="#ffffff" stop-opacity="0.9"/>
+      <stop offset="1" stop-color="#ffffff" stop-opacity="0.05"/>
+    </linearGradient>
+    <clipPath id="arthur-clip"><path d="M5.5 28.5a18.5 12.5 0 1 0 37 0a18.5 12.5 0 1 0 -37 0ZM25.9 17.4C26.7 13.6 29 10.9 32.2 9.4L31.2 7.6C27.4 9.4 24.6 12.6 23.6 17.2ZM30 6a3.6 3.6 0 1 0 7.2 0a3.6 3.6 0 1 0 -7.2 0Z"/></clipPath>
+    <clipPath id="arthur-eye-safe">
+      <path d="M0 0H48V48H0ZM15 22.5H33V32.5H15Z" fill-rule="evenodd" clip-rule="evenodd"/>
+    </clipPath>
+  </defs>
+  <g data-role="outline">
+    <path d="M5.5 28.5a18.5 12.5 0 1 0 37 0a18.5 12.5 0 1 0 -37 0ZM25.9 17.4C26.7 13.6 29 10.9 32.2 9.4L31.2 7.6C27.4 9.4 24.6 12.6 23.6 17.2ZM30 6a3.6 3.6 0 1 0 7.2 0a3.6 3.6 0 1 0 -7.2 0Z" fill="none" stroke="#611a00" stroke-width="3" stroke-linejoin="round"/>
+  </g>
+  <g data-role="body">
+    <path d="M5.5 28.5a18.5 12.5 0 1 0 37 0a18.5 12.5 0 1 0 -37 0ZM25.9 17.4C26.7 13.6 29 10.9 32.2 9.4L31.2 7.6C27.4 9.4 24.6 12.6 23.6 17.2ZM30 6a3.6 3.6 0 1 0 7.2 0a3.6 3.6 0 1 0 -7.2 0Z" fill="url(#arthur-body)"/>
+  </g>
+  <g data-role="glow" clip-path="url(#arthur-clip)">
+    <path d="M9.5 34C12.5 39.8 35.5 39.8 38.5 34C35.5 37.1 12.5 37.1 9.5 34Z" fill="url(#arthur-glow)"/>
+  </g>
+  <g data-role="gloss" clip-path="url(#arthur-clip)">
+    <g clip-path="url(#arthur-eye-safe)">
+      <path d="M9.2 26C10.5 21.4 16.8 18.5 24 18.5C31.2 18.5 37.5 21.4 38.8 26C31.3 28 16.7 28 9.2 26Z" fill="url(#arthur-gloss)"/>
+      <ellipse cx="16" cy="21" rx="2.2" ry="1.1" fill="#ffffff"/>
+      <circle cx="32.6" cy="4.8" r="0.75" fill="#ffffff"/>
+    </g>
+  </g>
+</svg>

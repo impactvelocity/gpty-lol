@@ -561,23 +561,12 @@
   mix-blend-mode: soft-light;
   opacity: 0.8;
 }
-/* A painted rule of dots along the bottom. */
-.cv-pick::after {
-  content: "";
-  position: absolute;
-  left: 14px;
-  right: 14px;
-  bottom: 3px;
-  height: 4px;
-  background: radial-gradient(circle, #d65f2e 1.1px, transparent 1.7px) 0 50% / 9px 4px repeat-x;
-  opacity: 0.55;
-}
 .cv-pick:hover { filter: brightness(1.06); }
 .cv-pick:focus-visible { outline: 2px solid #eaa64e; outline-offset: 2px; }
 @keyframes cv-pick-in { from { transform: scale(0.97); opacity: 0.5; } to { transform: none; opacity: 1; } }
 .cv-pick-av { position: relative; display: grid; flex: none; place-items: center; width: 42px; height: 42px; }
 .cv-pick-av .cv-pick-hand { position: absolute; inset: -4px; width: 50px; height: 50px; opacity: 0.55; }
-.cv-pick-av .gpty { position: relative; filter: drop-shadow(0 0 8px rgba(255, 120, 40, 0.4)); }
+.cv-pick-av .gpty { position: relative; }
 .cv-pick-name { display: flex; align-items: baseline; gap: 7px; font-size: 21px; font-weight: 900; line-height: 1.05; letter-spacing: 0.04em; text-transform: uppercase; }
 .cv-pick-name small { font-size: 12.5px; font-weight: 300; letter-spacing: 0.08em; color: #ef7d3f; }
 .cv-pick-sub { display: flex; align-items: center; gap: 6px; margin-top: 2px; overflow: hidden; font-size: 13px; font-weight: 300; letter-spacing: 0.08em; text-transform: uppercase; white-space: nowrap; text-overflow: ellipsis; color: rgba(242, 224, 196, 0.74); }

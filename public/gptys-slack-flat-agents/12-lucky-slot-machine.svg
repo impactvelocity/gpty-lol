@@ -1,0 +1,6 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 48 48" overflow="hidden">
+<defs><clipPath id="lucky12-slack-clip"><path d="M11 21C11 13.5 16.5 9 24 9C31.5 9 37 13.5 37 21V38Q37 43 32 43H16Q11 43 11 38ZM36 27H39.2V13H42V31H36ZM37 9.8a3.6 3.6 0 1 1 7.2 0a3.6 3.6 0 1 1 -7.2 0Z"/></clipPath><clipPath id="lucky12-slack-eye-safe"><path d="M0 0H48V48H0ZM15 20H33V30H15Z" fill-rule="evenodd" clip-rule="evenodd"/></clipPath></defs>
+<g data-role="body"><path d="M11 21C11 13.5 16.5 9 24 9C31.5 9 37 13.5 37 21V38Q37 43 32 43H16Q11 43 11 38ZM36 27H39.2V13H42V31H36ZM37 9.8a3.6 3.6 0 1 1 7.2 0a3.6 3.6 0 1 1 -7.2 0Z" fill="#e9a820"/></g>
+<g data-role="facet" clip-path="url(#lucky12-slack-clip)"><g clip-path="url(#lucky12-slack-eye-safe)"><path d="M46 14L14 46H48V14Z" fill="#de9f21"/></g></g>
+<g data-role="spot" clip-path="url(#lucky12-slack-clip)"><circle cx="15.312" cy="16.32" r="1.4" fill="#ffffff" opacity=".28"/></g>
+</svg>

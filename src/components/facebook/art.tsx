@@ -14,6 +14,7 @@ import { useId } from "react";
 
 export type ArtSlot =
   | "wallpaper" | "backdrop" | "buddyPicture" | "userPicture"
+  | "kayleigh" | "cal" | "nick" | "dale"
   | "photo1" | "photo2" | "photo3" | "sheep" | "finger";
 
 /**
@@ -27,6 +28,10 @@ const FILES: Partial<Record<ArtSlot, string>> = {
   backdrop: "/facebook/backdrop.webp",
   buddyPicture: "/facebook/dp-buddy.webp",
   userPicture: "/facebook/dp-you.webp",
+  kayleigh: "/facebook/dp-kayleigh.webp",
+  cal: "/facebook/dp-cal.webp",
+  nick: "/facebook/dp-nick.webp",
+  dale: "/facebook/dp-dale.webp",
   photo1: "/facebook/photo-beach.webp",
   photo2: "/facebook/photo-party.webp",
   photo3: "/facebook/photo-roadtrip.webp",
@@ -37,6 +42,15 @@ const FILES: Partial<Record<ArtSlot, string>> = {
 /** The picture for a slot, or undefined to draw the fallback. */
 export function art(slot: ArtSlot): string | undefined {
   return FILES[slot];
+}
+
+/** Each friend's picture slot, by the friend's agent id. Daisy has none, so she's drawn. */
+const FRIENDS: Partial<Record<string, ArtSlot>> = { msn: "kayleigh", skype: "cal", irc: "nick", bbs: "dale" };
+
+/** A friend's profile picture, or undefined to draw their gpty. */
+export function friendArt(agentId: string): string | undefined {
+  const slot = FRIENDS[agentId];
+  return slot && FILES[slot];
 }
 
 /* ───────── Shared gradients (emoticons only) ───────── */

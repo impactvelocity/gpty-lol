@@ -1,0 +1,6 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 48 48" overflow="hidden">
+<defs><clipPath id="grug-slack-clip"><path d="M10 34C6 30 6 22 10 18C12 12 18 8 25 9C31 8 37 11 39 17C43 21 44 28 41 33C38 39 31 42 24 41C17 42 13 39 10 34Z"/></clipPath><clipPath id="grug-slack-eye-safe"><path d="M0 0H48V48H0ZM15 19H33V29H15Z" fill-rule="evenodd" clip-rule="evenodd"/></clipPath></defs>
+<g data-role="body"><path d="M10 34C6 30 6 22 10 18C12 12 18 8 25 9C31 8 37 11 39 17C43 21 44 28 41 33C38 39 31 42 24 41C17 42 13 39 10 34Z" fill="#b5713f"/></g>
+<g data-role="facet" clip-path="url(#grug-slack-clip)"><g clip-path="url(#grug-slack-eye-safe)"><path d="M46 14L14 46H48V14Z" fill="#ad6c3e"/></g></g>
+<g data-role="spot" clip-path="url(#grug-slack-clip)"><circle cx="20.119" cy="15.507" r="1.4" fill="#ffffff" opacity=".38"/></g>
+</svg>

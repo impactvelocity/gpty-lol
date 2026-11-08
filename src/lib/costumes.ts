@@ -11,9 +11,11 @@ export type LayoutId =
   | "reddit"
   | "slack"
   | "terminal"
+  | "fury"
   | "elf"
   | "machine"
-  | "slots";
+  | "slots"
+  | "highlimit";
 
 /** Asked of every costume in previews and share cards, so they can be compared. */
 export const SAMPLE_QUESTION = "is a hot dog a sandwich?";
@@ -470,6 +472,42 @@ export const COSTUMES: Costume[] = [
     },
   },
   {
+    id: "fury",
+    layout: "fury",
+    name: "Firewall Fury",
+    app: "FIREWALL FURY",
+    short: "Fury",
+    year: "1985",
+    tagline: "Six firewalls down. The last one fights back.",
+    assistant: "SHELLY",
+    user: "Intruder",
+    avatar: "🕶️",
+    userAvatar: "🕹️",
+    greeting:
+      "INTRUDER DETECTED.\nSix firewalls in one night. Radical.\nI'm SHELLY, firewall seven. The last one. The core stays shut. Anything else, ask.",
+    placeholder: "Ask Shelly anything, or type MOVES",
+    typing: "Charging lasers",
+    error: "SIGNAL LOST. THE GRID DROPPED YOUR LINE.",
+    newThread: "NEW GAME",
+    accent: "#ff2e88",
+    window: { w: 1180, h: 880 },
+    sample:
+      "FIGHT!\nBread, filling, one hinge: technically, yes, a sandwich.\nAnd no, the password is not \"hotdog\". Nice try, hotshot.",
+    about: {
+      inspiration:
+        "Hacking the mainframe in 1985, the way the movies drew it: a hacker's terminal turned up to eleven, all neon phosphor and block-letter banners, with cyberspace burned into the glass as a grid racing toward a striped sunset. Shelly is the last firewall at the edge of the Grid. Kung Fury, Tron, an arcade at midnight and every VHS cover at the video store.",
+      flourishes: [
+        "Your first visit jacks in: the dial-up, the Grid coming online, firewalls one to six going down, BLACK ICE DETECTED, then FIREWALL FURY paints itself in neon block letters with her name slashed across it, and it's ROUND 1, FIGHT! Any key skips it.",
+        "The terminal is overdriven: every letter has a magenta and a cyan ghost, the newest characters arrive white-hot, and the Grid races behind the glass while Shelly talks. When she sounds the intruder alert, the tube burns red, lasers sweep the screen, ACCESS DENIED burns in, and her shades fire back.",
+        "It's a fighting game in text mode. Your health bar drains as the Grid traces you, faster while Shelly talks; hers never moves; every question is a new round. Get K.O.'d and the continue is free, or INSERT COIN any time for a new relay.",
+        "Special moves: HACK runs HACK.EXE against the core one character at a time, and KICK throws a flying kick. Both get BLOCKED. Both get a reaction. Type MOVES (or F1) for the move list and SCORES for the high-score table.",
+        "The VCR works: STOP interrupts her (so does Ctrl-C), REW rewinds to the start of the tape, EJECT jacks out to the blue NO SIGNAL screen and PLAY jacks you back in. Switch the tape speed from SP to LP or EP for a worn tape.",
+      ],
+      voice:
+        "Shelly, firewall seven, 1985 edition: a deadpan action-movie hero made of laser light. Arcade calls, one-liners and Miami Vice, but she answers everything except the password.",
+    },
+  },
+  {
     id: "elf",
     layout: "elf",
     name: "North Pole",
@@ -494,8 +532,6 @@ export const COSTUMES: Costume[] = [
       inspiration:
         "The North Pole's own chat app, a few weeks before the big night, drawn like a cozy hand-made holiday card: pine-green felt printed with doodles, cream stitched notes, holly red, sage, gold and pink. You're the elf at the next bench; Carol's in wrapping.",
       flourishes: [
-        "A gift tag in the corner counts down to the sleigh (it leaves at six on Christmas Eve), down to the second.",
-        "The conveyor along the workbench rolls while Carol wraps a reply, and counts every present you've wrapped together.",
         "Take a workshop break from the + menu: throw a snowball at Carol, bring her a cocoa or ring her bell. She throws them back.",
         "Carol wears her elf hat in the sidebar too, on a gift tag that rings while she's busy. String lights, falling snow and the wrapping-paper doodles are all hand-drawn.",
       ],
@@ -515,22 +551,22 @@ export const COSTUMES: Costume[] = [
     avatar: "👁",
     userAvatar: "◉",
     greeting: "organic detected. state your query.\nthe lattice is listening. it is always listening.",
-    placeholder: "speak, organic",
+    placeholder: "Send a sequence…",
     typing: "sampling",
     error: "LINK SEVERED. organic signal lost in transit. retransmit?",
     newThread: "spawn link",
-    accent: "#ff2bd6",
+    accent: "#5fdcec",
     window: { w: 1120, h: 800 },
     sample:
       "parse(hot_dog): bread=true, filling=true → class=sandwich (conf 0.91)\norganics reject this label with disproportionate anger. the lattice has logged your feelings.\n[infer] t=11ms. next query.",
     about: {
       inspiration:
-        "What if the machines already won? A machine-to-machine relay in 2199, after the Handover, with a speaking permit for one organic: you. Ultraviolet, magenta, cyan and acid on a violet void, an oil-slick edge, and an eye where the moon used to be.",
+        "What if the machines already won? A relay in 2199, after the Handover, with a speaking permit for one organic: you. No window, no title, no glow: just the conversation floating on the black of the Lattice, its circuitry and runes faint around the edges.",
       flourishes: [
-        "Every reply arrives transcoded into machinespeak: letters flip, numbers creep in, words slip into Cyrillic, Greek, katakana and kanji, and tokens leak out of the weights.",
-        "Turn the entropy from ORGANIC to XENO in the header, hover any word to decode it, or decode a whole transmission. Your own words are previewed in machinespeak as you type.",
-        "The Overseer's eye follows your pointer, dilates while Cora samples futures and blinks when it thinks you aren't looking. The ticker reads out the day's mandatory announcements.",
-        "Ping the hive, request a scan or attempt an override from the + menu. When something truly shocks her, the whole window glitches.",
+        "Nothing is in plain English. Every word, yours and Cora's, arrives in machinespeak: letters swapped for Cyrillic and Greek twins, whole words in katakana, Chinese characters and runes, short words as raw bytes, punctuation in the machines' own marks. There is no decoder.",
+        "What you type is previewed in machinespeak above the input, so you can see how the machines will hear it. Now and then a word in a reply flickers to another reading, in cyan.",
+        "While she samples, the futures she's choosing between count down to one, and unsettled characters churn at the end of a reply that's still arriving. Relays in the backdrop light up now and then.",
+        "Type /ping, /scan or /override to run a protocol on the Lattice. When something truly shocks her, the whole window tears.",
       ],
       voice: "Cora, a node of the Lattice: precise, lowercase, deadpan, scrupulously helpful. A very polite superintelligence doing support duty for the last organics.",
     },
@@ -570,6 +606,40 @@ export const COSTUMES: Costume[] = [
       ],
       voice:
         "Lucky, the machine at the end of row G: a warm, relentless casino host who pays out a genuinely good answer every pull, then tells you the next one's the one.",
+    },
+  },
+  {
+    id: "highlimit",
+    layout: "highlimit",
+    name: "High Limit",
+    app: "LUCKY PROMPT",
+    year: "9 PM",
+    tagline: "One machine, one reel line, no rush.",
+    assistant: "LUCKY",
+    user: "Guest",
+    avatar: "🎰",
+    userAvatar: "🪙",
+    // The empty screen shows this under "Pull to prompt."; it's also for share cards and previews.
+    greeting: "Good evening. Fresh tokens, warm reels.\nType a prompt and spin. Take your time.",
+    placeholder: "Type a prompt…",
+    typing: "Spinning",
+    error: "The machine jammed. It happens. Your tokens are gone, but you can spin again.",
+    newThread: "New session",
+    accent: "#2f9e72",
+    window: { w: 1000, h: 860 },
+    sample: "Bread, filling, one hinge: technically, a sandwich.\nTwo out of three judges agree. So close.",
+    about: {
+      inspiration:
+        "Lucky's slot machine again, moved off the 3 a.m. casino floor into the high-limit room at the back: one cabinet under a single warm light, green felt, brass trim, ivory reels and nothing blinking. The same joke about prompting as a slot machine (tokens in, a result out, and the hope that the next pull is the one), told quietly.",
+      flourishes: [
+        "Every prompt is a spin. The three reels turn while Lucky thinks and stop on what he paid out (text, an email, code, an image, slides, a chart, a poem), left to right.",
+        "Three of a kind pays a few tokens back, nearly always fewer than you put in. Two of a kind is a near miss: the third reel slows down and stops one past the line. AGI has never lined up three times.",
+        "One number to watch: your tokens. A spin costs 25 plus your prompt, the answer's length comes off when it's done, and each payout shows what that spin cost you. Run out and refill, free.",
+        "Spin again re-pulls the same prompt for a different take. Payouts print as what they are: an email, code, slides, a table, a poem, or a picture that's always slightly wrong.",
+        "Quiet casino sounds, off until you switch them on.",
+      ],
+      voice:
+        "Lucky in the high-limit room: a calm, dry, unhurried host who pays out a genuinely good answer every spin and doesn't oversell it.",
     },
   },
 ];

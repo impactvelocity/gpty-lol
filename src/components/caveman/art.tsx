@@ -1,6 +1,7 @@
 "use client";
 
 import { type CSSProperties, useId, useMemo } from "react";
+import type { Mood } from "@/components/Gpty";
 import { HAND_PATH, Picto, type PictoId } from "./pictos";
 
 /**
@@ -94,6 +95,53 @@ export function HandStencil({ className = "", rotate = 0, color = "#c9522a" }: {
       </defs>
       <g filter={`url(#${id}s)`}>
         <circle cx="32" cy="33" r="31" fill={`url(#${id}g)`} mask={`url(#${id}m)`} />
+      </g>
+    </svg>
+  );
+}
+
+/** Grug's rock, in the same 48×48 box as his gpty (see Gpty.tsx). */
+const ROCK = "M10 34C6 30 6 22 10 18C12 12 18 8 25 9C31 8 37 11 39 17C43 21 44 28 41 33C38 39 31 42 24 41C17 42 13 39 10 34Z";
+
+/**
+ * Grug as the tribe would paint him: his rock in red ochre with a charcoal
+ * outline, a swipe of yellow ochre on top and two dabs of bone for eyes, with
+ * wobbly edges and gaps where the paint didn't take. Uses the gpty classes, so
+ * he still blinks, ponders and hops like the others. Brings its own filter, so
+ * it works outside the window.
+ */
+export function PaintedGrug({ size = 34, mood = "idle", className = "" }: { size?: number; mood?: Mood; className?: string }) {
+  const id = useId().replace(/:/g, "");
+  return (
+    <svg
+      viewBox="0 0 48 48"
+      width={size}
+      height={size}
+      className={`gpty shrink-0 overflow-visible ${className}`}
+      data-mood={mood}
+      aria-hidden
+    >
+      <defs>
+        <filter id={`${id}p`} x="-12%" y="-12%" width="124%" height="124%" colorInterpolationFilters="sRGB">
+          <feTurbulence type="fractalNoise" baseFrequency=".55" numOctaves="2" seed="4" result="n" />
+          <feDisplacementMap in="SourceGraphic" in2="n" scale="2.2" xChannelSelector="R" yChannelSelector="G" result="d" />
+          <feTurbulence type="fractalNoise" baseFrequency="1.5" numOctaves="1" seed="8" result="g" />
+          <feColorMatrix in="g" type="matrix" values="0 0 0 0 0  0 0 0 0 0  0 0 0 0 0  0 0 0 -3.2 2.5" result="speck" />
+          <feComposite in="d" in2="speck" operator="in" />
+        </filter>
+      </defs>
+      <g className="gpty-body">
+        <g filter={`url(#${id}p)`}>
+          <path d={ROCK} fill="#d65f2e" fillOpacity=".92" stroke="#1e0c08" strokeWidth="1.7" strokeLinejoin="round" />
+          <path d="M14.5 16.5C18.5 12 26.5 10.8 33 14" fill="none" stroke="#eaa64e" strokeWidth="2.3" strokeLinecap="round" />
+          <path d="M13 33.5c3 3.2 7 4.6 11 4.4" fill="none" stroke="#9c3a1f" strokeWidth="1.6" strokeLinecap="round" />
+          <g className="gpty-look">
+            <g className="gpty-eyes" fill="#f2e0c4">
+              <path d="M19.2 20.2c1.7-.1 2.7 1.8 2.5 3.9-.2 2-1.3 3.6-2.8 3.5-1.6-.1-2.4-1.9-2.3-3.9.1-2 1-3.4 2.6-3.5Z" />
+              <path d="M29.1 20.4c1.6.1 2.5 1.7 2.4 3.8-.1 2-1.2 3.5-2.7 3.4-1.6 0-2.5-1.8-2.4-3.8.1-2.1 1.1-3.5 2.7-3.4Z" />
+            </g>
+          </g>
+        </g>
       </g>
     </svg>
   );

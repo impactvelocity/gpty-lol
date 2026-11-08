@@ -1,0 +1,1213 @@
+/*
+ * Firewall Fury, 1985: Shelly (FW-7) as the last firewall in cyberspace, the
+ * way the movies drew it. The window is an old color monitor, edge to edge:
+ * graphite plastic, a deep bezel, a curved tube with a movie hacker's
+ * terminal on it (overdriven neon phosphor, ANSI-style block banners,
+ * function keys), and a chin with the badge, the vents and the power LED.
+ * The Kung Fury neon lives on the screen and in the Grid behind it.
+ * Everything is scoped under .fy (and .fy-pick for the sidebar row, .fy-scene
+ * for the backdrop).
+ */
+
+.fy,
+.fy-pick,
+.fy-scene {
+  --fy-chrome: var(--font-fy-chrome), "Exo 2", ui-sans-serif, system-ui, sans-serif;
+  --fy-brush: var(--font-fy-brush), "Mr Dafoe", "Brush Script MT", cursive;
+  --fy-arcade: var(--font-fy-arcade), "Press Start 2P", ui-monospace, monospace;
+  --fy-osd: var(--font-vt323), "VT323", ui-monospace, monospace;
+  --fy-pink: #ff2e88;
+  --fy-pink-rgb: 255, 46, 136;
+  --fy-hot: #ff6ad5;
+  --fy-cyan: #2ef2ff;
+  --fy-cyan-rgb: 46, 242, 255;
+  --fy-red: #ff1f3d;
+  --fy-red-rgb: 255, 31, 61;
+  --fy-gold: #ffd23f;
+  --fy-ink: #0d0322;
+  /* The sun, top to horizon. An alarm turns all three red. */
+  --fy-sun-a: #fff36b;
+  --fy-sun-b: #ff9a3c;
+  --fy-sun-c: #ff2e88;
+  /* The grid's lines. */
+  --fy-grid: 255, 60, 200;
+}
+
+/* ───────── Shared pieces ───────── */
+
+.fy-sun-a { stop-color: var(--fy-sun-a); transition: stop-color 0.5s; }
+.fy-sun-b { stop-color: var(--fy-sun-b); transition: stop-color 0.5s; }
+.fy-sun-c { stop-color: var(--fy-sun-c); transition: stop-color 0.5s; }
+
+.fy-twinkle { animation: fy-twinkle var(--d, 3s) ease-in-out infinite; animation-delay: var(--dl, 0s); }
+@keyframes fy-twinkle { 0%, 100% { opacity: 0.25; } 50% { opacity: 1; } }
+
+.fy-mtn-wire path { fill: none; stroke-width: 1; vector-effect: non-scaling-stroke; }
+.fy-mtn-far path { stroke: rgba(var(--fy-cyan-rgb), 0.28); }
+.fy-mtn-far .fy-mtn-edge { stroke: rgba(var(--fy-cyan-rgb), 0.85); stroke-width: 1.4; filter: drop-shadow(0 0 3px rgba(var(--fy-cyan-rgb), 0.9)); }
+.fy-mtn-near path { stroke: rgba(var(--fy-pink-rgb), 0.3); }
+.fy-mtn-near .fy-mtn-edge { stroke: rgba(var(--fy-pink-rgb), 0.95); stroke-width: 1.6; filter: drop-shadow(0 0 4px rgba(var(--fy-pink-rgb), 0.95)); }
+
+.fy-palm-trunk { fill: #0a0216; }
+.fy-palm-leaf { fill: #0a0216; stroke: rgba(var(--fy-pink-rgb), 0.55); stroke-width: 1.2; paint-order: stroke; }
+
+/* Chrome lettering: sky on top, a hard horizon, warm ground below, and a glint that sweeps across. */
+.fy-chrome {
+  font-family: var(--fy-chrome);
+  font-weight: 900;
+  font-style: italic;
+  text-transform: uppercase;
+  letter-spacing: 0.02em;
+  color: transparent;
+  background:
+    linear-gradient(105deg, transparent 42%, rgba(255, 255, 255, 0.95) 50%, transparent 58%) no-repeat,
+    var(--fy-chrome-img, linear-gradient(180deg, #f4fbff 0%, #9cd6ff 24%, #ffffff 47%, #2b1745 49%, #6e3d8e 62%, #ff9f6b 82%, #fff0c4 100%));
+  background-size: 300% 100%, 100% 100%;
+  background-position: 160% 0, 0 0;
+  -webkit-background-clip: text;
+  background-clip: text;
+  -webkit-text-stroke: 0.6px rgba(255, 255, 255, 0.5);
+  filter: drop-shadow(0 1.5px 0 #3a0a52) drop-shadow(0 3px 0 #16032a) drop-shadow(0 0 12px rgba(var(--fy-pink-rgb), 0.45));
+  animation: fy-glint 6s ease-in-out infinite;
+}
+@keyframes fy-glint {
+  0%, 72% { background-position: 160% 0, 0 0; }
+  88%, 100% { background-position: -60% 0, 0 0; }
+}
+.fy-brush {
+  font-family: var(--fy-brush);
+  font-weight: 400;
+  font-style: normal;
+  color: #ff3d8e;
+  background: linear-gradient(180deg, #ffb3e6 0%, #ff4fa3 40%, #ff1f5a 75%, #c3002f 100%);
+  -webkit-background-clip: text;
+  background-clip: text;
+  -webkit-text-fill-color: transparent;
+  filter: drop-shadow(0 0 1px rgba(255, 255, 255, 0.4)) drop-shadow(0 2px 0 rgba(40, 0, 20, 0.7)) drop-shadow(0 0 10px rgba(255, 30, 110, 0.75));
+}
+
+/* The Grid's floor: a neon plane racing toward the horizon (the backdrop uses it). */
+.fy-floor {
+  position: absolute;
+  overflow: hidden;
+  perspective: 180px;
+  perspective-origin: 50% 0;
+  background: linear-gradient(180deg, #2a0640 0%, #12032a 45%, #07011a 100%);
+}
+.fy-plane {
+  position: absolute;
+  left: -80%;
+  right: -80%;
+  top: 0;
+  height: 420%;
+  transform-origin: 50% 0;
+  transform: rotateX(78deg);
+  overflow: hidden;
+}
+.fy-plane::before {
+  content: "";
+  position: absolute;
+  inset: -44px 0 0 0;
+  background:
+    linear-gradient(90deg, rgba(var(--fy-grid), 0.95) 0 2px, transparent 2px) 0 0 / 44px 44px,
+    linear-gradient(0deg, rgba(var(--fy-grid), 0.95) 0 2px, transparent 2px) 0 0 / 44px 44px;
+  filter: drop-shadow(0 0 3px rgba(var(--fy-grid), 0.9));
+  animation: fy-run 0.95s linear infinite;
+}
+@keyframes fy-run { to { transform: translateY(44px); } }
+.fy-floor::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background:
+    linear-gradient(180deg, rgba(255, 70, 160, 0.75) 0, rgba(120, 20, 120, 0.55) 6%, rgba(30, 5, 60, 0.15) 30%, transparent 55%),
+    radial-gradient(70% 90% at 50% 100%, transparent 40%, rgba(5, 1, 20, 0.6));
+}
+.fy-horizon {
+  position: absolute;
+  left: 0;
+  right: 0;
+  height: 2px;
+  margin-top: -1px;
+  background: linear-gradient(90deg, transparent, #ffd1ef 20%, #fff 50%, #ffd1ef 80%, transparent);
+  box-shadow: 0 0 10px 2px rgba(255, 90, 190, 0.9), 0 0 40px 6px rgba(255, 60, 160, 0.45);
+}
+
+/* ───────── The monitor ───────── */
+
+.fy {
+  container: fy / inline-size;
+  display: flex;
+  height: 100%;
+  justify-content: center;
+  align-items: center;
+}
+.fy ::selection { background: var(--c-pink, #ff2e88); color: var(--c-bg, #fff); text-shadow: none; -webkit-text-fill-color: currentColor; }
+
+/* A 1985 color monitor in dark graphite plastic, lit pink from the Grid behind it. */
+.fy-monitor {
+  --fy-noise: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='160' height='160'><filter id='n'><feTurbulence type='fractalNoise' baseFrequency='1.1' numOctaves='2' stitchTiles='stitch'/><feColorMatrix values='0 0 0 0 1  0 0 0 0 1  0 0 0 0 1  0 0 0 .06 0'/></filter><rect width='100%25' height='100%25' filter='url(%23n)'/></svg>");
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  width: 100%;
+  height: 100%;
+  padding: 22px 22px 0;
+  border-radius: 28px 28px 20px 20px;
+  background:
+    var(--fy-noise),
+    radial-gradient(130% 70% at 50% -18%, rgba(255, 255, 255, 0.1), transparent 58%),
+    linear-gradient(90deg, rgba(255, 140, 220, 0.05), transparent 7%, transparent 93%, rgba(0, 0, 0, 0.28)),
+    linear-gradient(180deg, #1f1e23 0%, #17161b 42%, #111014 100%);
+  background-size: 160px 160px, auto, auto, auto;
+  box-shadow:
+    inset 0 1px 0 rgba(255, 255, 255, 0.2),
+    inset 0 -3px 0 rgba(0, 0, 0, 0.55),
+    inset 2px 0 0 rgba(255, 255, 255, 0.04),
+    inset -2px 0 0 rgba(0, 0, 0, 0.3),
+    0 0 0 1px #050407,
+    0 3px 0 #0e0c12,
+    0 7px 0 #08070a,
+    0 50px 90px -30px rgba(0, 0, 0, 0.95),
+    0 0 140px -30px rgba(var(--fy-pink-rgb), 0.6);
+  transition: box-shadow 0.4s ease;
+}
+.fy[data-alarm] .fy-monitor {
+  box-shadow:
+    inset 0 1px 0 rgba(255, 255, 255, 0.2),
+    inset 0 -3px 0 rgba(0, 0, 0, 0.55),
+    inset 2px 0 0 rgba(255, 255, 255, 0.04),
+    inset -2px 0 0 rgba(0, 0, 0, 0.3),
+    0 0 0 1px #050407,
+    0 3px 0 #0e0c12,
+    0 7px 0 #08070a,
+    0 50px 90px -30px rgba(0, 0, 0, 0.95),
+    0 0 160px -10px rgba(var(--fy-red-rgb), 0.75);
+}
+.fy[data-shake] .fy-monitor { animation: fy-shake 0.45s cubic-bezier(0.36, 0.07, 0.19, 0.97); }
+@keyframes fy-shake {
+  10%, 90% { transform: translate(-1px, 1px); }
+  20%, 80% { transform: translate(3px, -2px); }
+  30%, 50%, 70% { transform: translate(-6px, 2px); }
+  40%, 60% { transform: translate(6px, -1px); }
+}
+
+/* The bezel: a deep recess that the tube sits in. */
+.fy-bezel {
+  position: relative;
+  flex: 1;
+  min-height: 0;
+  padding: 18px;
+  border-radius: 22px;
+  background: linear-gradient(180deg, #08080a 0%, #0f0e12 55%, #151418 100%);
+  box-shadow:
+    inset 0 7px 16px rgba(0, 0, 0, 0.95),
+    inset 0 -2px 0 rgba(255, 255, 255, 0.07),
+    inset 0 0 0 1px rgba(0, 0, 0, 0.85),
+    0 1px 0 rgba(255, 255, 255, 0.08),
+    0 -1px 0 rgba(0, 0, 0, 0.45);
+}
+
+/* ───────── The tube ───────── */
+
+.fy-stage {
+  /* COLOR: neon phosphor. Shelly in hot pink, you in cyan, the system in sunset yellow. */
+  --c-text: #f7deff;
+  --c-text-rgb: 255, 110, 210;
+  --c-pink: #ff6fd2;
+  --c-pink-rgb: 255, 80, 200;
+  --c-cyan: #6ff6ff;
+  --c-cyan-rgb: 60, 240, 255;
+  --c-hi: #ffe066;
+  --c-hi-rgb: 255, 214, 80;
+  --c-dim: #ad86cf;
+  --c-bad: #ff5a6e;
+  --c-bad-rgb: 255, 50, 70;
+  --c-bar: #ff4fae;
+  --c-bar-rgb: 255, 79, 174;
+  --c-bg: #10041f;
+  --c-glass: #1a0836;
+  --fx: -1.3px 0 rgba(255, 30, 120, 0.5), 1.3px 0 rgba(40, 230, 255, 0.42);
+  --mask: 0.07;
+  --bt-a: #fff36b;
+  --bt-b: #ff9a3c;
+  --bt-c: #ff2e88;
+  --bt-ghost: rgba(46, 242, 255, 0.5);
+  position: relative;
+  height: 100%;
+  overflow: hidden;
+  isolation: isolate;
+  container: stage / inline-size;
+  border-radius: 36px / 44px;
+  background: radial-gradient(ellipse 80% 72% at 50% 46%, var(--c-glass), color-mix(in srgb, var(--c-glass), #000 75%) 82%);
+  box-shadow:
+    0 0 0 2px #000,
+    0 0 0 3px rgba(255, 255, 255, 0.04),
+    0 0 36px 4px rgba(var(--c-text-rgb), 0.14);
+  transition: box-shadow 0.4s, background 0.4s;
+}
+.fy[data-alarm] .fy-stage { box-shadow: 0 0 0 2px #000, 0 0 0 3px rgba(255, 255, 255, 0.04), 0 0 48px 6px rgba(var(--c-bad-rgb), 0.45); }
+/* During an alarm the tube burns at the edges. */
+.fy-stage::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  z-index: 1;
+  pointer-events: none;
+  border-radius: inherit;
+  background: radial-gradient(ellipse at 50% 50%, transparent 38%, rgba(var(--c-bad-rgb), 0.32));
+  opacity: 0;
+  transition: opacity 0.25s;
+}
+.fy[data-alarm] .fy-stage::after { opacity: 1; animation: fy-pulse 0.55s ease-in-out infinite alternate; }
+@keyframes fy-pulse { from { opacity: 0.55; } to { opacity: 1; } }
+
+/* ───────── The terminal ───────── */
+
+.fy-screen {
+  --g: var(--c-text-rgb);
+  position: relative;
+  z-index: 2;
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+  padding: clamp(14px, 2.4cqi, 26px) clamp(18px, 3.4cqi, 40px) clamp(12px, 2cqi, 20px);
+  font-family: var(--fy-osd);
+  font-size: clamp(18px, 1.5cqi + 8px, 23px);
+  line-height: 1.18;
+  color: var(--c-text);
+  font-variant-ligatures: none;
+  -webkit-font-smoothing: antialiased;
+  /* VT323's strokes are hairline-thin on modern screens; fatten them a touch. */
+  -webkit-text-stroke: 0.3px currentColor;
+  transform-origin: 50% 50%;
+  animation: fy-flicker 9s steps(1) infinite;
+}
+/* Overdriven phosphor: on the color screen, a magenta and a cyan ghost either side of every letter, then the bloom. */
+.fy-screen,
+.fy-c-cyan,
+.fy-c-pink,
+.fy-c-hi,
+.fy-c-bad,
+.fy-who,
+.fy-ps1,
+.fy-mine,
+.fy-echo { text-shadow: var(--fx), 0 0 6px rgba(var(--g), 0.55), 0 0 18px rgba(var(--g), 0.2); }
+.fy-c-cyan,
+.fy-mine,
+.fy-ps1,
+.fy-echo { color: var(--c-cyan); --g: var(--c-cyan-rgb); }
+.fy-c-pink,
+.fy-who { color: var(--c-pink); --g: var(--c-pink-rgb); }
+.fy-c-hi { color: var(--c-hi); --g: var(--c-hi-rgb); }
+.fy-c-bad { color: var(--c-bad); --g: var(--c-bad-rgb); }
+.fy-c-dim { color: var(--c-dim); text-shadow: 0 0 6px rgba(var(--c-text-rgb), 0.25); }
+@keyframes fy-flicker {
+  0%, 96.4%, 97.2%, 100% { opacity: 1; }
+  96.6% { opacity: 0.88; }
+  97% { opacity: 0.95; }
+}
+.fy-screen :focus-visible { outline: 1px dashed var(--c-cyan); outline-offset: 1px; }
+.fy-screen button { cursor: pointer; text-align: inherit; font: inherit; color: inherit; }
+
+.fy-inverse {
+  display: inline-block;
+  width: fit-content;
+  padding: 0 0.5ch;
+  color: var(--c-bg);
+  background: var(--c-pink);
+  text-shadow: none;
+  -webkit-text-stroke: 0;
+  box-shadow: 0 0 12px rgba(var(--c-pink-rgb), 0.55);
+}
+.fy-blink { animation: fy-blink 0.5s steps(1) infinite; }
+
+/* The status lines, top and bottom: inverse video. */
+.fy-top,
+.fy-status {
+  display: flex;
+  flex-shrink: 0;
+  align-items: center;
+  overflow: hidden;
+  white-space: nowrap;
+  color: var(--c-bg);
+  background: var(--c-bar);
+  text-shadow: none;
+  -webkit-text-stroke: 0;
+  box-shadow: 0 0 14px rgba(var(--c-bar-rgb), 0.45);
+}
+.fy-top { justify-content: space-between; gap: 2ch; padding: 0 0.7ch; }
+.fy-status > * { padding: 0 1ch; border-left: 1px solid color-mix(in srgb, var(--c-bg) 45%, transparent); }
+.fy-status > :first-child { border-left: 0; }
+.fy-st-bad { animation: fy-blink 1s steps(1) infinite; }
+
+/* The trace, under the title. */
+.fy-trace {
+  display: flex;
+  flex-shrink: 0;
+  align-items: center;
+  gap: 1.2ch;
+  padding: 0.35em 0 0.3em;
+  overflow: hidden;
+  white-space: nowrap;
+  border-bottom: 1px dashed rgba(var(--c-text-rgb), 0.35);
+}
+.fy-segs { display: flex; align-items: center; flex-shrink: 0; width: 22ch; color: var(--c-dim); }
+.fy-segs-in { flex: 1; display: flex; gap: 2px; height: 0.6em; margin: 0 0.25ch; }
+.fy-segs-in i { flex: 1; background: rgba(var(--c-text-rgb), 0.1); box-shadow: inset 0 0 0 1px rgba(var(--c-text-rgb), 0.18); transition: background 0.2s, box-shadow 0.2s; }
+.fy-segs-in i[data-on] { background: var(--c-cyan); box-shadow: 0 0 6px rgba(var(--c-cyan-rgb), 0.85); }
+.fy-segs[data-hot] .fy-segs-in i[data-on] { background: var(--c-bad); box-shadow: 0 0 6px rgba(var(--c-bad-rgb), 0.9); }
+.fy-trace[data-done] .fy-segs-in i[data-on] { animation: fy-blink 0.45s steps(1) infinite; }
+.fy-trace-num { flex-shrink: 0; }
+.fy-trace-ice { margin-left: auto; overflow: hidden; text-overflow: ellipsis; }
+
+/* The log. */
+.fy-log {
+  flex: 1;
+  min-height: 0;
+  overflow-y: auto;
+  overscroll-behavior: contain;
+  scrollbar-width: none;
+  padding: 0.6em 0 0.2em;
+  /* Lines scrolling off the top fade out under the trace line instead of being cut in half. */
+  -webkit-mask-image: linear-gradient(180deg, transparent 0.1em, #000 0.9em);
+  mask-image: linear-gradient(180deg, transparent 0.1em, #000 0.9em);
+}
+.fy-log::-webkit-scrollbar { display: none; }
+.fy-log-inner { padding-bottom: 0.3em; }
+
+@keyframes fy-at { from { visibility: hidden; } to { visibility: visible; } }
+.fy-step { animation: fy-at 1ms both; animation-delay: var(--at); }
+.fy-paint { animation: fy-at 1ms both; animation-delay: var(--at); }
+
+/* The jack-in */
+.fy-pre > div { white-space: pre-wrap; }
+.fy-live .fy-typed { display: inline-block; animation: fy-typed calc(var(--n) * 26ms) steps(var(--n)) both; }
+@keyframes fy-typed { from { clip-path: inset(0 100% 0 0); } to { clip-path: inset(0); } }
+.fy-fws { margin: 0.1em 0; }
+.fy-fw { display: grid; grid-template-columns: 8ch 13ch auto; gap: 1ch; align-items: center; }
+.fy-meter { position: relative; height: 0.66em; border: 1px solid rgba(var(--c-cyan-rgb), 0.55); box-shadow: 0 0 6px rgba(var(--c-cyan-rgb), 0.25); }
+.fy-meter i {
+  position: absolute;
+  top: 1px;
+  bottom: 1px;
+  left: 1px;
+  width: calc((100% - 2px) * var(--fill));
+  background: repeating-linear-gradient(90deg, var(--c-cyan) 0 calc(1.1ch - 2px), transparent calc(1.1ch - 2px) 1.1ch);
+  filter: drop-shadow(0 0 3px rgba(var(--c-cyan-rgb), 0.8));
+}
+.fy-meter-halt { border-color: rgba(var(--c-pink-rgb), 0.7); }
+.fy-meter-halt i { background: repeating-linear-gradient(90deg, var(--c-pink) 0 calc(1.1ch - 2px), transparent calc(1.1ch - 2px) 1.1ch); filter: drop-shadow(0 0 3px rgba(var(--c-pink-rgb), 0.8)); }
+.fy-live .fy-meter i { animation: fy-fill 0.22s steps(10) both; }
+.fy-live .fy-meter-halt i { animation: fy-fill 0.6s steps(4) both; }
+@keyframes fy-fill { from { width: 0; } }
+.fy-live .fy-fw > :last-child { animation: fy-at 1ms 0.22s both; }
+.fy-live .fy-fw > .fy-blink-in { animation: fy-at 1ms 0.6s both, fy-blink 0.5s 0.6s steps(1) infinite; }
+.fy-ice { margin: 0.4em 0 0.1em; background: var(--c-bad); box-shadow: 0 0 16px rgba(var(--c-bad-rgb), 0.7); }
+.fy-live .fy-ice { animation: fy-blink 0.4s steps(1) infinite; }
+
+/* The banner: block letters, banded like ANSI art. */
+.fy-banner { margin: 0.9em 0 0.3em; }
+.fy-bt { overflow: visible; }
+.fy-bt-a { stop-color: var(--bt-a); }
+.fy-bt-b { stop-color: var(--bt-b); }
+.fy-bt-c { stop-color: var(--bt-c); }
+.fy-bt-ghost { fill: var(--bt-ghost); }
+.fy-banner-bt { display: block; width: min(100%, 30em); height: auto; filter: drop-shadow(0 0 3px rgba(var(--c-text-rgb), 0.75)) drop-shadow(0 0 16px rgba(var(--c-text-rgb), 0.35)); }
+.fy-banner-sub { margin-top: 0.5em; font-size: 0.86em; letter-spacing: 0.08em; color: var(--c-dim); }
+.fy-fight-line { display: flex; align-items: center; gap: 1ch; margin: 0.6em 0 0.1em; overflow: hidden; white-space: nowrap; color: var(--c-hi); }
+.fy-fight-line::before,
+.fy-fight-line::after { content: ""; flex: 1; min-width: 2ch; border-top: 3px double rgba(var(--c-hi-rgb), 0.6); }
+.fy-fight-line::before { flex: 0 0 2ch; }
+.fy-fight-line b { padding: 0 0.6ch; font-weight: 400; color: var(--c-bg); background: var(--c-hi); text-shadow: none; -webkit-text-stroke: 0; box-shadow: 0 0 14px rgba(var(--c-hi-rgb), 0.6); }
+.fy-live .fy-fight-line b { animation: fy-pop 0.35s cubic-bezier(0.2, 1.8, 0.4, 1) both, fy-blink 0.4s 0.35s steps(1) 4; }
+@keyframes fy-pop { from { transform: scale(2.2); opacity: 0; } }
+
+/* The conversation */
+.fy-msg { margin-top: 0.6em; }
+.fy-mine { display: grid; grid-template-columns: 5ch minmax(0, 1fr); }
+.fy-theirs { display: grid; grid-template-columns: 8ch minmax(0, 1fr); }
+.fy-who { white-space: nowrap; }
+.fy-text { white-space: pre-wrap; overflow-wrap: anywhere; }
+.fy-hot { color: #fff; text-shadow: 0 0 4px #fff, 0 0 10px rgba(var(--c-pink-rgb), 1), 0 0 22px rgba(var(--c-pink-rgb), 0.8); }
+.fy-alarm-line { grid-column: 1 / -1; margin-bottom: 0.2em; }
+.fy-alarm-line span {
+  padding: 0 0.6ch;
+  color: var(--c-bg);
+  background: var(--c-bad);
+  text-shadow: none;
+  -webkit-text-stroke: 0;
+  box-shadow: 0 0 14px rgba(var(--c-bad-rgb), 0.7);
+  animation: fy-blink 0.45s steps(1) 7;
+}
+.fy-cursor {
+  display: inline-block;
+  width: 1ch;
+  height: 0.95em;
+  margin-left: 1px;
+  vertical-align: -0.12em;
+  background: var(--c-pink, #ff6fd2);
+  box-shadow: 0 0 8px rgba(var(--c-pink-rgb, 255, 80, 200), 0.85);
+  animation: fy-blink 1.06s steps(1) infinite;
+}
+.fy-charge { display: inline-flex; gap: 3px; margin-left: 1ch; vertical-align: -0.05em; }
+.fy-charge i { width: 0.55ch; height: 0.7em; background: rgba(var(--c-pink-rgb), 0.18); animation: fy-charge 1.1s steps(1) infinite; }
+.fy-charge i:nth-child(2) { animation-delay: 0.18s; }
+.fy-charge i:nth-child(3) { animation-delay: 0.36s; }
+.fy-charge i:nth-child(4) { animation-delay: 0.54s; }
+.fy-charge i:nth-child(5) { animation-delay: 0.72s; }
+@keyframes fy-charge { 0%, 60% { background: var(--c-pink); box-shadow: 0 0 8px rgba(var(--c-pink-rgb), 0.9); } 61%, 100% { background: rgba(var(--c-pink-rgb), 0.18); box-shadow: none; } }
+.fy-dots { display: inline-block; overflow: hidden; white-space: nowrap; vertical-align: bottom; animation: fy-dots 1.2s steps(4) infinite; }
+@keyframes fy-dots { from { width: 0; } to { width: 4ch; } }
+
+/* What the terminal prints between messages. */
+.fy-sys { margin-top: 0.6em; }
+.fy-sys > div { white-space: pre-wrap; overflow-wrap: anywhere; }
+.fy-link { padding: 0 0.3ch; margin-left: -0.3ch; }
+.fy-link:hover,
+.fy-link:focus-visible { background: var(--c-pink); color: var(--c-bg) !important; text-shadow: none; -webkit-text-stroke: 0; outline: none; }
+.fy-link:hover *,
+.fy-link:focus-visible * { color: var(--c-bg) !important; text-shadow: none; }
+
+.fy-box {
+  position: relative;
+  max-width: 64ch;
+  margin: 0.95em 0 0.2em;
+  padding: 0.6em 1.2ch 0.45em;
+  border: 3px double rgba(var(--c-hi-rgb), 0.65);
+  box-shadow: 0 0 12px rgba(var(--c-hi-rgb), 0.15), inset 0 0 12px rgba(var(--c-hi-rgb), 0.08);
+}
+.fy-box header { position: absolute; top: -0.68em; left: 1ch; }
+.fy-box header span { padding: 0 1ch; color: var(--c-hi); background: color-mix(in srgb, var(--c-glass), #000 40%); }
+.fy-box-foot { margin-top: 0.35em; }
+.fy-help { display: grid; }
+.fy-help-row { display: grid; grid-template-columns: 8ch minmax(0, 1fr) 7ch; gap: 1ch; width: 100%; padding: 0 0.3ch; margin: 0 -0.3ch; }
+.fy-table { border-collapse: collapse; }
+.fy-table td { padding: 0 3ch 0 0; white-space: nowrap; }
+.fy-table td:last-child { padding-right: 0; text-align: right; }
+.fy-table tr:nth-child(1) td { color: var(--c-hi); }
+.fy-table tr:nth-child(2) td { color: var(--c-pink); }
+.fy-table tr:nth-child(3) td { color: var(--c-cyan); }
+.fy-table tr[data-you] td { color: #fff; animation: fy-blink 0.8s steps(1) infinite; }
+
+/* HACK.EXE */
+.fy-slots { display: flex; flex-wrap: wrap; gap: 0.6ch; margin: 0.4em 0 0.35em; }
+.fy-slot {
+  display: grid;
+  place-items: center;
+  width: 2.3ch;
+  height: 1.45em;
+  font-size: 1.3em;
+  color: var(--c-cyan);
+  border: 1px solid rgba(var(--c-cyan-rgb), 0.55);
+  box-shadow: inset 0 0 8px rgba(var(--c-cyan-rgb), 0.15);
+}
+.fy-slot[data-on="true"] {
+  color: var(--c-bg);
+  border-color: transparent;
+  background: var(--c-pink);
+  text-shadow: none;
+  -webkit-text-stroke: 0;
+  box-shadow: 0 0 12px rgba(var(--c-pink-rgb), 0.7);
+}
+.fy-slot[data-new] { animation: fy-lock 0.3s ease-out; }
+@keyframes fy-lock { from { filter: brightness(2); box-shadow: 0 0 26px rgba(var(--c-pink-rgb), 1); transform: scale(1.18); } }
+
+/* A flying kick, blocked. */
+.fy-kick { --bt-a: #f0ffff; --bt-b: #6ff6ff; --bt-c: #2a7dff; --bt-ghost: rgba(255, 46, 136, 0.6); }
+.fy-kick-run { overflow: hidden; color: var(--c-hi); }
+.fy-kick-run span { display: inline-block; white-space: nowrap; }
+.fy-kick-hit { margin: 0.35em 0 0.25em; }
+.fy-kick-bt { display: block; width: min(100%, 19em); height: auto; filter: drop-shadow(0 0 3px rgba(var(--c-cyan-rgb), 0.8)) drop-shadow(0 0 14px rgba(var(--c-cyan-rgb), 0.4)); }
+.fy-kick[data-live] .fy-kick-run span { animation: fy-kick-run 0.4s cubic-bezier(0.2, 0.9, 0.3, 1) both; }
+.fy-kick[data-live] .fy-kick-hit { animation: fy-at 1ms 0.4s both; }
+.fy-kick[data-live] .fy-kick-bt { animation: fy-pop 0.35s cubic-bezier(0.2, 1.8, 0.4, 1) 0.4s both; }
+.fy-kick[data-live] .fy-kick-dmg { animation: fy-at 1ms 0.85s both; }
+@keyframes fy-kick-run { from { transform: translateX(-110%); } }
+
+/* The prompt: a textarea, and above it a mirror that draws the block cursor. */
+.fy-cmd {
+  display: grid;
+  flex-shrink: 0;
+  grid-template-columns: 5ch minmax(0, 1fr) auto;
+  align-items: start;
+  column-gap: 0.6ch;
+  padding: 0.4em 0 0.3em;
+  color: var(--c-text);
+  border-top: 1px dashed rgba(var(--c-text-rgb), 0.35);
+}
+.fy-cmd .fy-ps1 { cursor: text; }
+.fy-field { position: relative; min-width: 0; }
+.fy-field textarea,
+.fy-mirror {
+  display: block;
+  width: 100%;
+  margin: 0;
+  padding: 0;
+  border: 0;
+  font: inherit;
+  line-height: inherit;
+  letter-spacing: inherit;
+  white-space: pre-wrap;
+  overflow-wrap: anywhere;
+  tab-size: 4;
+}
+.fy-field textarea {
+  max-height: 110px;
+  resize: none;
+  overflow-y: auto;
+  scrollbar-width: none;
+  background: transparent;
+  color: inherit;
+  caret-color: transparent;
+  outline: none;
+  text-shadow: inherit;
+}
+.fy-field textarea::-webkit-scrollbar { display: none; }
+.fy-field textarea:focus-visible { outline: none; }
+.fy-mirror {
+  position: absolute;
+  inset: 0;
+  overflow: hidden;
+  pointer-events: none;
+  color: transparent;
+  text-shadow: none;
+  -webkit-text-stroke: 0;
+}
+.fy-caret { display: inline; width: auto; height: auto; margin: 0; vertical-align: baseline; color: var(--c-bg); text-shadow: none; }
+.fy-caret-idle { background: transparent; color: transparent; box-shadow: inset 0 0 0 1px var(--c-pink); animation: none; }
+.fy-hint-in {
+  position: absolute;
+  top: 0;
+  left: 1.6ch;
+  right: 0;
+  overflow: hidden;
+  white-space: nowrap;
+  text-overflow: ellipsis;
+  pointer-events: none;
+  color: var(--c-dim);
+  opacity: 0.85;
+}
+.fy-fire { padding: 0 0.4ch; white-space: nowrap; color: var(--c-hi) !important; }
+.fy-fire:hover,
+.fy-fire:focus-visible { color: var(--c-bg) !important; background: var(--c-hi); text-shadow: none; -webkit-text-stroke: 0; outline: none; }
+.fy-fire[data-stop] { color: var(--c-bad) !important; }
+.fy-fire[data-stop]:hover { background: var(--c-bad); }
+
+/* The function keys: labels along the foot of the screen, like an old terminal's soft keys. */
+.fy-keys { display: flex; flex-shrink: 0; flex-wrap: wrap; gap: 0.35em 1.2ch; padding: 0.15em 0 0.45em; }
+.fy-key { display: flex; flex: 1; align-items: center; justify-content: center; gap: 0.5ch; min-width: 10ch; white-space: nowrap; }
+.fy-key small { font-size: 1em; color: var(--c-dim); }
+.fy-key span {
+  flex: 1;
+  padding: 0 0.6ch;
+  text-align: center;
+  color: var(--c-text);
+  box-shadow: inset 0 0 0 1px rgba(var(--c-text-rgb), 0.55), 0 0 8px rgba(var(--c-text-rgb), 0.15);
+}
+.fy-key:hover span,
+.fy-key:focus-visible span,
+.fy-key[data-lit] span { color: var(--c-bg); background: var(--c-text); text-shadow: none; -webkit-text-stroke: 0; box-shadow: 0 0 12px rgba(var(--c-text-rgb), 0.55); }
+.fy-key:focus-visible { outline: none; }
+.fy-key[data-lit] span { animation: fy-key-blink 0.3s steps(1) 3; }
+/* Blinks between inverse and normal video, so the key never vanishes mid-press. */
+@keyframes fy-key-blink {
+  50% { color: var(--c-text); background: transparent; box-shadow: inset 0 0 0 1px rgba(var(--c-text-rgb), 0.55), 0 0 8px rgba(var(--c-text-rgb), 0.15); }
+}
+
+/* ───────── The glass: scanlines, the shadow mask, flicker, curvature, glare ───────── */
+
+.fy-crt { position: absolute; inset: 0; z-index: 10; pointer-events: none; border-radius: inherit; overflow: hidden; }
+.fy-crt > * { position: absolute; inset: 0; display: block; border-radius: inherit; }
+.fy-crt-scan {
+  background:
+    repeating-linear-gradient(180deg, rgba(0, 0, 0, 0.26) 0 1px, transparent 1px 3px),
+    repeating-linear-gradient(90deg, rgba(255, 0, 60, var(--mask)) 0 1px, rgba(0, 255, 120, var(--mask)) 1px 2px, rgba(0, 120, 255, var(--mask)) 2px 3px);
+}
+.fy-crt-roll {
+  inset: -22% 0 auto !important;
+  height: 20%;
+  border-radius: 0 !important;
+  background: linear-gradient(180deg, transparent, rgba(var(--c-text-rgb), 0.05) 50%, transparent);
+  animation: fy-roll 8s linear infinite;
+}
+@keyframes fy-roll { to { transform: translateY(700%); } }
+.fy-crt-curve {
+  background: radial-gradient(ellipse 120% 112% at 50% 50%, transparent 58%, rgba(0, 0, 0, 0.62) 100%);
+  box-shadow: inset 0 0 60px rgba(0, 0, 0, 0.85), inset 0 0 10px rgba(0, 0, 0, 0.9);
+}
+.fy-crt-room {
+  background:
+    radial-gradient(40% 28% at 14% 9%, rgba(255, 120, 220, 0.06), transparent 70%),
+    radial-gradient(26% 34% at 94% 84%, rgba(60, 230, 255, 0.04), transparent 70%),
+    linear-gradient(112deg, transparent 56%, rgba(255, 255, 255, 0.025) 57%, transparent 72%);
+}
+.fy-crt-photo { width: 100%; height: 100%; object-fit: fill; opacity: 0.22; mix-blend-mode: screen; filter: blur(0.8px); }
+.fy-crt-glare {
+  background:
+    radial-gradient(65% 38% at 30% 4%, rgba(255, 255, 255, 0.085), transparent 70%),
+    radial-gradient(120% 60% at 50% -30%, rgba(255, 255, 255, 0.05), transparent 60%),
+    linear-gradient(168deg, rgba(255, 255, 255, 0.04), transparent 32%);
+}
+
+/* ───────── Overlays: ACCESS DENIED, K.O. ───────── */
+
+.fy-denied,
+.fy-ko { position: absolute; inset: 0; z-index: 8; display: grid; place-items: center; padding: 16px; pointer-events: none; }
+.fy-denied { background: rgba(0, 0, 0, 0.45); animation: fy-denied 1.9s steps(1) both; }
+.fy-ko { background: rgba(0, 0, 0, 0.6); }
+.fy-denied::before { content: ""; position: absolute; inset: 0; background: rgba(var(--c-bad-rgb), 0.32); animation: fy-flash 0.35s ease-out both; }
+@keyframes fy-flash { to { opacity: 0; } }
+@keyframes fy-denied { 0% { opacity: 1; } 14% { opacity: 0; } 22% { opacity: 1; } 34% { opacity: 0; } 42% { opacity: 1; } 94% { opacity: 1; } 100% { opacity: 0; } }
+.fy-denied-box {
+  --bt-a: #ffe0d0;
+  --bt-b: #ff5a4a;
+  --bt-c: #c0001e;
+  --bt-ghost: rgba(46, 242, 255, 0.4);
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 12px;
+  padding: 22px 30px 16px;
+  background: color-mix(in srgb, var(--c-glass), #000 60%);
+  border: 4px double var(--c-bad);
+  box-shadow: 0 0 0 5px color-mix(in srgb, var(--c-glass), #000 60%), 0 0 46px rgba(var(--c-bad-rgb), 0.5), inset 0 0 22px rgba(var(--c-bad-rgb), 0.16);
+  font-family: var(--fy-osd);
+  color: var(--c-bad);
+  text-shadow: 0 0 6px rgba(var(--c-bad-rgb), 0.7);
+  text-align: center;
+}
+.fy-denied-bt,
+.fy-ko-bt { display: block; height: auto; filter: drop-shadow(0 0 4px rgba(var(--c-bad-rgb), 0.85)) drop-shadow(0 0 18px rgba(var(--c-bad-rgb), 0.45)); }
+.fy-denied-bt { width: min(54cqi, 400px); }
+.fy-ko-bt { width: min(30cqi, 230px); animation: fy-pop 0.45s cubic-bezier(0.2, 1.8, 0.4, 1) both; }
+.fy-denied-box small { font-size: clamp(14px, 1.1cqi + 7px, 19px); letter-spacing: 0.08em; }
+.fy-ko-line { font-size: clamp(20px, 2.4cqi, 28px); line-height: 1.1; color: var(--c-text); }
+.fy-ko-line b { font-weight: 400; color: var(--c-hi); }
+.fy-ko-line[data-blink] { animation: fy-blink 0.5s steps(1) infinite; }
+
+/* ───────── The chin: badge, vents, the power LED ───────── */
+
+.fy-chin { display: flex; align-items: center; gap: 18px; flex-shrink: 0; height: 56px; padding: 0 4px 0 6px; }
+.fy-badge { position: relative; display: block; flex-shrink: 0; width: 158px; height: 42px; }
+.fy-badge .fy-chrome { position: absolute; left: 0; bottom: 4px; font-size: 18.5px; line-height: 1; white-space: nowrap; }
+.fy-badge .fy-brush { position: absolute; left: 58px; top: -8px; font-size: 33px; line-height: 1; transform: rotate(-9deg); white-space: nowrap; }
+.fy-model { display: flex; flex-direction: column; gap: 4px; flex-shrink: 0; font-family: var(--fy-chrome); font-weight: 700; font-size: 8px; line-height: 1; letter-spacing: 0.22em; text-transform: uppercase; white-space: nowrap; color: #8f889c; }
+.fy-model i { font-style: normal; color: #c3bccf; }
+.fy-stripes { display: flex; flex-direction: column; gap: 2px; width: 34px; flex-shrink: 0; }
+.fy-stripes i { display: block; height: 2px; border-radius: 1px; }
+.fy-stripes i:nth-child(1) { background: #2ef2ff; box-shadow: 0 0 4px rgba(46, 242, 255, 0.6); }
+.fy-stripes i:nth-child(2) { background: #ff2e88; box-shadow: 0 0 4px rgba(255, 46, 136, 0.6); }
+.fy-stripes i:nth-child(3) { background: #ffd23f; box-shadow: 0 0 4px rgba(255, 210, 63, 0.5); }
+.fy-vents {
+  flex: 1;
+  min-width: 20px;
+  height: 20px;
+  border-radius: 3px;
+  background: repeating-linear-gradient(90deg, rgba(0, 0, 0, 0.85) 0 3px, rgba(255, 255, 255, 0.05) 3px 4px, transparent 4px 9px);
+  box-shadow: inset 0 1px 2px rgba(0, 0, 0, 0.6);
+  -webkit-mask-image: linear-gradient(90deg, transparent, #000 8%, #000 92%, transparent);
+  mask-image: linear-gradient(90deg, transparent, #000 8%, #000 92%, transparent);
+}
+
+.fy-led { flex-shrink: 0; width: 8px; height: 8px; margin: 0 14px 0 auto; border-radius: 50%; background: #2a1f22; box-shadow: inset 0 1px 1px rgba(0, 0, 0, 0.6), 0 1px 0 rgba(255, 255, 255, 0.08); }
+.fy-led[data-led="on"],
+.fy-led[data-led="busy"] { background: radial-gradient(circle at 40% 35%, #d8ffe0, #3dff74 55%, #129a3a); box-shadow: 0 0 8px 1px rgba(61, 255, 116, 0.7); }
+.fy-led[data-led="busy"] { animation: fy-blink 0.28s steps(1) infinite; }
+.fy-led[data-led="down"] { background: radial-gradient(circle at 40% 35%, #fff0c8, #ffb000 55%, #a86a00); box-shadow: 0 0 8px 1px rgba(255, 176, 0, 0.6); }
+.fy-led[data-led="alarm"] { background: radial-gradient(circle at 40% 35%, #ffd0c8, #ff3b2b 55%, #9a0f05); box-shadow: 0 0 10px 2px rgba(255, 59, 43, 0.8); animation: fy-blink 0.4s steps(1) infinite; }
+
+/* ───────── Smaller windows ───────── */
+
+@container fy (max-width: 900px) {
+  .fy-model { display: none; }
+}
+@container fy (max-width: 760px) {
+  .fy-monitor { padding: 12px 12px 0; border-radius: 20px 20px 16px 16px; }
+  .fy-bezel { padding: 10px; border-radius: 16px; }
+  .fy-stage { border-radius: 22px / 26px; }
+  .fy-chin { height: 48px; gap: 12px; }
+  .fy-vents,
+  .fy-stripes { display: none; }
+}
+@container fy (max-width: 420px) {
+  .fy-badge { width: 132px; }
+  .fy-badge .fy-chrome { font-size: 15.5px; }
+  .fy-badge .fy-brush { left: 48px; font-size: 28px; }
+}
+@container stage (max-width: 640px) {
+  .fy-wide,
+  .fy-trace-num,
+  .fy-trace-ice { display: none; }
+  .fy-theirs { grid-template-columns: minmax(0, 1fr); }
+  .fy-help-row { grid-template-columns: 8ch minmax(0, 1fr); }
+  .fy-fw { grid-template-columns: 8ch 9ch auto; }
+  .fy-key small { display: none; }
+  .fy-key { min-width: 7ch; }
+}
+
+@media (max-height: 780px) {
+  .fy-monitor { padding-top: 16px; }
+  .fy-bezel { padding: 12px; }
+  .fy-chin { height: 46px; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .fy-chrome,
+  .fy-twinkle,
+  .fy-screen,
+  .fy-crt-roll,
+  .fy-cursor,
+  .fy-dots,
+  .fy-charge i,
+  .fy-alarm-line span,
+  .fy-blink,
+  .fy-st-bad,
+  .fy-led,
+  .fy-key[data-lit] span,
+  .fy-trace[data-done] .fy-segs-in i[data-on],
+  .fy-ko-line,
+  .fy-por *,
+  .fy-monitor,
+  .fy-stage::after,
+  .fy-denied,
+  .fy-denied::before,
+  .fy-table tr[data-you] td { animation: none !important; }
+  .fy-crt-roll { display: none; }
+}
+
+/* ───────── Shelly herself ───────── */
+
+.fy-por { overflow: visible; }
+.fy-por-body,
+.fy-por-tails { transform-box: fill-box; }
+.fy-por-body { transform-origin: 50% 100%; animation: fy-por-bob 3.2s ease-in-out infinite; }
+.fy-por-tails { transform-origin: 100% 30%; animation: fy-tails 0.5s ease-in-out infinite alternate; }
+@keyframes fy-por-bob { 0%, 100% { transform: translateY(0); } 50% { transform: translateY(-1.2px); } }
+@keyframes fy-tails { from { transform: rotate(-5deg) skewY(-3deg); } to { transform: rotate(6deg) skewY(4deg); } }
+.fy-por-glint { opacity: 0; }
+.fy-por[data-mood="thinking"] .fy-por-glint { animation: fy-por-glint 1.1s ease-in-out infinite; }
+@keyframes fy-por-glint { 0% { opacity: 0.85; transform: skewX(-24deg) translateX(0); } 100% { opacity: 0.85; transform: skewX(-24deg) translateX(44px); } }
+.fy-por[data-mood="thinking"] .fy-por-body { animation: fy-por-ponder 1.6s ease-in-out infinite; }
+@keyframes fy-por-ponder { 0%, 100% { transform: rotate(-3deg); } 50% { transform: rotate(3deg); } }
+.fy-por[data-mood="typing"] .fy-por-body { animation: fy-por-hop 0.5s ease-in-out infinite; }
+@keyframes fy-por-hop { 0%, 100% { transform: translateY(0) scale(1, 1); } 40% { transform: translateY(-2.5px) scale(0.97, 1.03); } 80% { transform: translateY(0) scale(1.04, 0.96); } }
+.fy-por[data-mood="error"] .fy-por-body { animation: fy-por-shake 0.4s ease-in-out 3; }
+@keyframes fy-por-shake { 25% { transform: translateX(-2px); } 75% { transform: translateX(2px); } }
+.fy-por[data-hit] .fy-por-body { animation: fy-por-hit 0.5s ease-out; }
+@keyframes fy-por-hit { 0% { filter: brightness(4) saturate(0); transform: translateX(3px); } 30% { filter: none; transform: translateX(-2px); } 100% { transform: none; } }
+.fy-por-red { opacity: 0; transition: opacity 0.2s; }
+.fy-por[data-alarm] .fy-por-red { opacity: 0.85; }
+.fy-por-beams path { fill: none; stroke: #ff2b3d; stroke-width: 1.4; stroke-linecap: round; filter: drop-shadow(0 0 1.5px #ff2b3d) drop-shadow(0 0 3px rgba(255, 40, 60, 0.9)); opacity: 0; }
+.fy-por[data-alarm] .fy-por-beams path { opacity: 1; animation: fy-beam 0.16s steps(2) infinite; }
+@keyframes fy-beam { 50% { stroke-width: 0.8; opacity: 0.75; } }
+@media (prefers-reduced-motion: reduce) {
+  .fy-por[data-alarm] .fy-por-beams path { opacity: 1; }
+}
+
+/* ───────── Sidebar: the open Fury agent ───────── */
+
+.fy-pick {
+  position: relative;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  width: 100%;
+  padding: 8px 12px 8px 9px;
+  overflow: hidden;
+  border-radius: 14px;
+  text-align: left;
+  color: #fff;
+  background:
+    linear-gradient(180deg, transparent 62%, rgba(255, 60, 200, 0.18) 62%, transparent 64%, transparent 80%, rgba(255, 60, 200, 0.12) 80%, transparent 82%),
+    radial-gradient(120% 140% at 0% 0%, rgba(255, 255, 255, 0.08), transparent 55%),
+    linear-gradient(180deg, #2a0b4a, #14052a);
+  box-shadow:
+    inset 0 1px 0 rgba(255, 255, 255, 0.16),
+    0 0 0 1px rgba(var(--fy-pink-rgb), 0.55),
+    0 12px 26px -12px rgba(0, 0, 0, 0.85),
+    0 0 26px -6px rgba(var(--fy-pink-rgb), 0.6);
+  animation: fy-pick-in 0.3s cubic-bezier(0.3, 1.4, 0.5, 1);
+}
+.fy-pick:hover { box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.16), 0 0 0 1px var(--fy-cyan), 0 12px 26px -12px rgba(0, 0, 0, 0.85), 0 0 30px -4px rgba(var(--fy-cyan-rgb), 0.5); }
+.fy-pick:focus-visible { outline: 2px solid #fff; outline-offset: 2px; }
+@keyframes fy-pick-in { from { transform: scale(0.97); opacity: 0.5; } to { transform: none; opacity: 1; } }
+.fy-pick-av {
+  position: relative;
+  display: grid;
+  place-items: end center;
+  flex-shrink: 0;
+  width: 44px;
+  height: 40px;
+  overflow: hidden;
+  border-radius: 9px;
+  background: linear-gradient(180deg, #1a0644 0%, #7a1890 52%, #ff6a9a 64%, #2a0640 64.5%, #10022a 100%);
+  box-shadow: inset 0 0 0 1px rgba(255, 255, 255, 0.18), 0 0 0 2px #0b0216;
+}
+.fy-pick-av::before {
+  content: "";
+  position: absolute;
+  left: 50%;
+  top: 64%;
+  width: 22px;
+  height: 22px;
+  margin: -16px 0 0 -11px;
+  border-radius: 50%;
+  background: linear-gradient(180deg, #fff36b, #ff9a3c 50%, #ff2e88);
+  -webkit-mask-image: linear-gradient(180deg, #000 0 52%, transparent 52% 58%, #000 58% 66%, transparent 66% 74%, #000 74%);
+  mask-image: linear-gradient(180deg, #000 0 52%, transparent 52% 58%, #000 58% 66%, transparent 66% 74%, #000 74%);
+}
+.fy-pick-av::after {
+  content: "";
+  position: absolute;
+  left: -30%;
+  right: -30%;
+  top: 64%;
+  bottom: -20%;
+  background:
+    linear-gradient(90deg, rgba(255, 60, 200, 0.85) 0 1px, transparent 1px) 0 0 / 8px 100%,
+    linear-gradient(0deg, rgba(255, 60, 200, 0.85) 0 1px, transparent 1px) 0 0 / 100% 5px;
+  transform: perspective(40px) rotateX(50deg);
+  transform-origin: 50% 0;
+}
+.fy-pick-av .fy-por { position: relative; z-index: 1; width: 34px; height: 34px; margin-bottom: 1px; }
+/* With the picture of her, no tile: she stands on her own, like the other agents in the list. */
+.fy-pick-av[data-photo] { place-items: center; overflow: visible; border-radius: 0; background: none; box-shadow: none; }
+.fy-pick-av[data-photo]::before,
+.fy-pick-av[data-photo]::after { content: none; }
+/* Same moods as the drawing: a slow bob, a hop while she types. */
+.fy-pick-photo {
+  position: relative;
+  z-index: 1;
+  width: 44px;
+  height: auto;
+  transform-origin: 50% 100%;
+  filter: drop-shadow(0 2px 3px rgba(0, 0, 0, 0.45));
+  animation: fy-photo-bob 3.2s ease-in-out infinite;
+}
+@keyframes fy-photo-bob { 0%, 100% { transform: translateY(0); } 50% { transform: translateY(-1px); } }
+.fy-pick-photo[data-mood="thinking"] { animation: fy-por-ponder 1.6s ease-in-out infinite; }
+.fy-pick-photo[data-mood="typing"] { animation: fy-photo-hop 0.5s ease-in-out infinite; }
+@keyframes fy-photo-hop { 0%, 100% { transform: translateY(0) scale(1, 1); } 40% { transform: translateY(-2px) scale(0.97, 1.03); } 80% { transform: translateY(0) scale(1.04, 0.96); } }
+.fy-pick-photo[data-mood="error"] { animation: fy-por-shake 0.4s ease-in-out 3; }
+.fy-pick-name { display: flex; align-items: center; gap: 8px; }
+.fy-pick-name .fy-chrome { font-size: 19px; line-height: 1.1; letter-spacing: 0.04em; filter: drop-shadow(0 1px 0 #3a0a52) drop-shadow(0 0 8px rgba(var(--fy-pink-rgb), 0.5)); }
+.fy-pick-tag { padding: 3px 4px 2px; font-family: var(--fy-arcade); font-size: 6px; line-height: 1; color: #fff; background: var(--fy-pink); box-shadow: 0 0 8px rgba(var(--fy-pink-rgb), 0.7); }
+.fy-pick-sub { display: block; margin-top: 2px; font-family: var(--fy-chrome); font-size: 11px; line-height: 1.25; white-space: nowrap; color: #ffc3ea; }
+.fy-pick-sub .fy-cursor { width: 0.5em; height: 0.9em; }
+.fy-pick-hp { display: flex; flex-direction: column; gap: 3px; flex-shrink: 0; }
+.fy-pick-hp i { width: 5px; height: 5px; transform: skewX(-18deg); background: rgba(255, 255, 255, 0.12); }
+.fy-pick-hp i:nth-child(-n + 3) { background: var(--fy-gold); box-shadow: 0 0 5px rgba(255, 210, 63, 0.7); }
+.fy-pick[data-busy] .fy-pick-hp i { animation: fy-charge 0.9s steps(1) infinite; }
+.fy-pick[data-busy] .fy-pick-hp i:nth-child(2) { animation-delay: 0.15s; }
+.fy-pick[data-busy] .fy-pick-hp i:nth-child(3) { animation-delay: 0.3s; }
+.fy-pick[data-busy] .fy-pick-hp i:nth-child(4) { animation-delay: 0.45s; }
+.fy-pick[data-error] .fy-pick-hp i { background: var(--fy-red); box-shadow: 0 0 5px rgba(var(--fy-red-rgb), 0.8); animation: fy-blink 0.5s steps(1) infinite; }
+@media (prefers-reduced-motion: reduce) {
+  .fy-pick,
+  .fy-pick * { animation: none !important; }
+}
+
+/* ───────── The backdrop ───────── */
+
+.fy-scene { position: absolute; inset: 0; overflow: hidden; container-type: size; --hz: 60%; }
+.fy-scene-sky { position: absolute; inset: 0 0 calc(100% - var(--hz)) 0; }
+.fy-scene-sky svg { position: absolute; inset: 0; width: 100%; height: 100%; }
+.fy-scene-glow { position: absolute; left: 62%; top: var(--hz); width: 120vh; height: 80vh; transform: translate(-50%, -60%); background: radial-gradient(closest-side, rgba(255, 90, 160, 0.55), rgba(255, 50, 150, 0.15) 55%, transparent); }
+.fy-scene-sun { position: absolute; left: 62%; top: var(--hz); width: 46vh; height: 46vh; transform: translate(-50%, -76%); filter: drop-shadow(0 0 40px rgba(255, 120, 120, 0.6)); }
+/* The firewall itself: a wall of laser light along the horizon, right behind the chat window. */
+.fy-scene-wall {
+  position: absolute;
+  left: 22%;
+  right: -2%;
+  top: calc(var(--hz) - 38vh);
+  height: 38vh;
+  background:
+    repeating-linear-gradient(90deg, rgba(255, 80, 200, 0.55) 0 2px, transparent 2px 26px),
+    linear-gradient(180deg, transparent, rgba(255, 60, 160, 0.18) 40%, rgba(255, 90, 200, 0.5));
+  -webkit-mask-image: linear-gradient(90deg, transparent, #000 14%, #000 92%, transparent), linear-gradient(180deg, transparent, #000 70%);
+  -webkit-mask-composite: source-in;
+  mask-image: linear-gradient(90deg, transparent, #000 14%, #000 92%, transparent), linear-gradient(180deg, transparent, #000 70%);
+  mask-composite: intersect;
+  filter: drop-shadow(0 0 6px rgba(255, 60, 200, 0.8));
+  animation: fy-wall 3.6s ease-in-out infinite;
+}
+@keyframes fy-wall { 0%, 100% { opacity: 0.75; } 50% { opacity: 1; } }
+.fy-scene-mtn { position: absolute; left: 0; top: calc(var(--hz) - 9vh); width: 100%; height: 9vh; }
+.fy-scene .fy-floor { inset: var(--hz) 0 0 0; perspective: 260px; }
+.fy-scene .fy-plane::before {
+  inset: -70px 0 0 0;
+  background:
+    linear-gradient(90deg, rgba(var(--fy-grid), 0.95) 0 2px, transparent 2px) 0 0 / 70px 70px,
+    linear-gradient(0deg, rgba(var(--fy-grid), 0.95) 0 2px, transparent 2px) 0 0 / 70px 70px;
+  animation: fy-run-lg 1.6s linear infinite;
+}
+@keyframes fy-run-lg { to { transform: translateY(70px); } }
+.fy-scene .fy-horizon { top: var(--hz); }
+.fy-scene-palm { position: absolute; bottom: calc(100% - var(--hz) - 18vh); height: 62vh; width: auto; filter: drop-shadow(0 0 1px rgba(255, 80, 200, 0.6)); }
+.fy-scene-palm-a { left: -4vh; }
+.fy-scene-palm-b { left: 9vh; height: 44vh; opacity: 0.9; }
+.fy-scene-palm-c { right: -3vh; height: 54vh; }
+/* Halley's Comet, coming back this winter. */
+.fy-comet { position: absolute; left: 7%; top: 9%; width: 160px; height: 2px; transform: rotate(-22deg); background: linear-gradient(90deg, transparent, rgba(160, 230, 255, 0.5) 70%, #fff); border-radius: 2px; filter: drop-shadow(0 0 6px rgba(160, 230, 255, 0.9)); }
+.fy-comet::after { content: ""; position: absolute; right: -3px; top: -3px; width: 8px; height: 8px; border-radius: 50%; background: #fff; box-shadow: 0 0 10px 3px rgba(160, 230, 255, 0.9); }
+/* ───────── The wallpaper, alive ───────── */
+
+/*
+ * The board is the picture's own shape (1586×992), covering the screen from
+ * the bottom up, like object-fit: cover anchored to the floor. Everything on
+ * it is placed in % of the picture, so the effects stay on its lines at any
+ * size. All of it adds light (screen), so nothing darkens the picture, and
+ * with reduced motion every effect rests invisible.
+ */
+.fy-board {
+  position: absolute;
+  left: 50%;
+  bottom: 0;
+  width: max(100cqw, calc(100cqh * 1586 / 992));
+  aspect-ratio: 1586 / 992;
+  translate: -50% 0;
+  isolation: isolate;
+}
+.fy-board-img { position: absolute; inset: 0; display: block; width: 100%; height: 100%; }
+.fy-alive { position: absolute; inset: 0; overflow: hidden; pointer-events: none; }
+.fy-alive i { position: absolute; display: block; }
+
+/* Neon light flashing up somewhere off in the Grid, then fading. */
+.fy-a-flash {
+  border-radius: 50%;
+  background: radial-gradient(closest-side, var(--c), transparent);
+  mix-blend-mode: screen;
+  opacity: 0;
+  transform: translate(-50%, -50%) scale(0.92);
+  animation: fy-a-flash var(--d) ease-in-out var(--dl) infinite;
+}
+@keyframes fy-a-flash {
+  0%, 52%, 100% { opacity: 0; transform: translate(-50%, -50%) scale(0.92); }
+  55% { opacity: 1; }
+  58% { opacity: 0.45; }
+  61% { opacity: 0.95; }
+  86% { opacity: 0; transform: translate(-50%, -50%) scale(1.06); }
+}
+
+/* A scan line sweeping down the sky to the horizon. */
+.fy-a-sky { position: absolute; left: 0; right: 0; top: 0; height: 83.47%; overflow: hidden; }
+.fy-a-scan {
+  left: 0;
+  right: 0;
+  top: 0;
+  height: 7%;
+  background: linear-gradient(180deg, transparent, rgba(255, 60, 190, 0.025) 55%, rgba(120, 240, 255, 0.07) 92%, rgba(200, 250, 255, 0.16) 98%, transparent);
+  -webkit-mask-image: linear-gradient(90deg, transparent, #000 20%, #000 80%, transparent);
+  mask-image: linear-gradient(90deg, transparent, #000 20%, #000 80%, transparent);
+  mix-blend-mode: screen;
+  transform: translateY(-100%);
+  animation: fy-a-scan 12s linear infinite;
+}
+@keyframes fy-a-scan { 0% { transform: translateY(-100%); } 70%, 100% { transform: translateY(1430%); } }
+
+/* Speed lines streaking across the sky. */
+.fy-a-streak { left: 0; right: 0; height: 1.5px; mix-blend-mode: screen; transform: rotate(-3deg); }
+.fy-a-streak[data-rtl] { transform: rotate(3deg) scaleX(-1); }
+.fy-a-streak::before {
+  content: "";
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 16%;
+  height: 100%;
+  border-radius: 2px;
+  background: linear-gradient(90deg, transparent, rgba(var(--c), 0.55) 80%, #fff);
+  opacity: 0;
+  transform: translateX(-100%);
+  animation: fy-a-streak var(--d) cubic-bezier(0.55, 0, 0.45, 1) var(--dl) infinite;
+}
+@keyframes fy-a-streak {
+  0% { opacity: 0; transform: translateX(-100%); }
+  1.5% { opacity: 1; }
+  13% { opacity: 1; }
+  15%, 100% { opacity: 0; transform: translateX(625%); }
+}
+
+/* The stars twinkle; the two big ones flare. */
+.fy-a-star {
+  width: 8px;
+  height: 8px;
+  margin: -4px 0 0 -4px;
+  border-radius: 50%;
+  background: radial-gradient(circle, #fff 0 22%, rgba(180, 240, 255, 0.55) 40%, transparent 70%);
+  mix-blend-mode: screen;
+  opacity: 0;
+  animation: fy-a-twinkle var(--d) ease-in-out var(--dl) infinite;
+}
+.fy-a-star[data-big] {
+  width: 34px;
+  height: 34px;
+  margin: -17px 0 0 -17px;
+  border-radius: 0;
+  background:
+    linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.9), transparent) center / 100% 1px no-repeat,
+    linear-gradient(180deg, transparent, rgba(255, 255, 255, 0.9), transparent) center / 1px 100% no-repeat,
+    radial-gradient(circle, #fff 0 6%, rgba(160, 230, 255, 0.45) 16%, transparent 34%);
+}
+@keyframes fy-a-twinkle {
+  0%, 100% { opacity: 0; transform: scale(0.6) rotate(0deg); }
+  50% { opacity: 1; transform: scale(1.25) rotate(12deg); }
+}
+
+/* The horizon breathes, and lights race along it. */
+.fy-a-horizon {
+  left: 0;
+  right: 0;
+  height: 9%;
+  background: linear-gradient(180deg, transparent, rgba(255, 46, 170, 0.22) 44%, rgba(255, 150, 225, 0.38) 50%, rgba(255, 46, 170, 0.18) 57%, transparent);
+  mix-blend-mode: screen;
+  opacity: 0.35;
+  transform: translateY(-50%);
+  animation: fy-a-breathe 5s ease-in-out infinite alternate;
+}
+@keyframes fy-a-breathe { to { opacity: 0.9; } }
+.fy-a-runner { left: 0; right: 0; height: 12px; margin-top: -6px; mix-blend-mode: screen; }
+.fy-a-runner[data-rtl] { transform: scaleX(-1); }
+.fy-a-runner::before {
+  content: "";
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 14%;
+  height: 100%;
+  background:
+    linear-gradient(90deg, transparent, rgba(255, 120, 220, 0.9) 75%, #fff 97%, transparent) center / 100% 2px no-repeat,
+    radial-gradient(ellipse 45% 50% at 82% 50%, rgba(255, 46, 170, 0.55), transparent);
+  opacity: 0;
+  transform: translateX(-100%);
+  animation: fy-a-runner var(--d) cubic-bezier(0.45, 0, 0.55, 1) var(--dl) infinite;
+}
+@keyframes fy-a-runner {
+  0% { opacity: 0; transform: translateX(-100%); }
+  2% { opacity: 1; }
+  30% { opacity: 1; }
+  32%, 100% { opacity: 0; transform: translateX(715%); }
+}
+
+/*
+ * Patches of the picture itself, lit up in place: the filter crushes the dark
+ * around a line to black and pushes the line brighter, so screened over the
+ * original, only the line glows.
+ */
+.fy-a-patch { background-repeat: no-repeat; mix-blend-mode: screen; opacity: 0; filter: var(--f, brightness(1.7) contrast(1.5)); }
+
+/* Waves of light rolling down the floor grid toward you, faster as they come. */
+.fy-a-floor {
+  --f: brightness(1.75) contrast(1.45);
+  -webkit-mask-image: linear-gradient(180deg, transparent, #000 40%, #000 60%, transparent);
+  mask-image: linear-gradient(180deg, transparent, #000 40%, #000 60%, transparent);
+  -webkit-mask-repeat: no-repeat;
+  mask-repeat: no-repeat;
+  -webkit-mask-size: 100% 30%;
+  mask-size: 100% 30%;
+  animation: fy-a-floor var(--d) cubic-bezier(0.6, 0, 0.9, 0.55) var(--dl) infinite;
+}
+@keyframes fy-a-floor {
+  0% { opacity: var(--o); -webkit-mask-position: 0 -45%; mask-position: 0 -45%; }
+  55% { opacity: var(--o); -webkit-mask-position: 0 145%; mask-position: 0 145%; }
+  55.1%, 100% { opacity: 0; -webkit-mask-position: 0 145%; mask-position: 0 145%; }
+}
+
+/* Light running along the circuit traces: a white-hot head, its tail, and a soft halo. */
+.fy-a-lines { position: absolute; inset: 0; width: 100%; height: 100%; mix-blend-mode: screen; }
+.fy-run[data-tone="pink"] { --c1: #ff4fb4; --c2: #ffe0f4; }
+.fy-run[data-tone="cyan"] { --c1: #2ef2ff; --c2: #eaffff; }
+.fy-run path { fill: none; stroke-linecap: round; stroke-linejoin: round; opacity: 0; animation-duration: var(--d); animation-delay: var(--dl); animation-timing-function: linear; animation-iteration-count: infinite; }
+.fy-run-halo { stroke: var(--c1); stroke-width: 10; stroke-dasharray: 26 99999; animation-name: fy-run-halo; }
+.fy-run-tail { stroke: var(--c1); stroke-width: 2.8; stroke-dasharray: 70 99999; animation-name: fy-run-tail; }
+.fy-run-head { stroke: var(--c2); stroke-width: 3; stroke-dasharray: 12 99999; animation-name: fy-run-head; }
+/* All three end together, TAIL (70) past the end of the line, at 45% of the cycle (RUN in scene.tsx). */
+@keyframes fy-run-halo {
+  0% { opacity: 0; stroke-dashoffset: 26px; }
+  3%, 40% { opacity: 0.3; }
+  45%, 100% { opacity: 0; stroke-dashoffset: calc(-1px * (var(--len) + 44)); }
+}
+@keyframes fy-run-tail {
+  0% { opacity: 0; stroke-dashoffset: 70px; }
+  3%, 40% { opacity: 0.7; }
+  45%, 100% { opacity: 0; stroke-dashoffset: calc(-1px * var(--len)); }
+}
+@keyframes fy-run-head {
+  0% { opacity: 0; stroke-dashoffset: 12px; }
+  3%, 40% { opacity: 1; }
+  45%, 100% { opacity: 0; stroke-dashoffset: calc(-1px * (var(--len) + 58)); }
+}
+
+/* The nodes flash as the light leaves or reaches them. */
+.fy-a-node { --f: brightness(1.8) contrast(1.5) saturate(1.15); animation: fy-a-node var(--d) ease-out var(--dl) infinite; }
+.fy-a-glow {
+  border-radius: 50%;
+  background: radial-gradient(closest-side, rgba(var(--g), 0.5), rgba(var(--g), 0.12) 55%, transparent);
+  mix-blend-mode: screen;
+  opacity: 0;
+  transform: translate(-50%, -50%);
+  animation: fy-a-node var(--d) ease-out var(--dl) infinite;
+}
+.fy-a-glow[data-tone="pink"] { --g: 255, 60, 180; }
+.fy-a-glow[data-tone="cyan"] { --g: 46, 242, 255; }
+@keyframes fy-a-node {
+  0% { opacity: 0; }
+  1.5% { opacity: 1; }
+  4% { opacity: 0.45; }
+  6% { opacity: 0.95; }
+  22%, 100% { opacity: 0; }
+}
+
+/* The hex readouts flicker, like data updating. */
+.fy-a-readout { --f: brightness(3) contrast(1.6); animation: fy-a-blip var(--d) linear var(--dl) infinite; }
+@keyframes fy-a-blip {
+  0%, 100% { opacity: 0; }
+  1% { opacity: 1; }
+  2% { opacity: 0.1; }
+  3% { opacity: 1; }
+  4.5% { opacity: 0.2; }
+  6% { opacity: 0.9; }
+  14% { opacity: 0; }
+}
+
+/* A wave of light across the fields of pixel dots. */
+.fy-a-wave {
+  --f: brightness(1.9) contrast(1.4);
+  -webkit-mask-image: linear-gradient(90deg, transparent, #000 50%, transparent);
+  mask-image: linear-gradient(90deg, transparent, #000 50%, transparent);
+  -webkit-mask-repeat: no-repeat;
+  mask-repeat: no-repeat;
+  -webkit-mask-size: 60% 100%;
+  mask-size: 60% 100%;
+  animation: fy-a-wave var(--d) linear var(--dl) infinite;
+}
+@keyframes fy-a-wave {
+  0% { opacity: 1; -webkit-mask-position: -150% 0; mask-position: -150% 0; }
+  30% { opacity: 1; -webkit-mask-position: 250% 0; mask-position: 250% 0; }
+  30.1%, 100% { opacity: 0; -webkit-mask-position: 250% 0; mask-position: 250% 0; }
+}
+
+/* Now and then the pixel ridges glitch sideways, with a cyan ghost. */
+.fy-a-glitch { --f: brightness(1.5) contrast(1.45); animation: fy-a-glitch var(--d) steps(1, end) var(--dl) infinite; }
+.fy-a-glitch[data-split] { --f: brightness(1.5) contrast(1.45) hue-rotate(-145deg); }
+@keyframes fy-a-glitch {
+  0%, 100% { opacity: 0; transform: none; }
+  0.8% { opacity: 0.85; transform: translateX(var(--x)); }
+  1.6% { opacity: 0; transform: none; }
+  2.6% { opacity: 0.6; transform: translateX(calc(var(--x) * -0.6)) skewX(-6deg); }
+  3.4% { opacity: 0; transform: none; }
+}
+
+/* Under the agent list: the high-score table off the attract screen. */
+.fy-hiscore { position: absolute; left: 28px; bottom: 62px; font-family: var(--fy-arcade); text-transform: uppercase; }
+.fy-hiscore h4 { margin-bottom: 12px; font-weight: 400; font-size: 11px; line-height: 1; color: var(--fy-red); text-shadow: 0 0 8px rgba(var(--fy-red-rgb), 0.8), 2px 2px 0 #2a0040; animation: fy-blink 1.2s steps(1) infinite; }
+.fy-hiscore ol { display: grid; gap: 9px; font-size: 10px; line-height: 1; }
+.fy-hiscore li { display: grid; grid-template-columns: 3ch 4ch 7ch; gap: 1ch; color: #fff; text-shadow: 2px 2px 0 #2a0040; }
+.fy-hiscore li:nth-child(1) { color: var(--fy-gold); }
+.fy-hiscore li:nth-child(2) { color: #ff9fd8; }
+.fy-hiscore li:nth-child(3) { color: var(--fy-cyan); }
+.fy-hiscore li span:last-child { text-align: right; }
+
+@keyframes fy-blink { 50% { opacity: 0; } }

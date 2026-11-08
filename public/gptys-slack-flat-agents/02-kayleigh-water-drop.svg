@@ -1,0 +1,6 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 48 48" overflow="hidden">
+<defs><clipPath id="kayleigh-slack-clip"><path d="M24 3C24 3 40 19.5 40 30A16 16 0 0 1 8 30C8 19.5 24 3 24 3Z"/></clipPath><clipPath id="kayleigh-slack-eye-safe"><path d="M0 0H48V48H0ZM15 24H33V34H15Z" fill-rule="evenodd" clip-rule="evenodd"/></clipPath></defs>
+<g data-role="body"><path d="M24 3C24 3 40 19.5 40 30A16 16 0 0 1 8 30C8 19.5 24 3 24 3Z" fill="#e96699"/></g>
+<g data-role="facet" clip-path="url(#kayleigh-slack-clip)"><g clip-path="url(#kayleigh-slack-eye-safe)"><path d="M46 14L14 46H48V14Z" fill="#de6193"/></g></g>
+<g data-role="spot" clip-path="url(#kayleigh-slack-clip)"><circle cx="17.014" cy="20.085" r="1.4" fill="#ffffff" opacity=".38"/></g>
+</svg>

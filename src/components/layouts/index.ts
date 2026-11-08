@@ -3,7 +3,9 @@ import { BbsLayout } from "./BbsLayout";
 import { CavemanLayout } from "./CavemanLayout";
 import { ElfLayout } from "./ElfLayout";
 import { FacebookLayout } from "./FacebookLayout";
+import { FuryLayout } from "./FuryLayout";
 import { CleanLayout } from "./CleanLayout";
+import { HighLimitLayout } from "./HighLimitLayout";
 import { IcqLayout } from "./IcqLayout";
 import { IrcLayout } from "./IrcLayout";
 import { MachineLayout } from "./MachineLayout";
@@ -29,7 +31,9 @@ export const LAYOUTS: Record<Costume["layout"], (p: LayoutProps) => React.ReactN
   reddit: RedditLayout,
   slack: SlackLayout,
   terminal: TerminalLayout,
+  fury: FuryLayout,
   elf: ElfLayout,
   machine: MachineLayout,
   slots: SlotsLayout,
+  highlimit: HighLimitLayout,
 };

@@ -1,0 +1,37 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 48 48" role="img" aria-label="Grug">
+  <defs>
+    <linearGradient id="grug-body" x1="0" y1="0" x2="0" y2="1" gradientUnits="objectBoundingBox">
+      <stop offset="0" stop-color="#e69c78"/>
+      <stop offset="0.52" stop-color="#d9662f"/>
+      <stop offset="1" stop-color="#ae5226"/>
+    </linearGradient>
+    <radialGradient id="grug-glow" cx="0.5" cy="0.72" r="0.64" gradientTransform="translate(0 0.36) scale(1 0.5)">
+      <stop offset="0" stop-color="#e59772" stop-opacity="0.64"/>
+      <stop offset="0.55" stop-color="#e59772" stop-opacity="0.3"/>
+      <stop offset="1" stop-color="#e59772" stop-opacity="0"/>
+    </radialGradient>
+    <linearGradient id="grug-gloss" x1="0" y1="11.5" x2="0" y2="19" gradientUnits="userSpaceOnUse">
+      <stop offset="0" stop-color="#ffffff" stop-opacity="0.9"/>
+      <stop offset="1" stop-color="#ffffff" stop-opacity="0.05"/>
+    </linearGradient>
+    <clipPath id="grug-clip"><path d="M10 34C6 30 6 22 10 18C12 12 18 8 25 9C31 8 37 11 39 17C43 21 44 28 41 33C38 39 31 42 24 41C17 42 13 39 10 34Z"/></clipPath>
+    <clipPath id="grug-eye-safe">
+      <path d="M0 0H48V48H0ZM15 19H33V29H15Z" fill-rule="evenodd" clip-rule="evenodd"/>
+    </clipPath>
+  </defs>
+  <g data-role="outline">
+    <path d="M10 34C6 30 6 22 10 18C12 12 18 8 25 9C31 8 37 11 39 17C43 21 44 28 41 33C38 39 31 42 24 41C17 42 13 39 10 34Z" fill="none" stroke="#522712" stroke-width="3" stroke-linejoin="round"/>
+  </g>
+  <g data-role="body">
+    <path d="M10 34C6 30 6 22 10 18C12 12 18 8 25 9C31 8 37 11 39 17C43 21 44 28 41 33C38 39 31 42 24 41C17 42 13 39 10 34Z" fill="url(#grug-body)"/>
+  </g>
+  <g data-role="glow" clip-path="url(#grug-clip)">
+    <path d="M11 34.2C14 40 36 40 39 34.2C36 37.3 14 37.3 11 34.2Z" fill="url(#grug-glow)"/>
+  </g>
+  <g data-role="gloss" clip-path="url(#grug-clip)">
+    <g clip-path="url(#grug-eye-safe)">
+      <path d="M11 21C12.9 15.1 18.1 11.3 25 11.5C30.7 10.6 35.3 13.4 37 18.1C32 22.6 17 23.5 11 21Z" fill="url(#grug-gloss)"/>
+      <ellipse cx="18" cy="14.4" rx="2.1" ry="1.15" fill="#ffffff"/>
+    </g>
+  </g>
+</svg>

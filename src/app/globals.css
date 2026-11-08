@@ -261,7 +261,7 @@ html, body { height: 100%; overflow: hidden; }
   --shell-on-text: #15151d;
   --shell-soft: rgba(255, 255, 255, 0.82);
   --shell-muted: rgba(255, 255, 255, 0.6);
-  --shell-hover: rgba(255, 255, 255, 0.09);
+  --shell-hover: rgba(255, 255, 255, 0.05);
   --shell-active: rgba(255, 255, 255, 0.15);
   --shell-ring: rgba(255, 255, 255, 0.16);
   --shell-glass: rgba(12, 12, 20, 0.28);
@@ -279,7 +279,7 @@ html, body { height: 100%; overflow: hidden; }
   --shell-on-text: #ffffff;
   --shell-soft: rgba(13, 36, 56, 0.82);
   --shell-muted: rgba(13, 36, 56, 0.58);
-  --shell-hover: rgba(255, 255, 255, 0.35);
+  --shell-hover: rgba(255, 255, 255, 0.22);
   --shell-active: rgba(255, 255, 255, 0.72);
   --shell-ring: rgba(13, 36, 56, 0.08);
   --shell-glass: rgba(255, 255, 255, 0.5);
@@ -292,6 +292,11 @@ html, body { height: 100%; overflow: hidden; }
   color-scheme: light;
 }
 .shell nav, .shell header, .shell aside { text-shadow: var(--shell-ink-shadow); }
+/* "Meet the Gptys" and "Built for Kiroween": a quiet frosted pill, a touch of black on dark scenes and of white on light ones. */
+.shell-kiro { background: rgb(0 0 0 / .16); }
+.shell-kiro:hover { background: rgb(0 0 0 / .2); }
+.shell[data-tone="light"] .shell-kiro { background: rgb(255 255 255 / .3); }
+.shell[data-tone="light"] .shell-kiro:hover { background: rgb(255 255 255 / .36); }
 /* A sidebar row's hover badge: a quiet, darker pill around the app's own label. */
 .shell-badge {
   display: flex;
@@ -345,6 +350,20 @@ html, body { height: 100%; overflow: hidden; }
 .sc-flap-l { animation: sc-flap .35s ease-in-out infinite alternate; }
 .sc-flap-r { animation: sc-flap .35s ease-in-out infinite alternate; }
 @keyframes sc-flap { from { transform: scaleX(1); } to { transform: scaleX(.35); } }
+/* Firelight: an uneven, living flicker, smooth rather than stepped. */
+.sc-firelight { transform-origin: 50% 50%; animation: sc-firelight var(--d, 3s) ease-in-out infinite; animation-delay: var(--dl, 0s); }
+@keyframes sc-firelight {
+  0%, 100% { opacity: .78; transform: scale(1); }
+  14% { opacity: .95; transform: scale(1.03); }
+  27% { opacity: .7; transform: scale(.98); }
+  41% { opacity: 1; transform: scale(1.04); }
+  55% { opacity: .82; transform: scale(1); }
+  68% { opacity: .9; transform: scale(1.02); }
+  83% { opacity: .66; transform: scale(.97); }
+}
+/* A light far off in the dark that slowly swells and fades. */
+.sc-glow { animation: sc-glow var(--d, 14s) ease-in-out infinite alternate; animation-delay: var(--dl, 0s); }
+@keyframes sc-glow { from { opacity: .4; transform: scale(.95); } to { opacity: 1; transform: scale(1.04); } }
 @media (prefers-reduced-motion: reduce) {
   .scene * { animation: none !important; }
 }
@@ -367,9 +386,26 @@ html, body { height: 100%; overflow: hidden; }
 @keyframes gpty-shake { 25% { transform: translateX(-2px); } 75% { transform: translateX(2px); } }
 button:hover > .gpty .gpty-body { animation: gpty-wiggle .5s ease-in-out; }
 @keyframes gpty-wiggle { 30% { transform: rotate(-7deg) scale(1.05); } 65% { transform: rotate(5deg) scale(1.05); } }
+/* Pixel gptys (the ICQ theme): the eyes jump a whole pixel instead of gliding. */
+.gpty[data-look="pixel"] .gpty-look { transition: none; }
+.gpty[data-look="pixel"][data-mood="thinking"] .gpty-look { transform: translate(3px, -3px); }
 @media (prefers-reduced-motion: reduce) { .gpty * { animation: none !important; } }
 
-/* Meet page, Kiroween section: the gptys in the dark, only their eyes lit, in each one's color (--glow). */
+/* Meet page, demo video placeholder: the gptys in the dark, only their eyes lit, in each one's color (--glow). */
 .meet-eyes .gpty-body > path { fill: color-mix(in srgb, var(--glow) 12%, #0f0d17); }
 .meet-eyes .gpty-eyes ellipse { fill: color-mix(in oklab, var(--glow), white 35%); }
 .meet-eyes .gpty { filter: drop-shadow(0 0 5px color-mix(in srgb, var(--glow) 70%, transparent)); }
+
+/* Meet page, feature cards (src/components/meet/FeatureStages.tsx): a gentle bob, and content easing in as it changes. */
+.meet-bob { animation: meet-bob var(--d, 3s) ease-in-out infinite; animation-delay: var(--dl, 0s); }
+@keyframes meet-bob { 0%, 100% { transform: translateY(0); } 50% { transform: translateY(-4px); } }
+@keyframes meet-in { from { opacity: 0; transform: translateY(6px); } to { opacity: 1; transform: none; } }
+@media (prefers-reduced-motion: reduce) { .meet-bob { animation: none !important; } }
+
+/* Meet page footer (ported from LotteryClock): twinkling stars, bobbing bats, and the graveyard's ghosts, fog and pumpkins. */
+@keyframes lc-twinkle { 0%, 100% { opacity: 0.15; transform: scale(0.7); } 50% { opacity: 1; transform: scale(1); } }
+@keyframes lc-bob { 0%, 100% { transform: translateY(0); } 50% { transform: translateY(-6px); } }
+@keyframes lc-gy-haunt { 0%, 100% { transform: translate(0, 0) rotate(-3deg); } 50% { transform: translate(6px, -14px) rotate(3deg); } }
+@keyframes lc-gy-rise { 0%, 100% { transform: translateY(0) scale(1); } 50% { transform: translateY(-12px) scale(1.03); } }
+@keyframes lc-gy-fog { 0%, 100% { transform: translateX(-60px); } 50% { transform: translateX(60px); } }
+@keyframes lc-gy-glow { 0%, 100% { opacity: 1; } 40% { opacity: 0.75; } 55% { opacity: 0.95; } 70% { opacity: 0.8; } }

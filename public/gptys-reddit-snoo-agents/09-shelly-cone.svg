@@ -1,0 +1,10 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 48 48">
+<defs><clipPath id="shelly9-rd-clip"><path d="M24 6C26 6 27.5 7.2 28.6 9L43 36C44.5 39 42.5 42 39 42H9C5.5 42 3.5 39 5 36L19.4 9C20.5 7.2 22 6 24 6Z"/></clipPath><clipPath id="shelly9-rd-face"><path transform="translate(24 24) scale(0.95) translate(-24 -24)" d="M24 6C26 6 27.5 7.2 28.6 9L43 36C44.5 39 42.5 42 39 42H9C5.5 42 3.5 39 5 36L19.4 9C20.5 7.2 22 6 24 6Z"/></clipPath></defs>
+<g transform="translate(24 24) scale(0.95) translate(-24 -24)">
+<g data-role="shadow" transform="translate(0 1.8)"><path d="M24 6C26 6 27.5 7.2 28.6 9L43 36C44.5 39 42.5 42 39 42H9C5.5 42 3.5 39 5 36L19.4 9C20.5 7.2 22 6 24 6Z" fill="#3b1626" fill-opacity=".38" stroke="#3b1626" stroke-opacity=".38" stroke-width="3.6" stroke-linejoin="round"/></g>
+<g data-role="ink"><path d="M24 6C26 6 27.5 7.2 28.6 9L43 36C44.5 39 42.5 42 39 42H9C5.5 42 3.5 39 5 36L19.4 9C20.5 7.2 22 6 24 6Z" fill="none" stroke="#1a1a1b" stroke-width="3.6" stroke-linejoin="round"/></g>
+<g data-role="body"><path d="M24 6C26 6 27.5 7.2 28.6 9L43 36C44.5 39 42.5 42 39 42H9C5.5 42 3.5 39 5 36L19.4 9C20.5 7.2 22 6 24 6Z" fill="#d72973"/></g>
+<g data-role="light" clip-path="url(#shelly9-rd-clip)"><path d="M24 6C26 6 27.5 7.2 28.6 9L43 36C44.5 39 42.5 42 39 42H9C5.5 42 3.5 39 5 36L19.4 9C20.5 7.2 22 6 24 6Z" fill="#ff2e88" transform="translate(-0.6 -2.6)"/></g>
+</g>
+<g data-role="face" clip-path="url(#shelly9-rd-face)"><ellipse cx="24" cy="30.4" rx="9.4" ry="6.5" fill="#ffffff"/><ellipse cx="24" cy="30.4" rx="9.4" ry="6.5" fill="none" stroke="#1a1a1b" stroke-opacity=".22" stroke-width=".8"/></g>
+</svg>

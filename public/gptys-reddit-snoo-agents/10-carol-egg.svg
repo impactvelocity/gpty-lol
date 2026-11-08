@@ -1,0 +1,10 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 48 48">
+<defs><clipPath id="carol10-rd-clip"><path d="M24 4C33 4 40 17 40 28C40 37 33 44 24 44C15 44 8 37 8 28C8 17 15 4 24 4Z"/></clipPath><clipPath id="carol10-rd-face"><path transform="translate(24 24) scale(0.95) translate(-24 -24)" d="M24 4C33 4 40 17 40 28C40 37 33 44 24 44C15 44 8 37 8 28C8 17 15 4 24 4Z"/></clipPath></defs>
+<g transform="translate(24 24) scale(0.95) translate(-24 -24)">
+<g data-role="shadow" transform="translate(0 1.8)"><path d="M24 4C33 4 40 17 40 28C40 37 33 44 24 44C15 44 8 37 8 28C8 17 15 4 24 4Z" fill="#3b1626" fill-opacity=".38" stroke="#3b1626" stroke-opacity=".38" stroke-width="3.6" stroke-linejoin="round"/></g>
+<g data-role="ink"><path d="M24 4C33 4 40 17 40 28C40 37 33 44 24 44C15 44 8 37 8 28C8 17 15 4 24 4Z" fill="none" stroke="#1a1a1b" stroke-width="3.6" stroke-linejoin="round"/></g>
+<g data-role="body"><path d="M24 4C33 4 40 17 40 28C40 37 33 44 24 44C15 44 8 37 8 28C8 17 15 4 24 4Z" fill="#c43138"/></g>
+<g data-role="light" clip-path="url(#carol10-rd-clip)"><path d="M24 4C33 4 40 17 40 28C40 37 33 44 24 44C15 44 8 37 8 28C8 17 15 4 24 4Z" fill="#e5383b" transform="translate(-0.6 -2.6)"/></g>
+</g>
+<g data-role="face" clip-path="url(#carol10-rd-face)"><ellipse cx="24" cy="26.4" rx="9.4" ry="6.5" fill="#ffffff"/><ellipse cx="24" cy="26.4" rx="9.4" ry="6.5" fill="none" stroke="#1a1a1b" stroke-opacity=".22" stroke-width=".8"/></g>
+</svg>

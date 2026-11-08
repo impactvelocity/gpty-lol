@@ -2,20 +2,19 @@
 
 import type { ActiveRowProps } from "@/components/activeRows";
 import { Gpty } from "@/components/Gpty";
-import { PlanchetteGlyph } from "./art";
 import "./seance.css";
 
 /**
  * The open Mortimer in the sidebar: a small engraved card, black and bone,
- * with his ghost in an oval cameo. While he answers, the line under his name
- * spells, and the planchette at the end stirs.
+ * with his ghost in the card's gold. While he answers, the line under his
+ * name spells.
  */
 export function SeanceActiveRow({ agent, mood, ...button }: ActiveRowProps) {
   const busy = mood === "thinking" || mood === "typing";
   return (
     <button type="button" {...button} className="sp-pick" data-busy={busy || undefined}>
       <span className="sp-pick-cameo">
-        <Gpty agent={agent} size={28} mood={mood} />
+        <Gpty agent={agent} size={32} mood={mood} />
       </span>
       <span className="min-w-0 flex-1">
         <span className="sp-pick-name">
@@ -41,7 +40,6 @@ export function SeanceActiveRow({ agent, mood, ...button }: ActiveRowProps) {
           )}
         </span>
       </span>
-      <PlanchetteGlyph className="sp-pick-plan" />
     </button>
   );
 }

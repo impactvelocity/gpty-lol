@@ -1,0 +1,38 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 48 48" role="img" aria-label="Lucky">
+  <defs>
+    <linearGradient id="lucky-body" x1="0" y1="0" x2="0" y2="1" gradientUnits="objectBoundingBox">
+      <stop offset="0" stop-color="#ffd97a"/>
+      <stop offset="0.52" stop-color="#ffc533"/>
+      <stop offset="1" stop-color="#cc9e29"/>
+    </linearGradient>
+    <radialGradient id="lucky-glow" cx="0.5" cy="0.72" r="0.64" gradientTransform="translate(0 0.36) scale(1 0.5)">
+      <stop offset="0" stop-color="#ffd874" stop-opacity="0.64"/>
+      <stop offset="0.55" stop-color="#ffd874" stop-opacity="0.3"/>
+      <stop offset="1" stop-color="#ffd874" stop-opacity="0"/>
+    </radialGradient>
+    <linearGradient id="lucky-gloss" x1="0" y1="11.5" x2="0" y2="20" gradientUnits="userSpaceOnUse">
+      <stop offset="0" stop-color="#ffffff" stop-opacity="0.9"/>
+      <stop offset="1" stop-color="#ffffff" stop-opacity="0.05"/>
+    </linearGradient>
+    <clipPath id="lucky-clip"><path d="M11 21C11 13.5 16.5 9 24 9C31.5 9 37 13.5 37 21V38Q37 43 32 43H16Q11 43 11 38ZM36 27H39.2V13H42V31H36ZM37 9.8a3.6 3.6 0 1 1 7.2 0a3.6 3.6 0 1 1 -7.2 0Z"/></clipPath>
+    <clipPath id="lucky-eye-safe">
+      <path d="M0 0H48V48H0ZM15 20H33V30H15Z" fill-rule="evenodd" clip-rule="evenodd"/>
+    </clipPath>
+  </defs>
+  <g data-role="outline">
+    <path d="M11 21C11 13.5 16.5 9 24 9C31.5 9 37 13.5 37 21V38Q37 43 32 43H16Q11 43 11 38ZM36 27H39.2V13H42V31H36ZM37 9.8a3.6 3.6 0 1 1 7.2 0a3.6 3.6 0 1 1 -7.2 0Z" fill="none" stroke="#614b13" stroke-width="3" stroke-linejoin="round"/>
+  </g>
+  <g data-role="body">
+    <path d="M11 21C11 13.5 16.5 9 24 9C31.5 9 37 13.5 37 21V38Q37 43 32 43H16Q11 43 11 38ZM36 27H39.2V13H42V31H36ZM37 9.8a3.6 3.6 0 1 1 7.2 0a3.6 3.6 0 1 1 -7.2 0Z" fill="url(#lucky-body)"/>
+  </g>
+  <g data-role="glow" clip-path="url(#lucky-clip)">
+    <path d="M15 36C18 41.8 30 41.8 33 36C30 39.1 18 39.1 15 36Z" fill="url(#lucky-glow)"/>
+  </g>
+  <g data-role="gloss" clip-path="url(#lucky-clip)">
+    <g clip-path="url(#lucky-eye-safe)">
+      <path d="M13.6 21.5C13.7 15.4 17.7 11.5 24 11.5C30.3 11.5 34.3 15.4 34.4 21.5C28.8 22.7 19.2 22.7 13.6 21.5Z" fill="url(#lucky-gloss)"/>
+      <ellipse cx="19" cy="14.4" rx="1.8" ry="1.1" fill="#ffffff"/>
+      <circle cx="39.6" cy="8.6" r="0.75" fill="#ffffff"/>
+    </g>
+  </g>
+</svg>

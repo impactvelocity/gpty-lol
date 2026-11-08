@@ -7,9 +7,9 @@ import type { Agent } from "@/lib/agents";
 /**
  * Art for WorkshopChat, the North Pole's own chat app: Christmas doodles in
  * the cozy, grainy gouache style of a hand-drawn holiday card (cream, holly
- * red, sage, gold and pink on deep pine green), Carol's elf hat, the presents
- * on the belt, the string lights and a snowball splat. Flat fills only; the
- * paint texture is one SVG filter that lives inside the window.
+ * red, sage, gold and pink on deep pine green), Carol's elf hat, the string
+ * lights and a snowball splat. Flat fills only; the paint texture is one SVG
+ * filter that lives inside the window.
  */
 
 /* ───────── Optional bitmap art ───────── */
@@ -443,69 +443,6 @@ export function Frieze({ className = "" }: { className?: string }) {
         </span>
       ))}
     </div>
-  );
-}
-
-/* ───────── Presents on the belt ───────── */
-
-export interface PresentLook {
-  w: number;
-  h: number;
-  box: string;
-  lid: string;
-  ribbon: string;
-  dots?: string;
-  stripes?: string;
-}
-
-const WRAPS: Omit<PresentLook, "w" | "h">[] = [
-  { box: I.holly, lid: I.hollyDark, ribbon: I.gold, dots: I.cream },
-  { box: I.sage, lid: "#7a9c68", ribbon: I.holly },
-  { box: I.cream, lid: "#e9dcc4", ribbon: I.holly, stripes: I.sage },
-  { box: I.pink, lid: "#e59d92", ribbon: I.fir, dots: I.cream },
-  { box: I.gold, lid: I.goldDark, ribbon: I.holly },
-  { box: I.teal, lid: "#4a948a", ribbon: I.cream, dots: I.cream },
-  { box: I.hollyDark, lid: "#8a231d", ribbon: I.cream, stripes: I.holly },
-  { box: "#e9dcc4", lid: "#d8c8aa", ribbon: I.fir, dots: I.holly },
-];
-
-/** A fixed parade of presents, so the belt looks the same each time. */
-export const PRESENTS: PresentLook[] = (() => {
-  const r = rand(53);
-  return Array.from({ length: 14 }, (_, i) => ({
-    w: Math.round(24 + r() * 14),
-    h: Math.round(22 + r() * 12),
-    ...WRAPS[(i * 3 + Math.floor(r() * 2)) % WRAPS.length],
-  }));
-})();
-
-/** One wrapped present: box, lid, ribbon and bow, in a box `w` by `h` (bow included). */
-export function Present({ w, h, box, lid, ribbon, dots, stripes }: PresentLook) {
-  const bow = 6;
-  const top = bow + 1;
-  const lidH = 5;
-  const bodyY = top + 3;
-  const bodyH = h - bodyY;
-  const cx = w / 2;
-  return (
-    <svg viewBox={`0 0 ${w} ${h}`} width={w} height={h} className="el-present" aria-hidden>
-      <rect x="1.5" y={bodyY} width={w - 3} height={bodyH} rx="1.8" fill={box} />
-      {stripes &&
-        Array.from({ length: Math.floor(w / 6) }, (_, i) => (
-          <rect key={i} x={3 + i * 6} y={bodyY} width="2.2" height={bodyH} fill={stripes} opacity=".55" />
-        ))}
-      {dots &&
-        [0.22, 0.75].flatMap((fx, a) =>
-          [0.35, 0.78].map((fy, b) => <circle key={`${a}${b}`} cx={w * fx} cy={bodyY + bodyH * fy} r="1.1" fill={dots} opacity=".85" />),
-        )}
-      <rect x="0" y={top} width={w} height={lidH} rx="1.4" fill={lid} />
-      <rect x={cx - 2} y={top} width="4" height={h - top} fill={ribbon} />
-      <path
-        d={`M${cx} ${top}c-3-5.6-8.4-5-7.2-1.6.8 2.2 4.4 2 7.2 1.6Zm0 0c3-5.6 8.4-5 7.2-1.6-.8 2.2-4.4 2-7.2 1.6Z`}
-        fill={ribbon}
-      />
-      <circle cx={cx} cy={top} r="1.7" fill={ribbon} />
-    </svg>
   );
 }
 

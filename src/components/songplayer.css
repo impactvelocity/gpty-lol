@@ -4,7 +4,8 @@
  * Messenger's glossy glass for MSN, Skype's sky with its green call button,
  * Facebook's blue top bar, reddit's orangered on smoked glass, Slack's
  * aubergine sidebar, Grug's slab of rock, Mortimer's faint presence, Shelly's
- * steel cabinet, Carol's moonlit night, Cora's iridescent void, Lucky's
+ * steel cabinet (and, in 1985, her neon and chrome), Carol's stitched leather,
+ * Cora's black strip between hairlines, Lucky's
  * dark velvet and gold. Agents without a skin get the site's frosted glass.
  * Everything is a tune- class so nothing leaks either way.
  */
@@ -33,8 +34,6 @@
 
 .tune-title { display: flex; flex: 0 1 auto; align-items: baseline; gap: 8px; min-width: 0; white-space: nowrap; overflow: hidden; }
 .tune-title b { overflow: hidden; text-overflow: ellipsis; font-size: 13px; font-weight: 700; }
-.tune-title small { font-size: 11px; }
-@media (max-width: 639px) { .tune-title small { display: none; } }
 
 .tune-seek { display: flex; flex: 1; align-items: center; gap: 8px; min-width: 64px; }
 .tune-wait { flex: 1; min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; font-size: 12px; }
@@ -56,7 +55,6 @@
   -webkit-backdrop-filter: blur(12px);
 }
 .tune[data-skin="glass"] .tune-play { border-radius: 50%; background: var(--shell-text); color: var(--shell-on-text); }
-.tune[data-skin="glass"] .tune-title small,
 .tune[data-skin="glass"] .tune-time,
 .tune[data-skin="glass"] .tune-wait { color: var(--shell-muted); }
 .tune[data-skin="glass"] .tune-bar { height: 3px; border-radius: 9999px; background: var(--shell-ring); }
@@ -94,7 +92,6 @@
     linear-gradient(90deg, #05106e 0%, #0b2a9a 34%, #1c6fce 78%, #3a9ae6 100%);
 }
 .tune[data-skin="icq"] .tune-title b { font-size: 12px; }
-.tune[data-skin="icq"] .tune-title small { color: #cfe0ff; }
 .tune[data-skin="icq"] .tune-seek { gap: 6px; }
 .tune[data-skin="icq"] .tune-bar { height: 16px; padding: 3px; background: #fff; box-shadow: var(--sunken); }
 /* Windows 98's block progress bar. */
@@ -121,7 +118,6 @@
 }
 .tune[data-skin="msn"] .tune-play:hover { box-shadow: 0 0 0 1px #1a56b0, inset 0 1px 0 rgba(255, 255, 255, 0.85), 0 0 8px rgba(70, 155, 255, 0.6); }
 .tune[data-skin="msn"] .tune-play:active { transform: translateY(1px); }
-.tune[data-skin="msn"] .tune-title small,
 .tune[data-skin="msn"] .tune-wait { color: #6c7690; }
 .tune[data-skin="msn"] .tune-time { color: #34507e; }
 .tune[data-skin="msn"] .tune-bar { height: 7px; border-radius: 4px; background: #fff; box-shadow: inset 0 0 0 1px #a9bfe2, inset 0 1px 2px rgba(15, 35, 80, 0.15); }
@@ -147,7 +143,6 @@
 }
 .tune[data-skin="skype"] .tune-play:active { transform: translateY(1px); }
 .tune[data-skin="skype"] .tune-title b { font-family: var(--font-skype-round), "Nunito", "Segoe UI", sans-serif; font-weight: 800; color: #0a86d0; }
-.tune[data-skin="skype"] .tune-title small,
 .tune[data-skin="skype"] .tune-wait { color: #6f879a; }
 .tune[data-skin="skype"] .tune-time { color: #36556e; }
 .tune[data-skin="skype"] .tune-bar { height: 7px; border-radius: 4px; background: #dde9f1; box-shadow: inset 0 0 0 1px #bcd6ea; }
@@ -168,7 +163,6 @@
 .tune[data-skin="facebook"] .tune-play { width: 26px; height: 22px; border-radius: 3px; color: #3b5998; background: linear-gradient(180deg, #fff, #e3e8f1); box-shadow: 0 0 0 1px #29447e, inset 0 1px 0 #fff; }
 .tune[data-skin="facebook"] .tune-play:active { background: linear-gradient(180deg, #d8dfea, #eceff5); }
 .tune[data-skin="facebook"] .tune-title b { font-size: 12.5px; letter-spacing: -0.01em; }
-.tune[data-skin="facebook"] .tune-title small,
 .tune[data-skin="facebook"] .tune-time,
 .tune[data-skin="facebook"] .tune-wait { color: #d8dfea; }
 .tune[data-skin="facebook"] .tune-bar { height: 6px; border-radius: 1px; background: #29447e; box-shadow: inset 0 1px 1px rgba(0, 0, 0, 0.3); }
@@ -196,7 +190,6 @@
 .tune[data-skin="cave"] .tune-play { width: 25px; height: 23px; border-radius: 52% 48% 55% 45% / 50% 58% 42% 50%; color: #2a130f; background: linear-gradient(170deg, #ef7d3f, #d65f2e 60%, #b44a22); box-shadow: inset 0 1px 0 rgba(255, 220, 180, 0.4), 0 2px 4px rgba(8, 2, 0, 0.5); }
 .tune[data-skin="cave"] .tune-play:active { transform: translateY(1px); }
 .tune[data-skin="cave"] .tune-title b { font-size: 15px; font-weight: 400; letter-spacing: 0.04em; text-transform: uppercase; }
-.tune[data-skin="cave"] .tune-title small { font-size: 12px; font-weight: 300; letter-spacing: 0.12em; text-transform: uppercase; color: #eaa64e; }
 .tune[data-skin="cave"] .tune-time { font-size: 13px; font-weight: 300; color: rgba(242, 224, 196, 0.74); }
 .tune[data-skin="cave"] .tune-wait { font-size: 13px; font-weight: 300; letter-spacing: 0.08em; text-transform: uppercase; color: rgba(242, 224, 196, 0.6); }
 /* The track is a painted rule of dots; the part played is bright ochre. */
@@ -219,10 +212,8 @@
 .tune[data-skin="slack"] .tune-play:hover { background: #31c389; }
 .tune[data-skin="slack"] .tune-play:active { transform: translateY(1px); }
 .tune[data-skin="slack"] .tune-title b { font-size: 14px; font-weight: 900; }
-.tune[data-skin="slack"] .tune-title small,
 .tune[data-skin="slack"] .tune-time,
 .tune[data-skin="slack"] .tune-wait { color: #ab9ba9; }
-.tune[data-skin="slack"] .tune-title small { font-size: 12px; }
 .tune[data-skin="slack"] .tune-bar { height: 6px; border-radius: 3px; background: #3e313c; }
 .tune[data-skin="slack"] .tune-fill { border-radius: inherit; background: #4c9689; }
 .tune[data-skin="slack"] .tune-viz { padding: 2px 5px; border-radius: 5px; background: #3e313c; }
@@ -252,7 +243,6 @@
 .tune[data-skin="reddit"] .tune-play:hover { box-shadow: 0 0 0 1px rgba(120, 30, 0, 0.8), inset 0 1px 0 rgba(255, 220, 200, 0.5), 0 0 10px rgba(255, 69, 0, 0.55); }
 .tune[data-skin="reddit"] .tune-play:active { transform: translateY(1px); }
 .tune[data-skin="reddit"] .tune-title b { font-size: 12.5px; }
-.tune[data-skin="reddit"] .tune-title small { font-size: 10.5px; color: rgba(255, 255, 255, 0.58); }
 .tune[data-skin="reddit"] .tune-time,
 .tune[data-skin="reddit"] .tune-wait { color: rgba(255, 255, 255, 0.72); }
 .tune[data-skin="reddit"] .tune-bar { height: 6px; border-radius: 3px; background: rgba(0, 0, 0, 0.4); box-shadow: inset 0 1px 2px rgba(0, 0, 0, 0.45), 0 1px 0 rgba(255, 255, 255, 0.08); }
@@ -282,7 +272,6 @@
 .tune[data-skin="seance"] .tune-play:hover { box-shadow: inset 0 0 0 1px #fff8e8, 0 0 16px rgba(236, 227, 207, 0.45); }
 .tune[data-skin="seance"] .tune-play svg { width: 10px; height: 10px; filter: drop-shadow(0 0 3px rgba(236, 227, 207, 0.7)); }
 .tune[data-skin="seance"] .tune-title b { font-family: var(--font-fell-sc), "IM Fell English SC", Georgia, serif; font-size: 15px; font-weight: 400; letter-spacing: 0.06em; color: #fff8e8; text-shadow: 0 0 8px rgba(236, 227, 207, 0.5); }
-.tune[data-skin="seance"] .tune-title small { font-size: 13.5px; font-style: italic; color: rgba(236, 227, 207, 0.8); }
 .tune[data-skin="seance"] .tune-time { font-family: var(--font-fell-sc), "IM Fell English SC", Georgia, serif; font-size: 13px; color: rgba(236, 227, 207, 0.78); }
 .tune[data-skin="seance"] .tune-wait { font-size: 14px; font-style: italic; color: rgba(236, 227, 207, 0.8); }
 /* A faint thread that fades in and out at its ends; what's played glows softly. */
@@ -315,11 +304,9 @@
 /* The title on a strip of amber screen. */
 .tune[data-skin="terminal"] .tune-title { align-self: center; height: 22px; align-items: center; padding: 0 8px; border-radius: 2px; background: #0e0802; box-shadow: inset 0 0 0 1px #000, inset 0 0 12px rgba(255, 166, 0, 0.14), 0 1px 0 rgba(255, 255, 255, 0.08); }
 .tune[data-skin="terminal"] .tune-title b,
-.tune[data-skin="terminal"] .tune-title small,
 .tune[data-skin="terminal"] .tune-time,
 .tune[data-skin="terminal"] .tune-wait { font-family: var(--font-vt323), "VT323", ui-monospace, monospace; font-weight: 400; text-transform: uppercase; }
 .tune[data-skin="terminal"] .tune-title b { font-size: 19px; letter-spacing: 0.02em; color: #ffb000; text-shadow: 0 0 6px rgba(255, 166, 0, 0.65); }
-.tune[data-skin="terminal"] .tune-title small { font-size: 16px; color: #c07c00; }
 .tune[data-skin="terminal"] .tune-time,
 .tune[data-skin="terminal"] .tune-wait { font-size: 17px; color: #ffb000; text-shadow: 0 0 5px rgba(255, 166, 0, 0.55); }
 .tune[data-skin="terminal"] .tune-bar { height: 10px; padding: 2px; border-radius: 1px; background: #0e0802; box-shadow: inset 0 0 0 1px #000, 0 1px 0 rgba(255, 255, 255, 0.08); }
@@ -327,67 +314,122 @@
 .tune[data-skin="terminal"] .tune-viz { padding: 2px; border-radius: 2px; background: #020805; box-shadow: inset 0 0 0 1px #000, 0 0 0 1px #4a4e55; }
 .tune[data-skin="terminal"] :focus-visible { outline-color: #ffb000; }
 
-/* ───────── Carol, the North Pole: a dark winter night, moonlight and aurora ───────── */
+/* ───────── Shelly, 1985 (Firewall Fury): chrome and neon off a VHS cover ───────── */
+
+.tune[data-skin="fury"] {
+  padding: 0 5px 0 4px;
+  border-radius: 10px;
+  font-family: var(--font-fy-chrome), "Exo 2", ui-sans-serif, system-ui, sans-serif;
+  color: #fde9ff;
+  background:
+    linear-gradient(180deg, transparent 0 82%, rgba(255, 60, 200, 0.22) 82% 86%, transparent 86%),
+    linear-gradient(180deg, #2a0b4a 0%, #170630 60%, #0d0322 100%);
+  box-shadow: 0 0 0 1px rgba(255, 46, 136, 0.7), 0 0 16px rgba(255, 46, 136, 0.3), inset 0 1px 0 rgba(255, 255, 255, 0.16), 0 14px 30px -14px rgba(0, 0, 0, 0.85);
+}
+/* A sunset-chrome PLAY key. */
+.tune[data-skin="fury"] .tune-play { width: 26px; height: 22px; border-radius: 6px; color: #2a0024; background: linear-gradient(180deg, rgba(255, 255, 255, 0.55) 0 30%, transparent 52%), linear-gradient(180deg, #fff27a, #ffb02e 45%, #ff3d8e); box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.9), 0 0 0 1px #3a0030, 0 0 10px rgba(255, 120, 80, 0.5); }
+.tune[data-skin="fury"] .tune-play:active { transform: translateY(1px); }
+.tune[data-skin="fury"] .tune-title b { font-weight: 900; font-style: italic; font-size: 14px; letter-spacing: 0.04em; text-transform: uppercase; color: #fff; text-shadow: 0 0 8px rgba(255, 46, 136, 0.8); }
+.tune[data-skin="fury"] .tune-time,
+.tune[data-skin="fury"] .tune-wait { font-family: var(--font-vt323), "VT323", ui-monospace, monospace; font-size: 17px; text-transform: uppercase; color: #7dfcf0; text-shadow: 0 0 6px rgba(80, 255, 230, 0.7); }
+.tune[data-skin="fury"] .tune-bar { height: 6px; overflow: visible; border-radius: 1px; background: rgba(255, 255, 255, 0.1); box-shadow: inset 0 0 0 1px rgba(255, 255, 255, 0.12); transform: skewX(-20deg); }
+.tune[data-skin="fury"] .tune-fill { background: linear-gradient(90deg, #ff2e88, #ff9a3c 60%, #fff36b); box-shadow: 0 0 8px rgba(255, 120, 120, 0.7); }
+.tune[data-skin="fury"] .tune-viz { padding: 0; border-radius: 3px; overflow: hidden; box-shadow: 0 0 0 1px rgba(255, 46, 136, 0.5); }
+.tune[data-skin="fury"] :focus-visible { outline-color: #2ef2ff; }
+
+/* ───────── Carol, the North Pole: the same pine leather and cream stitch as her window ───────── */
 
 .tune[data-skin="elf"] {
-  padding: 0 6px 0 5px;
-  border-radius: 13px;
+  position: relative;
+  isolation: isolate;
+  gap: 14px;
+  height: 54px;
+  /* Clear of the stitch, which runs 7–8.5px in, with room to breathe inside it. */
+  padding: 0 22px 0 16px;
+  border-radius: 18px;
   font-family: var(--font-elf-body), "Nunito", ui-rounded, system-ui, sans-serif;
   color: #f8f0e1;
-  background: linear-gradient(180deg, rgba(14, 25, 39, 0.8) 0%, rgba(10, 18, 28, 0.8) 60%, rgba(7, 13, 21, 0.8) 100%);
-  box-shadow: 0 0 0 1px rgba(150, 180, 230, 0.12), 0 14px 30px -14px rgba(4, 10, 20, 0.85);
-  backdrop-filter: blur(12px);
-  -webkit-backdrop-filter: blur(12px);
+  background:
+    radial-gradient(120% 100% at 50% -40%, rgba(110, 190, 130, 0.1), transparent 65%),
+    linear-gradient(180deg, #123c23 0%, #0b2b17 100%);
+  box-shadow:
+    0 0 0 1px rgba(2, 12, 6, 0.7),
+    inset 0 1px 0 rgba(255, 255, 255, 0.06),
+    0 14px 30px -14px rgba(0, 0, 0, 0.8);
 }
-/* The aurora from the wallpaper, as a glowing disc. */
-.tune[data-skin="elf"] .tune-play { width: 22px; height: 22px; border-radius: 50%; color: #0b1a26; background: radial-gradient(circle at 35% 28%, #b9ffdc 0%, #5fe6ad 38%, #22a98f 78%, #17807e 100%); box-shadow: inset 0 0 0 1px rgba(255, 255, 255, 0.28), 0 0 10px rgba(80, 230, 170, 0.4); }
-.tune[data-skin="elf"] .tune-play:hover { box-shadow: inset 0 0 0 1px rgba(255, 255, 255, 0.4), 0 0 14px rgba(80, 230, 170, 0.6); }
+/* Pebbled leather (as --el-leather in elf.css; this bar sits outside the window). */
+.tune[data-skin="elf"]::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  z-index: -1;
+  border-radius: inherit;
+  pointer-events: none;
+  background: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='180' height='180'><filter id='l' x='0' y='0' width='100%' height='100%' color-interpolation-filters='sRGB'><feTurbulence type='fractalNoise' baseFrequency='.38' numOctaves='3' seed='7' stitchTiles='stitch'/><feDiffuseLighting surfaceScale='2.2' diffuseConstant='1' lighting-color='white'><feDistantLight azimuth='235' elevation='60'/></feDiffuseLighting><feComponentTransfer><feFuncR type='linear' slope='1.6' intercept='-.88'/><feFuncG type='linear' slope='1.6' intercept='-.88'/><feFuncB type='linear' slope='1.6' intercept='-.88'/></feComponentTransfer></filter><rect width='100%' height='100%' filter='url(%23l)'/></svg>") 0 0 / 150px;
+  mix-blend-mode: overlay;
+  opacity: 0.3;
+}
+/* 22px taller than the others: on desktop it reaches 11px higher, so its middle stays level with the logo. */
+@media (min-width: 768px) {
+  .tune[data-skin="elf"] { margin-top: -11px; }
+}
+/* The cream running stitch, like the window's. */
+.tune[data-skin="elf"]::after {
+  content: "";
+  position: absolute;
+  inset: 7px;
+  border: 1.5px dashed rgba(248, 240, 225, 0.26);
+  border-radius: 11px;
+  pointer-events: none;
+}
+/* A holly-red button, like the window's send button. */
+.tune[data-skin="elf"] .tune-play { width: 28px; height: 28px; margin-left: 3px; border-radius: 50%; color: #fff9ef; background: #c8372d; box-shadow: inset 0 -2px 0 rgba(0, 0, 0, 0.2), 0 1px 2px rgba(0, 0, 0, 0.35); }
+.tune[data-skin="elf"] .tune-play:hover { background: #d4423a; }
 .tune[data-skin="elf"] .tune-play:active { transform: translateY(1px); }
-.tune[data-skin="elf"] .tune-title b { font-family: var(--font-elf-display), "Fraunces", Georgia, serif; font-size: 15px; font-weight: 600; font-variation-settings: "SOFT" 100, "WONK" 1; color: #fff; }
-.tune[data-skin="elf"] .tune-title small { font-family: var(--font-caveat), "Caveat", "Segoe Print", cursive; font-size: 17px; font-weight: 700; color: #e2ae4a; }
-.tune[data-skin="elf"] .tune-time { font-size: 12px; font-weight: 700; color: #fff; }
-.tune[data-skin="elf"] .tune-wait { font-size: 12.5px; font-weight: 700; color: #fff; }
-/* A thin line of moonlight; what's played glows. */
-.tune[data-skin="elf"] .tune-bar { height: 3px; overflow: visible; border-radius: 2px; background: rgba(170, 195, 235, 0.16); }
-.tune[data-skin="elf"] .tune-fill { border-radius: inherit; background: linear-gradient(90deg, rgba(180, 205, 245, 0.55), #e6f0ff); box-shadow: 0 0 8px rgba(190, 215, 255, 0.55); }
-.tune[data-skin="elf"] .tune-viz { padding: 0 4px; }
-.tune[data-skin="elf"] :focus-visible { outline-color: #cfe0ff; }
+.tune[data-skin="elf"] .tune-play svg { width: 11px; height: 11px; }
+.tune[data-skin="elf"] .tune-title b { font-family: var(--font-elf-display), "Fraunces", Georgia, serif; font-size: 16px; font-weight: 600; font-variation-settings: "SOFT" 100, "WONK" 1; color: #f8f0e1; }
+.tune[data-skin="elf"] .tune-time { font-size: 12px; font-weight: 700; color: rgba(248, 240, 225, 0.72); }
+.tune[data-skin="elf"] .tune-wait { font-size: 12.5px; font-weight: 700; color: rgba(248, 240, 225, 0.72); }
+/* Progress in the string lights' colours (as the visualizer), lit from above, on a faint cream track. */
+.tune[data-skin="elf"] .tune-bar { container-type: inline-size; height: 5px; border-radius: 3px; background: rgba(248, 240, 225, 0.14); box-shadow: inset 0 1px 1px rgba(0, 0, 0, 0.3); }
+.tune[data-skin="elf"] .tune-fill {
+  border-radius: inherit;
+  background:
+    linear-gradient(180deg, rgba(255, 255, 255, 0.35), transparent 60%),
+    linear-gradient(90deg, #e4574b, #e9b24c 30%, #8fb07c 55%, #f3b7ad 78%, #5aaea2);
+  /* Spread the colours across the whole track, so they light up one by one as it plays. */
+  background-size: 100% 100%, 100cqw 100%;
+}
+/* The visualizer in a little sunken well. */
+.tune[data-skin="elf"] .tune-viz { padding: 3px 6px; border-radius: 8px; background: rgba(0, 0, 0, 0.28); box-shadow: inset 0 1px 2px rgba(0, 0, 0, 0.45), 0 1px 0 rgba(248, 240, 225, 0.06); }
+.tune[data-skin="elf"] :focus-visible { outline-color: #e2ae4a; }
 
-/* ───────── Cora, 2199: the Lattice's violet void, edged in oil-slick ───────── */
-
+/* ───────── Cora, 2199: a black strip between two hairlines, white type ───────── */
 .tune[data-skin="machine"] {
   padding: 0 4px;
-  border: 1px solid transparent;
-  border-radius: 10px;
-  font-family: var(--font-mx-mono), "Martian Mono", ui-monospace, "SF Mono", Menlo, monospace;
-  font-stretch: 87.5%;
-  color: #f1e9ff;
-  background:
-    url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='56' height='97' viewBox='0 0 56 97'><path d='M28 0 56 16.2v32.3L28 64.7 0 48.5V16.2zM28 64.7v32.3M0 97V80.8M56 97V80.8' fill='none' stroke='%23a77bff' stroke-opacity='.16' stroke-width='1.2'/></svg>") 0 0 / 22px 38px padding-box,
-    linear-gradient(180deg, rgba(16, 4, 42, 0.84), rgba(6, 1, 13, 0.9)) padding-box,
-    linear-gradient(90deg, #ff2bd6, #7b2cff 28%, #19f0ff 56%, #c8ff2e 80%, #ff6b2b) border-box;
-  box-shadow: 0 0 18px -4px rgba(123, 44, 255, 0.55), 0 14px 30px -14px rgba(0, 0, 0, 0.85);
-  backdrop-filter: blur(10px);
-  -webkit-backdrop-filter: blur(10px);
+  font-family: var(--font-geist-mono), ui-monospace, "SF Mono", Menlo, monospace;
+  color: #f2f4f5;
+  background: rgba(0, 1, 4, 0.92);
+  box-shadow: inset 0 1px rgba(242, 244, 245, 0.14), inset 0 -1px rgba(242, 244, 245, 0.14);
 }
-/* A cell of the lattice, lit acid. */
-.tune[data-skin="machine"] .tune-play { width: 26px; height: 24px; border-radius: 0; color: #06010d; background: #c8ff2e; clip-path: polygon(25% 4%, 75% 4%, 100% 50%, 75% 96%, 25% 96%, 0 50%); }
-.tune[data-skin="machine"] .tune-play:hover { background: #dcff73; }
-.tune[data-skin="machine"] .tune-title b { font-family: var(--font-mx-display), "Major Mono Display", var(--font-mx-mono), monospace; font-size: 14px; font-weight: 400; text-transform: lowercase; letter-spacing: 0.02em; text-shadow: -1.5px 0 rgba(255, 43, 214, 0.75), 1.5px 0 rgba(25, 240, 255, 0.75); }
-.tune[data-skin="machine"] .tune-title small,
-.tune[data-skin="machine"] .tune-wait { font-size: 10px; letter-spacing: 0.08em; text-transform: uppercase; color: rgba(241, 233, 255, 0.5); }
-.tune[data-skin="machine"] .tune-time { font-size: 10px; color: rgba(241, 233, 255, 0.8); }
-.tune[data-skin="machine"] .tune-bar { height: 3px; overflow: visible; border-radius: 2px; background: rgba(167, 123, 255, 0.22); }
-.tune[data-skin="machine"] .tune-fill { border-radius: inherit; background: linear-gradient(90deg, #ff2bd6, #7b2cff 35%, #19f0ff 70%, #c8ff2e); box-shadow: 0 0 8px rgba(25, 240, 255, 0.55); }
-.tune[data-skin="machine"] .tune-viz { padding: 2px 5px; border-radius: 6px; background: rgba(6, 1, 13, 0.6); box-shadow: inset 0 0 0 1px rgba(167, 123, 255, 0.24); }
-.tune[data-skin="machine"] :focus-visible { outline: 1.5px solid #c8ff2e; }
+.tune[data-skin="machine"] .tune-play { width: 22px; height: 22px; border-radius: 0; color: #f2f4f5; background: transparent; box-shadow: inset 0 0 0 1px rgba(242, 244, 245, 0.3); }
+.tune[data-skin="machine"] .tune-play:hover { filter: none; box-shadow: inset 0 0 0 1px #f2f4f5; }
+.tune[data-skin="machine"] .tune-play svg { width: 9px; height: 9px; }
+.tune[data-skin="machine"] .tune-title b { font-family: var(--font-geist-sans), ui-sans-serif, system-ui, sans-serif; font-size: 12.5px; font-weight: 500; }
+.tune[data-skin="machine"] .tune-wait { font-size: 10.5px; color: rgba(242, 244, 245, 0.48); }
+.tune[data-skin="machine"] .tune-time { font-size: 10.5px; color: rgba(242, 244, 245, 0.6); }
+.tune[data-skin="machine"] .tune-bar { height: 1px; overflow: visible; background: rgba(242, 244, 245, 0.18); }
+.tune[data-skin="machine"] .tune-fill { background: #5fdcec; }
+.tune[data-skin="machine"] .tune-viz { color: rgba(242, 244, 245, 0.75); }
+.tune[data-skin="machine"] :focus-visible { outline: 1px solid #f2f4f5; outline-offset: 3px; }
 
 /* ───────── Lucky, 3 a.m.: dark velvet with a gold edge ───────── */
 
+/* As wide as the cabinet, and a full pill. */
 .tune[data-skin="slots"] {
-  padding: 0 5px;
+  padding: 0 7px 0 4px;
   border: 1px solid transparent;
-  border-radius: 10px;
+  border-radius: 999px;
   font-family: var(--font-lk-body), "Outfit", system-ui, sans-serif;
   color: #fff3e2;
   background:
@@ -398,14 +440,29 @@
 .tune[data-skin="slots"] .tune-play { width: 23px; height: 23px; border-radius: 50%; color: #3a0410; background: radial-gradient(circle at 40% 30%, #fff0b3, #ffc533 45%, #b37a14); box-shadow: 0 1px 2px rgba(0, 0, 0, 0.5); }
 .tune[data-skin="slots"] .tune-play:active { transform: translateY(1px); }
 .tune[data-skin="slots"] .tune-title b { font-family: var(--font-lk-sign), "Bungee", Impact, sans-serif; font-size: 13px; font-weight: 400; letter-spacing: 0.02em; color: #ffc533; }
-.tune[data-skin="slots"] .tune-title small { font-size: 11.5px; font-weight: 500; color: rgba(255, 232, 210, 0.6); }
 .tune[data-skin="slots"] .tune-wait { font-size: 12px; color: rgba(255, 232, 210, 0.7); }
 .tune[data-skin="slots"] .tune-time { font-family: var(--font-lk-mono), "Share Tech Mono", ui-monospace, monospace; font-size: 12px; color: rgba(255, 232, 210, 0.7); }
 .tune[data-skin="slots"] .tune-bar { height: 4px; border-radius: 2px; background: rgba(255, 232, 210, 0.12); }
 .tune[data-skin="slots"] .tune-fill { border-radius: inherit; background: #ffc533; }
-.tune[data-skin="slots"] .tune-viz { padding: 2px; border-radius: 3px; background: #0a0204; }
+.tune[data-skin="slots"] .tune-viz { padding: 2px 6px; border-radius: 999px; background: #0a0204; }
 .tune[data-skin="slots"] :focus-visible { outline-color: #ffc533; }
-/* As wide as the cabinet, not the lever beside it (slots.css drops the lever below 760px). */
-@container tune-row (min-width: 761px) {
-  .tune[data-skin="slots"] { width: calc(100% - 50px); }
+
+/* ───────── Lucky, High Limit: dark green felt with a brass hairline ───────── */
+
+.tune[data-skin="highlimit"] {
+  padding: 0 6px 0 5px;
+  border-radius: 14px;
+  font-family: var(--font-hl-body), "DM Sans", system-ui, sans-serif;
+  color: #f3ecdc;
+  background: linear-gradient(180deg, #13261e, #0c1813);
+  box-shadow: inset 0 0 0 1px rgba(214, 180, 112, 0.4), 0 14px 30px -14px rgba(0, 0, 0, 0.85);
 }
+.tune[data-skin="highlimit"] .tune-play { width: 23px; height: 23px; border-radius: 50%; color: #241a08; background: radial-gradient(circle at 50% 30%, #f7e8bd, #d6b470 58%, #a8853f); box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.5); }
+.tune[data-skin="highlimit"] .tune-play:active { transform: translateY(1px); }
+.tune[data-skin="highlimit"] .tune-title b { font-family: var(--font-hl-display), "DM Serif Display", Georgia, serif; font-size: 15px; font-weight: 400; color: #f3ecdc; }
+.tune[data-skin="highlimit"] .tune-wait { font-size: 12px; color: rgba(243, 236, 220, 0.65); }
+.tune[data-skin="highlimit"] .tune-time { font-family: var(--font-hl-mono), "DM Mono", ui-monospace, monospace; font-size: 11.5px; color: rgba(243, 236, 220, 0.6); }
+.tune[data-skin="highlimit"] .tune-bar { height: 3px; border-radius: 2px; background: rgba(243, 236, 220, 0.12); }
+.tune[data-skin="highlimit"] .tune-fill { border-radius: inherit; background: #d6b470; }
+.tune[data-skin="highlimit"] .tune-viz { color: #d6b470; }
+.tune[data-skin="highlimit"] :focus-visible { outline-color: #d6b470; }

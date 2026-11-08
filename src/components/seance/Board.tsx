@@ -1,12 +1,12 @@
 "use client";
 
-import { memo, type Ref, useEffect, useImperativeHandle, useMemo, useRef } from "react";
+import { memo, type Ref, useEffect, useId, useImperativeHandle, useMemo, useRef } from "react";
 import { art, EYE_ALMOND, LENS_R, MoonFace, PlanchetteBody, Star, SunFace } from "./art";
 
 /**
  * The talking board: two arcs of letters, the numbers, YES under the sun, NO
- * under the moon, GOODBYE at the foot and an eye at the top that watches
- * you, engraved in antique gold and bone on warm charcoal. One SVG, 1000×480
+ * under the moon, GOODBYE at the foot and an all-seeing eye at the top,
+ * engraved in antique gold and bone on warm charcoal. One SVG, 1000×520
  * units, so every letter has a known spot and the planchette can travel
  * between them.
  *
@@ -17,7 +17,7 @@ import { art, EYE_ALMOND, LENS_R, MoonFace, PlanchetteBody, Star, SunFace } from
  */
 
 export const BOARD_W = 1000;
-export const BOARD_H = 480;
+export const BOARD_H = 520;
 
 const CX = 500;
 const CY = 1200;
@@ -49,14 +49,15 @@ const GLYPHS: Glyph[] = [
 ];
 
 export const WORDS = {
-  YES: { x: 236, y: 104 },
-  NO: { x: 764, y: 104 },
-  GOODBYE: { x: 500, y: 438 },
+  YES: { x: 250, y: 104 },
+  NO: { x: 750, y: 104 },
+  GOODBYE: { x: 500, y: 462 },
 } as const;
 export type Word = keyof typeof WORDS;
 export const isWord = (w: string): w is Word => w in WORDS;
-/** How wide each word's bracket is. */
-const WORD_W: Record<Word, number> = { YES: 110, NO: 86, GOODBYE: 196 };
+/** How big each word's bracket is, with room to breathe around the word. */
+const WORD_W: Record<Word, number> = { YES: 146, NO: 118, GOODBYE: 224 };
+const WORD_H: Record<Word, number> = { YES: 68, NO: 68, GOODBYE: 48 };
 
 const REST = { x: 500, y: 326 };
 const EYE = { x: 500, y: 92 };
@@ -97,38 +98,85 @@ function bracket(cx: number, cy: number, w: number, h: number, k = 10) {
   return `M${l} ${t + k}V${t}H${l + k}M${r - k} ${t}H${r}V${t + k}M${r} ${b - k}V${b}H${r - k}M${l + k} ${b}H${l}V${b - k}`;
 }
 
-const FRAME = notched(8, 8, 992, 472, 30);
-const FRAME_IN = notchedInner(8, 8, 992, 472, 30, 7);
+const FRAME = notched(8, 8, 992, BOARD_H - 8, 30);
+const FRAME_IN = notchedInner(8, 8, 992, BOARD_H - 8, 30, 7);
 
 export interface BoardApi {
   /** Rings ripple out across the board, one per rap. */
   knock: (n: number) => void;
 }
 
+const EYE_RAYS = Array.from({ length: 13 }, (_, i) => {
+  const a = ((-162 + i * 12) * Math.PI) / 180;
+  const r2 = i % 2 ? 58 : 70;
+  return `M${(Math.cos(a) * 42).toFixed(1)} ${(Math.sin(a) * 42).toFixed(1)}L${(Math.cos(a) * r2).toFixed(1)} ${(Math.sin(a) * r2).toFixed(1)}`;
+}).join("");
+const EYE_STRIAE = Array.from({ length: 14 }, (_, i) => {
+  const a = (i / 14) * Math.PI * 2;
+  return `M${(Math.cos(a) * 9).toFixed(1)} ${(Math.sin(a) * 9).toFixed(1)}L${(Math.cos(a) * 15).toFixed(1)} ${(Math.sin(a) * 15).toFixed(1)}`;
+}).join("");
+
+/**
+ * The all-seeing eye, centered on 0,0: rays, the almond, the iris looking
+ * straight out, lashes and four stars. About 260×110 units. `clipId` names
+ * a clipPath of EYE_ALMOND that the caller defines.
+ */
+function EyeArt({ clipId }: { clipId: string }) {
+  return (
+    <g strokeLinecap="round" strokeLinejoin="round">
+      <path d={EYE_RAYS} className="sp-gold-line" strokeWidth="1.2" />
+      <g className="sp-blink">
+        <path d={EYE_ALMOND} className="sp-eye-white" />
+        <g clipPath={`url(#${clipId})`}>
+          <circle r="17" className="sp-iris" />
+          <path d={EYE_STRIAE} className="sp-gold-line" strokeWidth=".9" />
+          <circle r="7.5" className="sp-pupil" />
+          <circle cx="-4.6" cy="-4.8" r="2.4" className="sp-bone-fill" />
+        </g>
+        <path d={EYE_ALMOND} className="sp-bone-line" strokeWidth="1.6" />
+      </g>
+      <path d="M-50 -16.5l-5 -6M-34 -24.5l-3 -7.4M-17 -28.5l-1.4 -8M0 -29.6v-8.2M17 -28.5l1.4 -8M34 -24.5l3 -7.4M50 -16.5l5 -6" className="sp-bone-line" strokeWidth="1" />
+      <Star x={-98} y={-24} s={20} className="sp-gold-fill sp-twinkle" />
+      <Star x={98} y={-24} s={20} className="sp-gold-fill sp-twinkle" style={{ animationDelay: "-1.6s" }} />
+      <Star x={-122} y={12} s={10} className="sp-gold-fill sp-twinkle" style={{ animationDelay: "-.8s" }} />
+      <Star x={122} y={12} s={10} className="sp-gold-fill sp-twinkle" style={{ animationDelay: "-2.4s" }} />
+    </g>
+  );
+}
+
+/**
+ * The board's eye on its own, for when the sitting is under way and the
+ * words should have the room. Its pupil widens while a spirit speaks, like
+ * the board's (both follow .sp-window[data-live]).
+ */
+export function SeeingEye({ className = "" }: { className?: string }) {
+  const id = `sp-eye-${useId().replace(/:/g, "")}`;
+  const photo = art("eye");
+  if (photo) {
+    // eslint-disable-next-line @next/next/no-img-element
+    return <img src={photo} alt="" draggable={false} className={className} />;
+  }
+  return (
+    <svg viewBox="-135 -72 270 118" className={className} fill="none" aria-hidden>
+      <defs>
+        <clipPath id={id}>
+          <path d={EYE_ALMOND} />
+        </clipPath>
+      </defs>
+      <g filter="url(#sp-ink)">
+        <EyeArt clipId={id} />
+      </g>
+    </svg>
+  );
+}
+
 /** The static engraving: frame, sunburst, sun, moon, eye and the dotted arcs. */
-function Engraving({ irisRef }: { irisRef: Ref<SVGGElement> }) {
+function Engraving() {
   const burst = useMemo(
     () =>
       Array.from({ length: 29 }, (_, i) => {
         const a = ((-74 + (i * 148) / 28) * Math.PI) / 180;
         return `M500 540L${(500 + Math.sin(a) * 780).toFixed(0)} ${(540 - Math.cos(a) * 780).toFixed(0)}`;
-      }).join(""),
-    [],
-  );
-  const rays = useMemo(
-    () =>
-      Array.from({ length: 13 }, (_, i) => {
-        const a = ((-162 + i * 12) * Math.PI) / 180;
-        const r2 = i % 2 ? 58 : 70;
-        return `M${(Math.cos(a) * 42).toFixed(1)} ${(Math.sin(a) * 42).toFixed(1)}L${(Math.cos(a) * r2).toFixed(1)} ${(Math.sin(a) * r2).toFixed(1)}`;
-      }).join(""),
-    [],
-  );
-  const striae = useMemo(
-    () =>
-      Array.from({ length: 14 }, (_, i) => {
-        const a = (i / 14) * Math.PI * 2;
-        return `M${(Math.cos(a) * 9).toFixed(1)} ${(Math.sin(a) * 9).toFixed(1)}L${(Math.cos(a) * 15).toFixed(1)} ${(Math.sin(a) * 15).toFixed(1)}`;
       }).join(""),
     [],
   );
@@ -145,8 +193,8 @@ function Engraving({ irisRef }: { irisRef: Ref<SVGGElement> }) {
         {/* A star in each notch. */}
         <Star x={14} y={14} s={11} />
         <Star x={986} y={14} s={11} />
-        <Star x={14} y={466} s={11} />
-        <Star x={986} y={466} s={11} />
+        <Star x={14} y={BOARD_H - 14} s={11} />
+        <Star x={986} y={BOARD_H - 14} s={11} />
 
         {/* Dotted arcs over and under the letters. */}
         <path d={dottedArc(R1 + 44, 372)} className="sp-dots" />
@@ -155,41 +203,24 @@ function Engraving({ irisRef }: { irisRef: Ref<SVGGElement> }) {
         <SunFace x={104} y={100} s={0.86} />
         <MoonFace x={896} y={100} s={1.2} />
 
-        {/* The eye at the top, watching. */}
+        {/* The eye at the top, looking straight out. */}
         {eyePhoto ? (
           <image href={eyePhoto} x={EYE.x - 110} y={EYE.y - 80} width="220" height="160" />
         ) : (
-          <g transform={`translate(${EYE.x} ${EYE.y})`} strokeLinecap="round" strokeLinejoin="round">
-            <path d={rays} className="sp-gold-line" strokeWidth="1.2" />
-            <g className="sp-blink">
-              <path d={EYE_ALMOND} className="sp-eye-white" />
-              <g clipPath="url(#sp-eye-clip)">
-                <g ref={irisRef}>
-                  <circle r="17" className="sp-iris" />
-                  <path d={striae} className="sp-gold-line" strokeWidth=".9" />
-                  <circle r="7.5" className="sp-pupil" />
-                  <circle cx="-4.6" cy="-4.8" r="2.4" className="sp-bone-fill" />
-                </g>
-              </g>
-              <path d={EYE_ALMOND} className="sp-bone-line" strokeWidth="1.6" />
-            </g>
-            <path d="M-50 -16.5l-5 -6M-34 -24.5l-3 -7.4M-17 -28.5l-1.4 -8M0 -29.6v-8.2M17 -28.5l1.4 -8M34 -24.5l3 -7.4M50 -16.5l5 -6" className="sp-bone-line" strokeWidth="1" />
-            <Star x={-98} y={-24} s={20} className="sp-gold-fill sp-twinkle" />
-            <Star x={98} y={-24} s={20} className="sp-gold-fill sp-twinkle" style={{ animationDelay: "-1.6s" }} />
-            <Star x={-122} y={12} s={10} className="sp-gold-fill sp-twinkle" style={{ animationDelay: "-.8s" }} />
-            <Star x={122} y={12} s={10} className="sp-gold-fill sp-twinkle" style={{ animationDelay: "-2.4s" }} />
+          <g transform={`translate(${EYE.x} ${EYE.y})`}>
+            <EyeArt clipId="sp-eye-clip" />
           </g>
         )}
-        <path d="M304 104H362M638 104H696" className="sp-dots" />
+        <path d="M336 104H372M628 104H664" className="sp-dots" />
 
         {/* Stars scattered low on the board, and either side of GOODBYE. */}
         <Star x={150} y={392} s={14} className="sp-gold-fill sp-twinkle" style={{ animationDelay: "-.6s" }} />
         <Star x={850} y={392} s={14} className="sp-gold-fill sp-twinkle" style={{ animationDelay: "-2s" }} />
         <Star x={88} y={300} s={8} className="sp-gold-fill sp-twinkle" style={{ animationDelay: "-1.1s" }} />
         <Star x={912} y={300} s={8} className="sp-gold-fill sp-twinkle" style={{ animationDelay: "-3s" }} />
-        <path d="M290 438H380M620 438H710" className="sp-gold-line" strokeWidth=".7" opacity=".55" />
-        <Star x={276} y={438} s={10} />
-        <Star x={724} y={438} s={10} />
+        <path d="M290 462H368M632 462H710" className="sp-gold-line" strokeWidth=".7" opacity=".55" />
+        <Star x={276} y={462} s={10} />
+        <Star x={724} y={462} s={10} />
 
         {/* Where the planchette rests. */}
         <circle cx={REST.x} cy={REST.y} r="54" className="sp-dots" opacity=".6" />
@@ -215,7 +246,6 @@ export const Board = memo(function Board({
   const svg = useRef<SVGSVGElement>(null);
   const plan = useRef<SVGGElement>(null);
   const lens = useRef<SVGUseElement>(null);
-  const iris = useRef<SVGGElement>(null);
   const ripple = useRef<SVGGElement>(null);
   const aimRef = useRef(aim);
   useEffect(() => {
@@ -244,7 +274,7 @@ export const Board = memo(function Board({
     [],
   );
 
-  /* The planchette and the eye, every frame. */
+  /* The planchette, every frame. */
   useEffect(() => {
     const s = svg.current;
     const p = plan.current;
@@ -268,14 +298,6 @@ export const Board = memo(function Board({
     let prev = performance.now();
     let lit: Element | null = null;
     let reading = false;
-    let ptr: { x: number; y: number } | null = null;
-    let ix = 0;
-    let iy = 0;
-
-    const onMove = (e: PointerEvent) => {
-      ptr = { x: e.clientX, y: e.clientY };
-    };
-    window.addEventListener("pointermove", onMove, { passive: true });
 
     let raf = 0;
     const frame = (now: number) => {
@@ -350,38 +372,10 @@ export const Board = memo(function Board({
         p.toggleAttribute("data-reading", reading);
       }
 
-      // The eye: it follows you, and watches the planchette while it spells.
-      const ir = iris.current;
-      if (ir) {
-        let gx = 0;
-        let gy = 0;
-        if (reading) {
-          gx = x - EYE.x;
-          gy = y - EYE.y;
-        } else if (ptr) {
-          const m = s.getScreenCTM();
-          if (m) {
-            gx = ptr.x - (m.a * EYE.x + m.c * EYE.y + m.e);
-            gy = ptr.y - (m.b * EYE.x + m.d * EYE.y + m.f);
-          }
-        }
-        const len = Math.hypot(gx, gy) || 1;
-        const reach = Math.min(1, len / 260);
-        const wx = (gx / len) * reach * 15;
-        const wy = (gy / len) * reach * 7;
-        const ease = reduce ? 1 : Math.min(1, dt * 9);
-        ix += (wx - ix) * ease;
-        iy += (wy - iy) * ease;
-        ir.setAttribute("transform", `translate(${ix.toFixed(2)} ${iy.toFixed(2)})`);
-      }
-
       raf = requestAnimationFrame(frame);
     };
     raf = requestAnimationFrame(frame);
-    return () => {
-      cancelAnimationFrame(raf);
-      window.removeEventListener("pointermove", onMove);
-    };
+    return () => cancelAnimationFrame(raf);
   }, []);
 
   const press = (fn: () => void) => ({
@@ -438,7 +432,7 @@ export const Board = memo(function Board({
         </filter>
       </defs>
 
-      <Engraving irisRef={iris} />
+      <Engraving />
 
       {/* Everything the planchette can point at. The lens shows a copy of this group, magnified. */}
       <g id="sp-glyphs">
@@ -469,8 +463,8 @@ export const Board = memo(function Board({
               {...press(() => onWord(w))}
             >
               {/* An invisible hit area, so the whole bracket is clickable. */}
-              <rect x={x - WORD_W[w] / 2} y={y - (wide ? 20 : 26)} width={WORD_W[w]} height={wide ? 40 : 52} className="sp-hit" />
-              <path d={bracket(x, y, WORD_W[w], wide ? 40 : 52, wide ? 9 : 12)} className="sp-bracket" />
+              <rect x={x - WORD_W[w] / 2} y={y - WORD_H[w] / 2} width={WORD_W[w]} height={WORD_H[w]} className="sp-hit" />
+              <path d={bracket(x, y, WORD_W[w], WORD_H[w], wide ? 9 : 12)} className="sp-bracket" />
               <text x={x} y={y + 1} className="sp-glyph sp-word-t" fontSize={wide ? 26 : 38} textAnchor="middle" dominantBaseline="central">
                 {w}
               </text>

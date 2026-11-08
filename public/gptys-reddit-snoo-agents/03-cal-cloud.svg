@@ -1,0 +1,10 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 48 48">
+<defs><clipPath id="cal3-rd-clip"><path d="M13 38C6.5 38 3 33.5 3 29C3 24 7 20.5 11.5 20.5C12.5 13.5 18 9 24.5 9C31.5 9 36.5 14 37 20.5C41.5 21 45 24.5 45 29.5C45 34.5 41 38 36 38Z"/></clipPath><clipPath id="cal3-rd-face"><path transform="translate(24 24) scale(0.95) translate(-24 -24)" d="M13 38C6.5 38 3 33.5 3 29C3 24 7 20.5 11.5 20.5C12.5 13.5 18 9 24.5 9C31.5 9 36.5 14 37 20.5C41.5 21 45 24.5 45 29.5C45 34.5 41 38 36 38Z"/></clipPath></defs>
+<g transform="translate(24 24) scale(0.95) translate(-24 -24)">
+<g data-role="shadow" transform="translate(0 1.8)"><path d="M13 38C6.5 38 3 33.5 3 29C3 24 7 20.5 11.5 20.5C12.5 13.5 18 9 24.5 9C31.5 9 36.5 14 37 20.5C41.5 21 45 24.5 45 29.5C45 34.5 41 38 36 38Z" fill="#3b1626" fill-opacity=".38" stroke="#3b1626" stroke-opacity=".38" stroke-width="3.6" stroke-linejoin="round"/></g>
+<g data-role="ink"><path d="M13 38C6.5 38 3 33.5 3 29C3 24 7 20.5 11.5 20.5C12.5 13.5 18 9 24.5 9C31.5 9 36.5 14 37 20.5C41.5 21 45 24.5 45 29.5C45 34.5 41 38 36 38Z" fill="none" stroke="#1a1a1b" stroke-width="3.6" stroke-linejoin="round"/></g>
+<g data-role="body"><path d="M13 38C6.5 38 3 33.5 3 29C3 24 7 20.5 11.5 20.5C12.5 13.5 18 9 24.5 9C31.5 9 36.5 14 37 20.5C41.5 21 45 24.5 45 29.5C45 34.5 41 38 36 38Z" fill="#268ac1"/></g>
+<g data-role="light" clip-path="url(#cal3-rd-clip)"><path d="M13 38C6.5 38 3 33.5 3 29C3 24 7 20.5 11.5 20.5C12.5 13.5 18 9 24.5 9C31.5 9 36.5 14 37 20.5C41.5 21 45 24.5 45 29.5C45 34.5 41 38 36 38Z" fill="#16aeef" transform="translate(-0.6 -2.6)"/></g>
+</g>
+<g data-role="face" clip-path="url(#cal3-rd-face)"><ellipse cx="24" cy="25.4" rx="9.4" ry="6.5" fill="#ffffff"/><ellipse cx="24" cy="25.4" rx="9.4" ry="6.5" fill="none" stroke="#1a1a1b" stroke-opacity=".22" stroke-width=".8"/></g>
+</svg>

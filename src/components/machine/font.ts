@@ -1,25 +1,15 @@
-import { Major_Mono_Display, Martian_Mono } from "next/font/google";
+import { Geist_Mono } from "next/font/google";
 
 /**
- * The Lattice's two faces. Martian Mono, a wide, engineered monospace with
- * Cyrillic built in (so half the garbled letters stay in the same face), for
- * everything you read. Major Mono Display, whose letters can't decide between
- * upper and lower case, for the few words the machines say out loud. Shared
- * by the window, its row in the sidebar and the scene.
+ * The Machine's one face: Geist Mono, with its Cyrillic and extra symbols, so
+ * machinespeak (half its letters borrowed from other alphabets) stays in the
+ * same clean mono instead of falling back mid-word. Greek, kana and kanji
+ * come from the system. Shared by the window and its row in the sidebar.
  */
-export const martian = Martian_Mono({
-  subsets: ["latin", "cyrillic"],
+export const mxMono = Geist_Mono({
+  subsets: ["latin", "cyrillic", "symbols2"],
   variable: "--font-mx-mono",
-  axes: ["wdth"],
   display: "swap",
 });
 
-export const major = Major_Mono_Display({
-  subsets: ["latin"],
-  weight: "400",
-  variable: "--font-mx-display",
-  display: "swap",
-});
-
-/** Both, for a className. */
-export const mxFonts = `${martian.variable} ${major.variable}`;
+export const mxFonts = mxMono.variable;
