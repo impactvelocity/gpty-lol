@@ -73,6 +73,20 @@ export function Family() {
   );
 }
 
+export function ShareButton({ onClick, className = "flex" }: { onClick: () => void; className?: string }) {
+  return (
+    <button
+      type="button"
+      onClick={onClick}
+      title="Share gpty.lol"
+      className={`shell-kiro ${className} h-8 cursor-pointer items-center gap-1.5 rounded-xl pl-3 pr-2.5 text-[14px] font-medium tracking-wide text-[var(--shell-text)] ring-1 ring-[var(--shell-ring)] backdrop-blur-sm transition-colors`}
+    >
+      Share
+      <Share className="h-[15px] w-[15px]" strokeWidth={2.2} />
+    </button>
+  );
+}
+
 export function AgentSidebar({
   agentId,
   isDraft,
@@ -98,15 +112,8 @@ export function AgentSidebar({
       {/* The logo and Share, 24px down: level with the top of the chat window beside it. */}
       <div className="mb-3 mt-6 flex h-8 shrink-0 items-center justify-between pl-6 pr-3">
         <LogoLink id={meet ? undefined : agentId} onMeet={onMeet} />
-        <button
-          type="button"
-          onClick={onShare}
-          title="Share gpty.lol"
-          className="shell-kiro flex h-8 items-center gap-1.5 rounded-xl pl-3 pr-2.5 text-[14px] font-medium tracking-wide text-[var(--shell-text)] ring-1 ring-[var(--shell-ring)] backdrop-blur-sm transition-colors"
-        >
-          Share
-          <Share className="h-[15px] w-[15px]" strokeWidth={2.2} />
-        </button>
+        {/* Phones show Share in the top bar instead, across from the logo. */}
+        <ShareButton onClick={onShare} className="hidden md:flex" />
       </div>
 
       {/* What gptys are: opens a page beside the sidebar. */}

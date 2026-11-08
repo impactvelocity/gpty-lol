@@ -16,15 +16,17 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
   const c = COSTUMES.find((x) => x.id === costume);
   if (!c) return {};
   const a = isAgent(c.id) ? getAgent(c.id) : null;
-  const title = a ? `${a.name} · ${agentEra(a)} — gpty.lol` : costumeTitle(c);
+  const title = a ? `Chat with ${a.name} · ${agentEra(a)} — gpty.lol` : costumeTitle(c);
   const description = a
     ? `Chat with ${a.name}, a Gpty who lives in ${c.app} (${c.year}) and only knows the world up to then. ${a.bio}`
     : `${c.tagline} An AI chatbot dressed up as ${c.app}.`;
+  // Share cards: the image says where; the title says who.
+  const shareTitle = a ? `Chat with ${a.name} · ${agentEra(a)}` : title;
   return {
     title,
     description,
-    openGraph: { title, description },
-    twitter: { card: "summary_large_image", title, description },
+    openGraph: { title: shareTitle, description, url: `/${c.id}` },
+    twitter: { card: "summary_large_image", title: shareTitle, description },
   };
 }
 

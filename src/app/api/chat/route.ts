@@ -10,7 +10,7 @@ import type { ChatMessage } from "@/lib/types";
 
 export const maxDuration = 60;
 
-const MODEL = process.env.AI_MODEL ?? "anthropic/claude-sonnet-5.5";
+const MODEL = process.env.AI_MODEL ?? "anthropic/claude-haiku-5.5";
 
 export async function POST(req: Request) {
   const { messages, agent }: { messages: ChatMessage[]; agent?: string } = await req.json();

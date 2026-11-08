@@ -9,7 +9,7 @@ import { SITE_TITLE } from "@/lib/site";
 import { messageText, previewOf, useThreads } from "@/lib/threads";
 import type { ChatMessage } from "@/lib/types";
 import { AboutModal } from "./AboutModal";
-import { AgentSidebar, LogoLink } from "./AgentSidebar";
+import { AgentSidebar, LogoLink, ShareButton } from "./AgentSidebar";
 import { MeetPage } from "./MeetPage";
 import { ShareModal } from "./ShareModal";
 import { toneOf } from "./Scenes";
@@ -32,7 +32,7 @@ const SETTLE: Keyframe[] = [
   { transform: "none" },
 ];
 
-/** The query a shared link names its agent with: gpty.lol/?agent=msn */
+/** The query older shared links named their agent with (gpty.lol/?agent=msn); new ones use the path. */
 const SHARE_PARAM = "agent";
 
 /** An agent in the URL (/msn, or a shared ?agent=msn) opens a new chat with that agent. */
@@ -180,6 +180,7 @@ export function ChatApp({ costume: fromRoute }: { costume?: string }) {
               <Menu className="h-5 w-5" />
             </button>
             <LogoLink id={meet ? undefined : agent.id} onMeet={onMeet} />
+            <ShareButton onClick={() => setSharing(true)} className="ml-auto flex" />
           </header>
           <div className="flex min-h-0 flex-1 flex-col px-2 pb-2 md:p-6">
             {/* The agent's song: a bar as wide as its window, level with the logo. */}

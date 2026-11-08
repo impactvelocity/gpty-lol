@@ -9,13 +9,12 @@ import { Family, HACKATHON, KIRO_GHOST_PATH } from "./AgentSidebar";
 import { Gpty } from "./Gpty";
 
 /**
- * A link that opens gpty.lol on one agent (gpty.lol/?agent=msn), or on the
- * Meet page when there's no agent. ChatApp reads ?agent= on load.
+ * A link that opens gpty.lol on one agent (gpty.lol/msn), or on the Meet page
+ * when there's no agent. The path gets that agent's own share card and title;
+ * older ?agent= links still open too (see ChatApp).
  */
 export function shareLink(agentId?: string) {
-  const url = new URL("/", window.location.origin);
-  if (agentId) url.searchParams.set("agent", agentId);
-  return url.toString();
+  return new URL(agentId ? `/${agentId}` : "/", window.location.origin).toString();
 }
 
 function shareText(a?: Agent) {
