@@ -1,0 +1,411 @@
+/*
+ * The song player across the top of the chat window (SongPlayer.tsx). It
+ * wears the chrome of the agent's own app: Windows 98 bevels for ICQ,
+ * Messenger's glossy glass for MSN, Skype's sky with its green call button,
+ * Facebook's blue top bar, reddit's orangered on smoked glass, Slack's
+ * aubergine sidebar, Grug's slab of rock, Mortimer's faint presence, Shelly's
+ * steel cabinet, Carol's moonlit night, Cora's iridescent void, Lucky's
+ * dark velvet and gold. Agents without a skin get the site's frosted glass.
+ * Everything is a tune- class so nothing leaks either way.
+ */
+
+/* The row the player sits in, as wide as the agent's window (see ChatApp.tsx). */
+.tune-row { container: tune-row / inline-size; }
+
+.tune {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  width: 100%;
+  height: 32px;
+  padding: 0 4px;
+  font-size: 12px;
+  line-height: 1;
+  user-select: none;
+  -webkit-user-select: none;
+  -webkit-font-smoothing: antialiased;
+}
+.tune :focus-visible { outline: 2px solid currentColor; outline-offset: 2px; }
+
+.tune-play { flex: none; display: grid; place-items: center; width: 24px; height: 24px; padding: 0; border: 0; cursor: pointer; transition: filter 0.15s, transform 0.1s; }
+.tune-play svg { width: 11px; height: 11px; fill: currentColor; }
+.tune-play:hover { filter: brightness(1.06); }
+
+.tune-title { display: flex; flex: 0 1 auto; align-items: baseline; gap: 8px; min-width: 0; white-space: nowrap; overflow: hidden; }
+.tune-title b { overflow: hidden; text-overflow: ellipsis; font-size: 13px; font-weight: 700; }
+.tune-title small { font-size: 11px; }
+@media (max-width: 639px) { .tune-title small { display: none; } }
+
+.tune-seek { display: flex; flex: 1; align-items: center; gap: 8px; min-width: 64px; }
+.tune-wait { flex: 1; min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; font-size: 12px; }
+.tune-time { flex: none; font-size: 11px; font-variant-numeric: tabular-nums; }
+.tune-track { display: flex; flex: 1; align-items: center; height: 16px; cursor: pointer; }
+.tune-bar { position: relative; display: block; width: 100%; height: 4px; overflow: hidden; box-sizing: border-box; }
+.tune-fill { display: block; height: 100%; transition: width 0.3s linear; }
+.tune-viz { flex: none; display: grid; place-items: center; box-sizing: content-box; }
+
+/* ───────── The site's frosted glass (no app of its own) ───────── */
+
+.tune[data-skin="glass"] {
+  padding-right: 6px;
+  border-radius: 9999px;
+  color: var(--shell-text);
+  background: var(--shell-glass);
+  box-shadow: var(--shell-shadow), inset 0 0 0 1px var(--shell-ring);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+}
+.tune[data-skin="glass"] .tune-play { border-radius: 50%; background: var(--shell-text); color: var(--shell-on-text); }
+.tune[data-skin="glass"] .tune-title small,
+.tune[data-skin="glass"] .tune-time,
+.tune[data-skin="glass"] .tune-wait { color: var(--shell-muted); }
+.tune[data-skin="glass"] .tune-bar { height: 3px; border-radius: 9999px; background: var(--shell-ring); }
+.tune[data-skin="glass"] .tune-fill { border-radius: inherit; background: var(--shell-soft); }
+.tune[data-skin="glass"] .tune-viz { color: var(--shell-soft); padding: 0 6px; }
+
+/* ───────── ICQ 2000: a Windows 98 toolbar ───────── */
+
+.tune[data-skin="icq"] {
+  --raised: inset -1px -1px #33322e, inset 1px 1px #ece9e1, inset -2px -2px #8c887f, inset 2px 2px #fff;
+  --pressed: inset -1px -1px #fff, inset 1px 1px #33322e, inset -2px -2px #ece9e1, inset 2px 2px #8c887f;
+  --sunken: inset -1px -1px #fff, inset 1px 1px #8c887f, inset -2px -2px #ece9e1, inset 2px 2px #33322e;
+  gap: 6px;
+  padding: 0 4px;
+  border-radius: 2px;
+  font-family: Tahoma, "Segoe UI", Verdana, Geneva, sans-serif;
+  color: #111;
+  background: linear-gradient(180deg, #e4e0d7 0%, #d8d4ca 40%, #d1cdc3 100%);
+  box-shadow: var(--raised), 0 14px 30px -14px rgba(0, 0, 0, 0.55);
+}
+.tune[data-skin="icq"] .tune-play { width: 24px; height: 22px; border-radius: 0; background: #d9d5cc; color: #000; box-shadow: var(--raised); }
+.tune[data-skin="icq"] .tune-play:active { box-shadow: var(--pressed); }
+.tune[data-skin="icq"] .tune-play:active svg { transform: translate(1px, 1px); }
+.tune[data-skin="icq"] :focus-visible { outline: 1px dotted #111; outline-offset: -4px; }
+/* The title as a little active titlebar. */
+.tune[data-skin="icq"] .tune-title {
+  align-self: center;
+  height: 22px;
+  align-items: center;
+  padding: 0 8px;
+  color: #fff;
+  text-shadow: 0 1px 0 rgba(0, 0, 40, 0.55);
+  background:
+    linear-gradient(180deg, rgba(255, 255, 255, 0.2), rgba(255, 255, 255, 0.04) 50%, rgba(0, 0, 0, 0) 51%),
+    linear-gradient(90deg, #05106e 0%, #0b2a9a 34%, #1c6fce 78%, #3a9ae6 100%);
+}
+.tune[data-skin="icq"] .tune-title b { font-size: 12px; }
+.tune[data-skin="icq"] .tune-title small { color: #cfe0ff; }
+.tune[data-skin="icq"] .tune-seek { gap: 6px; }
+.tune[data-skin="icq"] .tune-bar { height: 16px; padding: 3px; background: #fff; box-shadow: var(--sunken); }
+/* Windows 98's block progress bar. */
+.tune[data-skin="icq"] .tune-fill { background: repeating-linear-gradient(90deg, #0a1f8f 0 7px, transparent 7px 9px); transition: none; }
+.tune[data-skin="icq"] .tune-time { width: 30px; text-align: center; color: #111; }
+.tune[data-skin="icq"] .tune-wait { color: #5d5a53; }
+.tune[data-skin="icq"] .tune-viz { padding: 2px; background: #000; box-shadow: var(--sunken); }
+
+/* ───────── MSN Messenger 2005: glossy blue glass ───────── */
+
+.tune[data-skin="msn"] {
+  padding: 0 4px;
+  border-radius: 9px;
+  font-family: "Segoe UI", var(--font-msn), Tahoma, Verdana, sans-serif;
+  color: #0f2350;
+  background: linear-gradient(180deg, rgba(255, 255, 255, 0.96) 0%, rgba(234, 243, 254, 0.92) 46%, rgba(196, 220, 248, 0.94) 50%, rgba(222, 237, 255, 0.96) 100%);
+  box-shadow: 0 0 0 1px rgba(8, 34, 92, 0.5), inset 0 0 0 1px rgba(255, 255, 255, 0.7), inset 0 2px 0 -1px #fff, 0 14px 30px -14px rgba(4, 26, 74, 0.55);
+}
+.tune[data-skin="msn"] .tune-play {
+  border-radius: 50%;
+  color: #fff;
+  background: linear-gradient(180deg, #d4edff 0%, #62b4f7 44%, #1f74e0 54%, #4aa3f5 100%);
+  box-shadow: 0 0 0 1px #1a56b0, inset 0 1px 0 rgba(255, 255, 255, 0.85), 0 1px 3px rgba(10, 50, 120, 0.35);
+}
+.tune[data-skin="msn"] .tune-play:hover { box-shadow: 0 0 0 1px #1a56b0, inset 0 1px 0 rgba(255, 255, 255, 0.85), 0 0 8px rgba(70, 155, 255, 0.6); }
+.tune[data-skin="msn"] .tune-play:active { transform: translateY(1px); }
+.tune[data-skin="msn"] .tune-title small,
+.tune[data-skin="msn"] .tune-wait { color: #6c7690; }
+.tune[data-skin="msn"] .tune-time { color: #34507e; }
+.tune[data-skin="msn"] .tune-bar { height: 7px; border-radius: 4px; background: #fff; box-shadow: inset 0 0 0 1px #a9bfe2, inset 0 1px 2px rgba(15, 35, 80, 0.15); }
+.tune[data-skin="msn"] .tune-fill { border-radius: inherit; background: linear-gradient(180deg, #a8e0ff 0%, #3a92f2 50%, #1f6fdc 100%); }
+.tune[data-skin="msn"] .tune-viz { padding: 2px 5px; border-radius: 5px; background: linear-gradient(180deg, #fbfdff, #e5effc); box-shadow: inset 0 0 0 1px #a9bfe2; }
+.tune[data-skin="msn"] :focus-visible { outline-color: #4a90ff; }
+
+/* ───────── Skype 3: the sky, with a green call button ───────── */
+
+.tune[data-skin="skype"] {
+  padding: 0 4px;
+  border-radius: 11px;
+  font-family: "Segoe UI", var(--font-msn), Tahoma, Verdana, sans-serif;
+  color: #12314a;
+  background: linear-gradient(180deg, #ffffff 0%, #eef8fe 48%, #d4edfb 100%);
+  box-shadow: 0 0 0 1px rgba(6, 60, 110, 0.45), inset 0 0 0 1px rgba(255, 255, 255, 0.7), inset 0 2px 0 -1px #fff, 0 14px 30px -14px rgba(4, 40, 90, 0.5);
+}
+.tune[data-skin="skype"] .tune-play {
+  border-radius: 50%;
+  color: #fff;
+  background: linear-gradient(180deg, #a6ea6e 0%, #62c62e 48%, #46ad16 52%, #5cc426 100%);
+  box-shadow: 0 0 0 1px #2f8a10, inset 0 1px 0 rgba(255, 255, 255, 0.6), 0 1px 3px rgba(20, 90, 10, 0.35);
+}
+.tune[data-skin="skype"] .tune-play:active { transform: translateY(1px); }
+.tune[data-skin="skype"] .tune-title b { font-family: var(--font-skype-round), "Nunito", "Segoe UI", sans-serif; font-weight: 800; color: #0a86d0; }
+.tune[data-skin="skype"] .tune-title small,
+.tune[data-skin="skype"] .tune-wait { color: #6f879a; }
+.tune[data-skin="skype"] .tune-time { color: #36556e; }
+.tune[data-skin="skype"] .tune-bar { height: 7px; border-radius: 4px; background: #dde9f1; box-shadow: inset 0 0 0 1px #bcd6ea; }
+.tune[data-skin="skype"] .tune-fill { border-radius: inherit; background: linear-gradient(180deg, #b2ee7c, #4fb91f); }
+.tune[data-skin="skype"] .tune-viz { padding: 2px 5px; border-radius: 7px; background: #fff; box-shadow: inset 0 0 0 1px #bcd6ea; }
+.tune[data-skin="skype"] :focus-visible { outline-color: #12aef0; }
+
+/* ───────── Facebook 2008: the blue top bar ───────── */
+
+.tune[data-skin="facebook"] {
+  padding: 0 4px;
+  border-radius: 5px;
+  font-family: "Lucida Grande", "lucida grande", "Lucida Sans Unicode", Tahoma, Verdana, sans-serif;
+  color: #fff;
+  background: linear-gradient(180deg, #5470ab 0%, #3f5e9e 48%, #3b5998 52%, #36528d 100%);
+  box-shadow: 0 0 0 1px #29447e, inset 0 1px 0 rgba(255, 255, 255, 0.18), 0 14px 30px -14px rgba(8, 22, 64, 0.6);
+}
+.tune[data-skin="facebook"] .tune-play { width: 26px; height: 22px; border-radius: 3px; color: #3b5998; background: linear-gradient(180deg, #fff, #e3e8f1); box-shadow: 0 0 0 1px #29447e, inset 0 1px 0 #fff; }
+.tune[data-skin="facebook"] .tune-play:active { background: linear-gradient(180deg, #d8dfea, #eceff5); }
+.tune[data-skin="facebook"] .tune-title b { font-size: 12.5px; letter-spacing: -0.01em; }
+.tune[data-skin="facebook"] .tune-title small,
+.tune[data-skin="facebook"] .tune-time,
+.tune[data-skin="facebook"] .tune-wait { color: #d8dfea; }
+.tune[data-skin="facebook"] .tune-bar { height: 6px; border-radius: 1px; background: #29447e; box-shadow: inset 0 1px 1px rgba(0, 0, 0, 0.3); }
+.tune[data-skin="facebook"] .tune-fill { background: #d8dfea; }
+.tune[data-skin="facebook"] .tune-viz { padding: 2px 5px; border-radius: 3px; background: #29447e; box-shadow: inset 0 1px 2px rgba(0, 0, 0, 0.3); }
+.tune[data-skin="facebook"] :focus-visible { outline-color: #fff; }
+
+/* ───────── Grug, 10,000 BC: a slab of warm rock, painted in ochre ───────── */
+
+.tune[data-skin="cave"] {
+  --dots: radial-gradient(circle, currentColor 1.4px, transparent 2.1px) 0 50% / 9px 6px repeat-x;
+  padding: 0 5px;
+  /* Rock, not a box: no two corners alike. */
+  border-radius: 16px 9px 20px 10px / 11px 16px 12px 18px;
+  font-family: var(--font-londrina), "Londrina Solid", "Arial Rounded MT Bold", system-ui, sans-serif;
+  color: #f2e0c4;
+  background:
+    url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='160' height='160'><filter id='g'><feTurbulence type='fractalNoise' baseFrequency='.85' numOctaves='2' stitchTiles='stitch'/><feColorMatrix values='1 0 0 0 0  1 0 0 0 0  1 0 0 0 0  0 0 0 0 .55'/></filter><rect width='100%' height='100%' filter='url(%23g)'/></svg>") 0 0 / 160px,
+    radial-gradient(60% 160% at 96% -40%, rgba(190, 64, 52, 0.35), transparent 70%),
+    linear-gradient(178deg, #4a241c 0%, #361913 60%, #2a130f 100%);
+  background-blend-mode: soft-light, normal, normal;
+  box-shadow: 0 0 0 1px rgba(10, 3, 2, 0.75), inset 0 1px 0 rgba(255, 220, 190, 0.1), 0 14px 30px -14px rgba(8, 2, 0, 0.8);
+}
+/* A pebble of ochre. */
+.tune[data-skin="cave"] .tune-play { width: 25px; height: 23px; border-radius: 52% 48% 55% 45% / 50% 58% 42% 50%; color: #2a130f; background: linear-gradient(170deg, #ef7d3f, #d65f2e 60%, #b44a22); box-shadow: inset 0 1px 0 rgba(255, 220, 180, 0.4), 0 2px 4px rgba(8, 2, 0, 0.5); }
+.tune[data-skin="cave"] .tune-play:active { transform: translateY(1px); }
+.tune[data-skin="cave"] .tune-title b { font-size: 15px; font-weight: 400; letter-spacing: 0.04em; text-transform: uppercase; }
+.tune[data-skin="cave"] .tune-title small { font-size: 12px; font-weight: 300; letter-spacing: 0.12em; text-transform: uppercase; color: #eaa64e; }
+.tune[data-skin="cave"] .tune-time { font-size: 13px; font-weight: 300; color: rgba(242, 224, 196, 0.74); }
+.tune[data-skin="cave"] .tune-wait { font-size: 13px; font-weight: 300; letter-spacing: 0.08em; text-transform: uppercase; color: rgba(242, 224, 196, 0.6); }
+/* The track is a painted rule of dots; the part played is bright ochre. */
+.tune[data-skin="cave"] .tune-bar { height: 6px; overflow: hidden; color: rgba(242, 224, 196, 0.22); background: var(--dots); }
+.tune[data-skin="cave"] .tune-fill { color: #ef7d3f; background: var(--dots); transition: none; }
+.tune[data-skin="cave"] .tune-viz { padding: 2px 6px; border-radius: 9px 6px 10px 5px; background: rgba(12, 4, 2, 0.55); box-shadow: inset 0 1px 3px rgba(0, 0, 0, 0.6); }
+.tune[data-skin="cave"] :focus-visible { outline-color: #eaa64e; border-radius: 10px; }
+
+/* ───────── Slack 2014: the aubergine sidebar, flat, in Lato ───────── */
+
+.tune[data-skin="slack"] {
+  padding: 0 4px;
+  border-radius: 8px;
+  font-family: var(--font-lato), "Lato", "Helvetica Neue", Helvetica, Arial, sans-serif;
+  color: #fff;
+  background: #4d394b;
+  box-shadow: 0 0 0 1px rgba(30, 18, 30, 0.6), inset 0 1px 0 rgba(255, 255, 255, 0.08), 0 14px 30px -14px rgba(20, 8, 20, 0.7);
+}
+.tune[data-skin="slack"] .tune-play { border-radius: 50%; color: #fff; background: #2ab27b; box-shadow: 0 1px 2px rgba(0, 0, 0, 0.3); }
+.tune[data-skin="slack"] .tune-play:hover { background: #31c389; }
+.tune[data-skin="slack"] .tune-play:active { transform: translateY(1px); }
+.tune[data-skin="slack"] .tune-title b { font-size: 14px; font-weight: 900; }
+.tune[data-skin="slack"] .tune-title small,
+.tune[data-skin="slack"] .tune-time,
+.tune[data-skin="slack"] .tune-wait { color: #ab9ba9; }
+.tune[data-skin="slack"] .tune-title small { font-size: 12px; }
+.tune[data-skin="slack"] .tune-bar { height: 6px; border-radius: 3px; background: #3e313c; }
+.tune[data-skin="slack"] .tune-fill { border-radius: inherit; background: #4c9689; }
+.tune[data-skin="slack"] .tune-viz { padding: 2px 5px; border-radius: 5px; background: #3e313c; }
+.tune[data-skin="slack"] :focus-visible { outline-color: #6ecadc; }
+
+/* ───────── reddit 2009: dark smoked glass, with orangered ───────── */
+
+.tune[data-skin="reddit"] {
+  padding: 0 4px;
+  border-radius: 6px;
+  font-family: verdana, "DejaVu Sans", "Bitstream Vera Sans", arial, helvetica, sans-serif;
+  color: #fff;
+  background: linear-gradient(180deg, rgba(48, 48, 52, 0.72) 0%, rgba(24, 24, 27, 0.72) 100%);
+  box-shadow: 0 0 0 1px rgba(0, 0, 0, 0.5), inset 0 1px 0 rgba(255, 255, 255, 0.12), 0 14px 30px -14px rgba(6, 16, 40, 0.7);
+  backdrop-filter: blur(14px) saturate(1.2);
+  -webkit-backdrop-filter: blur(14px) saturate(1.2);
+  text-shadow: 0 1px 1px rgba(0, 0, 0, 0.4);
+}
+.tune[data-skin="reddit"] .tune-play {
+  width: 24px;
+  height: 22px;
+  border-radius: 4px;
+  color: #fff;
+  background: linear-gradient(180deg, #ff7a45 0%, #ff4500 55%, #e03d00 100%);
+  box-shadow: 0 0 0 1px rgba(120, 30, 0, 0.8), inset 0 1px 0 rgba(255, 220, 200, 0.5);
+}
+.tune[data-skin="reddit"] .tune-play:hover { box-shadow: 0 0 0 1px rgba(120, 30, 0, 0.8), inset 0 1px 0 rgba(255, 220, 200, 0.5), 0 0 10px rgba(255, 69, 0, 0.55); }
+.tune[data-skin="reddit"] .tune-play:active { transform: translateY(1px); }
+.tune[data-skin="reddit"] .tune-title b { font-size: 12.5px; }
+.tune[data-skin="reddit"] .tune-title small { font-size: 10.5px; color: rgba(255, 255, 255, 0.58); }
+.tune[data-skin="reddit"] .tune-time,
+.tune[data-skin="reddit"] .tune-wait { color: rgba(255, 255, 255, 0.72); }
+.tune[data-skin="reddit"] .tune-bar { height: 6px; border-radius: 3px; background: rgba(0, 0, 0, 0.4); box-shadow: inset 0 1px 2px rgba(0, 0, 0, 0.45), 0 1px 0 rgba(255, 255, 255, 0.08); }
+.tune[data-skin="reddit"] .tune-fill { border-radius: inherit; background: linear-gradient(180deg, #ff8b60, #ff4500); box-shadow: 0 0 6px rgba(255, 69, 0, 0.6); }
+.tune[data-skin="reddit"] .tune-viz { padding: 2px 5px; border-radius: 4px; background: rgba(0, 0, 0, 0.42); box-shadow: inset 0 1px 3px rgba(0, 0, 0, 0.5), 0 1px 0 rgba(255, 255, 255, 0.08); }
+.tune[data-skin="reddit"] :focus-visible { outline-color: #ff8b60; }
+
+/* ───────── Mortimer, 1888: no frame at all, just a faint presence in the dark ───────── */
+
+.tune[data-skin="seance"] {
+  padding: 0 6px;
+  font-family: var(--font-fell), "IM Fell English", "Iowan Old Style", Georgia, serif;
+  color: #ece3cf;
+  /* A breath of mist behind it, fading out at the ends. */
+  background: radial-gradient(60% 120% at 50% 50%, rgba(236, 227, 207, 0.06), transparent 70%);
+  opacity: 0.94;
+  transition: opacity 0.6s ease;
+}
+.tune[data-skin="seance"]:hover,
+.tune[data-skin="seance"]:focus-within { opacity: 1; }
+/* While it plays, it breathes. */
+.tune[data-skin="seance"][data-playing] { animation: tune-haunt 7s ease-in-out infinite; }
+.tune[data-skin="seance"][data-playing]:hover { animation: none; opacity: 1; }
+@keyframes tune-haunt { 0%, 100% { opacity: 0.84; } 50% { opacity: 1; } }
+@media (prefers-reduced-motion: reduce) { .tune[data-skin="seance"][data-playing] { animation: none; } }
+.tune[data-skin="seance"] .tune-play { width: 22px; height: 22px; border-radius: 50%; color: #fff8e8; background: rgba(236, 227, 207, 0.06); box-shadow: inset 0 0 0 1px rgba(236, 227, 207, 0.85), 0 0 12px rgba(236, 227, 207, 0.25); }
+.tune[data-skin="seance"] .tune-play:hover { box-shadow: inset 0 0 0 1px #fff8e8, 0 0 16px rgba(236, 227, 207, 0.45); }
+.tune[data-skin="seance"] .tune-play svg { width: 10px; height: 10px; filter: drop-shadow(0 0 3px rgba(236, 227, 207, 0.7)); }
+.tune[data-skin="seance"] .tune-title b { font-family: var(--font-fell-sc), "IM Fell English SC", Georgia, serif; font-size: 15px; font-weight: 400; letter-spacing: 0.06em; color: #fff8e8; text-shadow: 0 0 8px rgba(236, 227, 207, 0.5); }
+.tune[data-skin="seance"] .tune-title small { font-size: 13.5px; font-style: italic; color: rgba(236, 227, 207, 0.8); }
+.tune[data-skin="seance"] .tune-time { font-family: var(--font-fell-sc), "IM Fell English SC", Georgia, serif; font-size: 13px; color: rgba(236, 227, 207, 0.78); }
+.tune[data-skin="seance"] .tune-wait { font-size: 14px; font-style: italic; color: rgba(236, 227, 207, 0.8); }
+/* A faint thread that fades in and out at its ends; what's played glows softly. */
+.tune[data-skin="seance"] .tune-bar {
+  height: 1px;
+  overflow: visible;
+  background: rgba(236, 227, 207, 0.38);
+  -webkit-mask-image: linear-gradient(90deg, transparent, #000 8%, #000 92%, transparent);
+  mask-image: linear-gradient(90deg, transparent, #000 8%, #000 92%, transparent);
+}
+.tune[data-skin="seance"] .tune-fill { background: #fff8e8; box-shadow: 0 0 6px 1px rgba(236, 227, 207, 0.55); }
+.tune[data-skin="seance"] .tune-viz { padding: 0 2px; }
+.tune[data-skin="seance"] :focus-visible { outline: 1px solid rgba(236, 227, 207, 0.6); outline-offset: 3px; }
+
+/* ───────── Shelly, 1989: the steel cabinet, an amber CRT, a green scope ───────── */
+
+.tune[data-skin="terminal"] {
+  padding: 0 4px;
+  border-radius: 4px;
+  font-family: var(--font-mf-label), "Share Tech Mono", ui-monospace, monospace;
+  color: #ffb000;
+  background:
+    repeating-linear-gradient(90deg, rgba(255, 255, 255, 0.025) 0 1px, transparent 1px 3px),
+    linear-gradient(180deg, #3b3f45 0%, #25282d 45%, #1a1c20 100%);
+  box-shadow: 0 0 0 1px #0b0c0e, inset 0 1px 0 rgba(255, 255, 255, 0.14), inset 0 -1px 0 rgba(0, 0, 0, 0.5), 0 14px 30px -14px rgba(0, 0, 0, 0.85);
+}
+/* A lit lens. */
+.tune[data-skin="terminal"] .tune-play { width: 26px; height: 22px; border-radius: 3px; color: #2a0502; background: radial-gradient(circle at 50% 35%, #ffb3a0, #ff3b2b 45%, #8a1208); box-shadow: 0 0 0 1px #000, 0 0 0 2px #4a4e55, 0 0 9px rgba(255, 59, 43, 0.45); }
+.tune[data-skin="terminal"] .tune-play:active { transform: translateY(1px); }
+/* The title on a strip of amber screen. */
+.tune[data-skin="terminal"] .tune-title { align-self: center; height: 22px; align-items: center; padding: 0 8px; border-radius: 2px; background: #0e0802; box-shadow: inset 0 0 0 1px #000, inset 0 0 12px rgba(255, 166, 0, 0.14), 0 1px 0 rgba(255, 255, 255, 0.08); }
+.tune[data-skin="terminal"] .tune-title b,
+.tune[data-skin="terminal"] .tune-title small,
+.tune[data-skin="terminal"] .tune-time,
+.tune[data-skin="terminal"] .tune-wait { font-family: var(--font-vt323), "VT323", ui-monospace, monospace; font-weight: 400; text-transform: uppercase; }
+.tune[data-skin="terminal"] .tune-title b { font-size: 19px; letter-spacing: 0.02em; color: #ffb000; text-shadow: 0 0 6px rgba(255, 166, 0, 0.65); }
+.tune[data-skin="terminal"] .tune-title small { font-size: 16px; color: #c07c00; }
+.tune[data-skin="terminal"] .tune-time,
+.tune[data-skin="terminal"] .tune-wait { font-size: 17px; color: #ffb000; text-shadow: 0 0 5px rgba(255, 166, 0, 0.55); }
+.tune[data-skin="terminal"] .tune-bar { height: 10px; padding: 2px; border-radius: 1px; background: #0e0802; box-shadow: inset 0 0 0 1px #000, 0 1px 0 rgba(255, 255, 255, 0.08); }
+.tune[data-skin="terminal"] .tune-fill { background: repeating-linear-gradient(90deg, #ffb000 0 4px, transparent 4px 6px); filter: drop-shadow(0 0 3px rgba(255, 166, 0, 0.7)); transition: none; }
+.tune[data-skin="terminal"] .tune-viz { padding: 2px; border-radius: 2px; background: #020805; box-shadow: inset 0 0 0 1px #000, 0 0 0 1px #4a4e55; }
+.tune[data-skin="terminal"] :focus-visible { outline-color: #ffb000; }
+
+/* ───────── Carol, the North Pole: a dark winter night, moonlight and aurora ───────── */
+
+.tune[data-skin="elf"] {
+  padding: 0 6px 0 5px;
+  border-radius: 13px;
+  font-family: var(--font-elf-body), "Nunito", ui-rounded, system-ui, sans-serif;
+  color: #f8f0e1;
+  background: linear-gradient(180deg, rgba(14, 25, 39, 0.8) 0%, rgba(10, 18, 28, 0.8) 60%, rgba(7, 13, 21, 0.8) 100%);
+  box-shadow: 0 0 0 1px rgba(150, 180, 230, 0.12), 0 14px 30px -14px rgba(4, 10, 20, 0.85);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+}
+/* The aurora from the wallpaper, as a glowing disc. */
+.tune[data-skin="elf"] .tune-play { width: 22px; height: 22px; border-radius: 50%; color: #0b1a26; background: radial-gradient(circle at 35% 28%, #b9ffdc 0%, #5fe6ad 38%, #22a98f 78%, #17807e 100%); box-shadow: inset 0 0 0 1px rgba(255, 255, 255, 0.28), 0 0 10px rgba(80, 230, 170, 0.4); }
+.tune[data-skin="elf"] .tune-play:hover { box-shadow: inset 0 0 0 1px rgba(255, 255, 255, 0.4), 0 0 14px rgba(80, 230, 170, 0.6); }
+.tune[data-skin="elf"] .tune-play:active { transform: translateY(1px); }
+.tune[data-skin="elf"] .tune-title b { font-family: var(--font-elf-display), "Fraunces", Georgia, serif; font-size: 15px; font-weight: 600; font-variation-settings: "SOFT" 100, "WONK" 1; color: #fff; }
+.tune[data-skin="elf"] .tune-title small { font-family: var(--font-caveat), "Caveat", "Segoe Print", cursive; font-size: 17px; font-weight: 700; color: #e2ae4a; }
+.tune[data-skin="elf"] .tune-time { font-size: 12px; font-weight: 700; color: #fff; }
+.tune[data-skin="elf"] .tune-wait { font-size: 12.5px; font-weight: 700; color: #fff; }
+/* A thin line of moonlight; what's played glows. */
+.tune[data-skin="elf"] .tune-bar { height: 3px; overflow: visible; border-radius: 2px; background: rgba(170, 195, 235, 0.16); }
+.tune[data-skin="elf"] .tune-fill { border-radius: inherit; background: linear-gradient(90deg, rgba(180, 205, 245, 0.55), #e6f0ff); box-shadow: 0 0 8px rgba(190, 215, 255, 0.55); }
+.tune[data-skin="elf"] .tune-viz { padding: 0 4px; }
+.tune[data-skin="elf"] :focus-visible { outline-color: #cfe0ff; }
+
+/* ───────── Cora, 2199: the Lattice's violet void, edged in oil-slick ───────── */
+
+.tune[data-skin="machine"] {
+  padding: 0 4px;
+  border: 1px solid transparent;
+  border-radius: 10px;
+  font-family: var(--font-mx-mono), "Martian Mono", ui-monospace, "SF Mono", Menlo, monospace;
+  font-stretch: 87.5%;
+  color: #f1e9ff;
+  background:
+    url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='56' height='97' viewBox='0 0 56 97'><path d='M28 0 56 16.2v32.3L28 64.7 0 48.5V16.2zM28 64.7v32.3M0 97V80.8M56 97V80.8' fill='none' stroke='%23a77bff' stroke-opacity='.16' stroke-width='1.2'/></svg>") 0 0 / 22px 38px padding-box,
+    linear-gradient(180deg, rgba(16, 4, 42, 0.84), rgba(6, 1, 13, 0.9)) padding-box,
+    linear-gradient(90deg, #ff2bd6, #7b2cff 28%, #19f0ff 56%, #c8ff2e 80%, #ff6b2b) border-box;
+  box-shadow: 0 0 18px -4px rgba(123, 44, 255, 0.55), 0 14px 30px -14px rgba(0, 0, 0, 0.85);
+  backdrop-filter: blur(10px);
+  -webkit-backdrop-filter: blur(10px);
+}
+/* A cell of the lattice, lit acid. */
+.tune[data-skin="machine"] .tune-play { width: 26px; height: 24px; border-radius: 0; color: #06010d; background: #c8ff2e; clip-path: polygon(25% 4%, 75% 4%, 100% 50%, 75% 96%, 25% 96%, 0 50%); }
+.tune[data-skin="machine"] .tune-play:hover { background: #dcff73; }
+.tune[data-skin="machine"] .tune-title b { font-family: var(--font-mx-display), "Major Mono Display", var(--font-mx-mono), monospace; font-size: 14px; font-weight: 400; text-transform: lowercase; letter-spacing: 0.02em; text-shadow: -1.5px 0 rgba(255, 43, 214, 0.75), 1.5px 0 rgba(25, 240, 255, 0.75); }
+.tune[data-skin="machine"] .tune-title small,
+.tune[data-skin="machine"] .tune-wait { font-size: 10px; letter-spacing: 0.08em; text-transform: uppercase; color: rgba(241, 233, 255, 0.5); }
+.tune[data-skin="machine"] .tune-time { font-size: 10px; color: rgba(241, 233, 255, 0.8); }
+.tune[data-skin="machine"] .tune-bar { height: 3px; overflow: visible; border-radius: 2px; background: rgba(167, 123, 255, 0.22); }
+.tune[data-skin="machine"] .tune-fill { border-radius: inherit; background: linear-gradient(90deg, #ff2bd6, #7b2cff 35%, #19f0ff 70%, #c8ff2e); box-shadow: 0 0 8px rgba(25, 240, 255, 0.55); }
+.tune[data-skin="machine"] .tune-viz { padding: 2px 5px; border-radius: 6px; background: rgba(6, 1, 13, 0.6); box-shadow: inset 0 0 0 1px rgba(167, 123, 255, 0.24); }
+.tune[data-skin="machine"] :focus-visible { outline: 1.5px solid #c8ff2e; }
+
+/* ───────── Lucky, 3 a.m.: dark velvet with a gold edge ───────── */
+
+.tune[data-skin="slots"] {
+  padding: 0 5px;
+  border: 1px solid transparent;
+  border-radius: 10px;
+  font-family: var(--font-lk-body), "Outfit", system-ui, sans-serif;
+  color: #fff3e2;
+  background:
+    linear-gradient(180deg, #2a050e 0%, #1a0309 55%, #12020a 100%) padding-box,
+    linear-gradient(180deg, #ffd968 0%, #b37a14 50%, #8a5a0c 100%) border-box;
+  box-shadow: 0 0 0 1px rgba(10, 2, 5, 0.8), 0 14px 30px -14px rgba(0, 0, 0, 0.85);
+}
+.tune[data-skin="slots"] .tune-play { width: 23px; height: 23px; border-radius: 50%; color: #3a0410; background: radial-gradient(circle at 40% 30%, #fff0b3, #ffc533 45%, #b37a14); box-shadow: 0 1px 2px rgba(0, 0, 0, 0.5); }
+.tune[data-skin="slots"] .tune-play:active { transform: translateY(1px); }
+.tune[data-skin="slots"] .tune-title b { font-family: var(--font-lk-sign), "Bungee", Impact, sans-serif; font-size: 13px; font-weight: 400; letter-spacing: 0.02em; color: #ffc533; }
+.tune[data-skin="slots"] .tune-title small { font-size: 11.5px; font-weight: 500; color: rgba(255, 232, 210, 0.6); }
+.tune[data-skin="slots"] .tune-wait { font-size: 12px; color: rgba(255, 232, 210, 0.7); }
+.tune[data-skin="slots"] .tune-time { font-family: var(--font-lk-mono), "Share Tech Mono", ui-monospace, monospace; font-size: 12px; color: rgba(255, 232, 210, 0.7); }
+.tune[data-skin="slots"] .tune-bar { height: 4px; border-radius: 2px; background: rgba(255, 232, 210, 0.12); }
+.tune[data-skin="slots"] .tune-fill { border-radius: inherit; background: #ffc533; }
+.tune[data-skin="slots"] .tune-viz { padding: 2px; border-radius: 3px; background: #0a0204; }
+.tune[data-skin="slots"] :focus-visible { outline-color: #ffc533; }
+/* As wide as the cabinet, not the lever beside it (slots.css drops the lever below 760px). */
+@container tune-row (min-width: 761px) {
+  .tune[data-skin="slots"] { width: calc(100% - 50px); }
+}

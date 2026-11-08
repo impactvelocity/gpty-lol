@@ -177,7 +177,7 @@ html, body { height: 100%; overflow: hidden; }
 .blink { animation: blink 1.06s steps(1) infinite; }
 @keyframes blink { 50% { opacity: 0; } }
 
-/* Typing dots (Messenger, Slack) */
+/* Typing dots (Slack) */
 .dot { animation: dot 1.2s ease-in-out infinite; }
 @keyframes dot { 0%, 60%, 100% { transform: translateY(0); opacity: .45; } 30% { transform: translateY(-3px); opacity: 1; } }
 
@@ -258,6 +258,7 @@ html, body { height: 100%; overflow: hidden; }
 /* The shell floats on the agent's scene; its ink flips with the scene's tone. */
 .shell {
   --shell-text: #ffffff;
+  --shell-on-text: #15151d;
   --shell-soft: rgba(255, 255, 255, 0.82);
   --shell-muted: rgba(255, 255, 255, 0.6);
   --shell-hover: rgba(255, 255, 255, 0.09);
@@ -268,11 +269,14 @@ html, body { height: 100%; overflow: hidden; }
   --shell-ink-shadow: 0 1px 2px rgba(0, 0, 0, 0.35);
   --shell-shade: linear-gradient(90deg, rgba(0,0,0,.38) 0, rgba(0,0,0,.24) 240px, transparent 440px);
   --shell-drawer: rgba(14, 14, 22, 0.6);
+  --shell-badge: rgba(0, 0, 0, 0.32);
+  --shell-badge-ring: rgba(255, 255, 255, 0.08);
   color-scheme: dark;
-  transition: color .5s ease;
+  transition: color .25s ease;
 }
 .shell[data-tone="light"] {
   --shell-text: #0d2438;
+  --shell-on-text: #ffffff;
   --shell-soft: rgba(13, 36, 56, 0.82);
   --shell-muted: rgba(13, 36, 56, 0.58);
   --shell-hover: rgba(255, 255, 255, 0.35);
@@ -283,14 +287,29 @@ html, body { height: 100%; overflow: hidden; }
   --shell-ink-shadow: none;
   --shell-shade: linear-gradient(90deg, rgba(255,255,255,.4) 0, rgba(255,255,255,.2) 240px, transparent 440px);
   --shell-drawer: rgba(255, 255, 255, 0.7);
+  --shell-badge: rgba(13, 36, 56, 0.1);
+  --shell-badge-ring: rgba(13, 36, 56, 0.06);
   color-scheme: light;
 }
 .shell nav, .shell header, .shell aside { text-shadow: var(--shell-ink-shadow); }
-.wp-side { position: absolute; inset: 0; background: var(--shell-shade); transition: background .6s ease; }
+/* A sidebar row's hover badge: a quiet, darker pill around the app's own label. */
+.shell-badge {
+  display: flex;
+  align-items: center;
+  height: 22px;
+  padding: 0 9px;
+  border-radius: 9999px;
+  background: var(--shell-badge);
+  box-shadow: inset 0 0 0 1px var(--shell-badge-ring);
+}
+.wp-side { position: absolute; inset: 0; z-index: 2; background: var(--shell-shade); transition: background .3s ease; }
 @media (max-width: 767px) { .wp-side { display: none; } }
 
 /* ---------- Scenes: gentle, looping motion for the agents' backdrops ---------- */
-.scene { position: absolute; inset: 0; overflow: hidden; transition: opacity .7s ease; }
+/* Crossfade without a dark dip: the new scene fades in on top while the old one
+   stays solid underneath, and only drops out once it's covered. */
+.scene { position: absolute; inset: 0; z-index: 0; overflow: hidden; transition: opacity 0s linear .3s; }
+.scene[data-on="true"] { z-index: 1; transition: opacity .3s cubic-bezier(.22, 1, .36, 1); }
 .scene[data-on="false"], .scene[data-on="false"] * { animation-play-state: paused !important; }
 /* Pieces at the foot of the sidebar column: only where the list leaves room. */
 .sc-under { display: none; }
@@ -308,6 +327,8 @@ html, body { height: 100%; overflow: hidden; }
 @keyframes sc-fall { from { transform: translate3d(0, -10vh, 0); } to { transform: translate3d(var(--x, 0px), 110vh, 0); } }
 .sc-rise { animation: sc-rise var(--d, 6s) ease-out infinite; animation-delay: var(--dl, 0s); }
 @keyframes sc-rise { 0% { transform: translate(0, 0); opacity: 0; } 15% { opacity: 1; } 100% { transform: translate(var(--x, 10px), -42vh); opacity: 0; } }
+.sc-ascend { opacity: 0; animation: sc-ascend var(--d, 40s) linear infinite; animation-delay: var(--dl, 0s); }
+@keyframes sc-ascend { 0% { transform: translate3d(0, 0, 0); opacity: 0; } 6%, 78% { opacity: var(--o, 1); } 100% { transform: translate3d(var(--x, 0px), -112vh, 0); opacity: 0; } }
 .sc-flicker { animation: sc-flicker 2.6s ease-in-out infinite; }
 @keyframes sc-flicker { 0%, 100% { opacity: .85; } 30% { opacity: 1; } 60% { opacity: .7; } }
 .sc-blink { animation: sc-blink var(--d, 2s) ease-in-out infinite; }
@@ -347,3 +368,8 @@ html, body { height: 100%; overflow: hidden; }
 button:hover > .gpty .gpty-body { animation: gpty-wiggle .5s ease-in-out; }
 @keyframes gpty-wiggle { 30% { transform: rotate(-7deg) scale(1.05); } 65% { transform: rotate(5deg) scale(1.05); } }
 @media (prefers-reduced-motion: reduce) { .gpty * { animation: none !important; } }
+
+/* Meet page, Kiroween section: the gptys in the dark, only their eyes lit, in each one's color (--glow). */
+.meet-eyes .gpty-body > path { fill: color-mix(in srgb, var(--glow) 12%, #0f0d17); }
+.meet-eyes .gpty-eyes ellipse { fill: color-mix(in oklab, var(--glow), white 35%); }
+.meet-eyes .gpty { filter: drop-shadow(0 0 5px color-mix(in srgb, var(--glow) 70%, transparent)); }

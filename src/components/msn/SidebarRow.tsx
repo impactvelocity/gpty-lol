@@ -1,6 +1,6 @@
 "use client";
 
-import type { ActiveRowProps, HoverBadgeProps } from "@/components/activeRows";
+import type { ActiveRowProps } from "@/components/activeRows";
 import { Gpty } from "@/components/Gpty";
 import { Pencil } from "./art";
 import { segoe } from "./font";
@@ -43,15 +43,5 @@ export function MsnActiveRow({ agent, mood, ...button }: ActiveRowProps) {
         </span>
       </span>
     </button>
-  );
-}
-
-/**
- * MSN's hover label in the sidebar: "MSN · 2005" ("Messenger" is too long),
- * a little brighter and bolder than the other agents' labels.
- */
-export function MsnHoverBadge({ agent }: HoverBadgeProps) {
-  return (
-    <span className="truncate text-[12px] font-medium text-[var(--shell-soft)]">MSN · {agent.costume.year}</span>
   );
 }

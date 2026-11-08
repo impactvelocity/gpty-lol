@@ -1,0 +1,656 @@
+/*
+ * mIRC 6 on Windows 2000, remastered. Everything here is scoped under .irc
+ * (or an irc- class) so it can't leak into the other costumes.
+ *
+ * Familiar at a glance: the gray 3D face, the navy title bars, the white
+ * panes and mIRC's colors. Modern up close: real depth under the windows,
+ * smooth motion, a lit night behind the MDI area and crisp vector icons.
+ */
+
+.irc {
+  --irc-ui: Tahoma, "Segoe UI", Verdana, Geneva, sans-serif;
+  --irc-mono: "Fixedsys Excelsior 3.01", "Fixedsys Excelsior", var(--font-irc-pixel), "Lucida Console", Monaco, monospace;
+  --irc-face: #d4d0c8;
+  --irc-navy: #0a246a;
+  --irc-sky: #a6caf0;
+  --irc-out: inset -1px -1px #404040, inset 1px 1px #fff, inset -2px -2px #808080, inset 2px 2px #e8e6e2;
+  --irc-in: inset -1px -1px #fff, inset 1px 1px #808080, inset -2px -2px #e8e6e2, inset 2px 2px #404040;
+  --irc-thin-out: inset -1px -1px #808080, inset 1px 1px #fff;
+  --irc-thin-in: inset 1px 1px #808080, inset -1px -1px #fff;
+  font-family: var(--irc-ui);
+  font-size: 12px;
+  color: #000;
+}
+.irc ::selection { background: var(--irc-navy); color: #fff; }
+.irc :focus-visible { outline: 1px dotted #000; outline-offset: -3px; }
+.irc .irc-titlebar,
+.irc .irc-menubar,
+.irc .irc-statusbar { text-shadow: none; }
+
+/* ───────── Window ───────── */
+
+.irc-window {
+  position: relative;
+  isolation: isolate;
+  display: flex;
+  flex-direction: column;
+  width: 100%;
+  height: 100%;
+  overflow: hidden;
+  padding: 4px;
+  border-radius: 3px;
+  container: irc / inline-size;
+  background: linear-gradient(180deg, #dedad3 0, var(--irc-face) 60px);
+  box-shadow:
+    var(--irc-out),
+    0 34px 80px -24px rgba(2, 6, 28, 0.75),
+    0 12px 30px -12px rgba(2, 6, 28, 0.5);
+}
+.irc-window[data-dragging] * { cursor: default; }
+
+.irc-titlebar {
+  position: relative;
+  display: flex;
+  flex-shrink: 0;
+  align-items: center;
+  gap: 6px;
+  height: 24px;
+  padding: 0 3px 0 5px;
+  overflow: hidden;
+  font-size: 12px;
+  font-weight: 700;
+  color: #fff;
+  touch-action: none;
+  user-select: none;
+  -webkit-user-select: none;
+  background: linear-gradient(90deg, #0a246a 0%, #24508f 46%, #a6caf0 100%);
+}
+/* A soft sheen on the glass, the remaster's one indulgence up here. */
+.irc-titlebar::before {
+  content: "";
+  position: absolute;
+  inset: 0 0 50% 0;
+  background: linear-gradient(180deg, rgba(255, 255, 255, 0.18), rgba(255, 255, 255, 0.02));
+  pointer-events: none;
+}
+.irc-caps { display: flex; flex-shrink: 0; align-items: center; margin-left: auto; }
+.irc-cap {
+  display: grid;
+  place-items: center;
+  width: 18px;
+  height: 16px;
+  color: #000;
+  background: var(--irc-face);
+  box-shadow: var(--irc-out);
+}
+.irc-titlebar .irc-cap:last-child { margin-left: 2px; }
+button.irc-cap:active { box-shadow: var(--irc-in); }
+button.irc-cap:active .irc-glyph { translate: 1px 1px; }
+.irc-glyph { width: 9px; height: 8px; }
+
+/* ───────── Menus ───────── */
+
+.irc-menubar { display: flex; flex-shrink: 0; align-items: center; height: 22px; padding: 1px 0; }
+.irc-menubar > div > button { height: 20px; padding: 0 7px; }
+.irc-menubar > div > button:hover { box-shadow: var(--irc-thin-out); }
+.irc-menubar > div > button[data-open] { box-shadow: var(--irc-thin-in); }
+.irc-mdi-caps { display: flex; flex: 1; align-items: center; justify-content: flex-end; gap: 0; padding-right: 2px; padding-left: 8px; }
+.irc-mdi-caps .irc-cap { width: 16px; height: 14px; }
+.irc-mdi-caps .irc-cap:last-child { margin-left: 2px; }
+
+.irc-menu {
+  z-index: 60;
+  min-width: 190px;
+  padding: 2px;
+  background: var(--irc-face);
+  box-shadow: var(--irc-out), 3px 5px 14px rgba(0, 0, 0, 0.32);
+  animation: irc-fade 0.12s ease-out;
+}
+.irc-dropdown { position: absolute; top: 100%; left: 0; }
+.irc-ctx { position: absolute; }
+.irc-menu > button { display: flex; align-items: center; width: 100%; height: 22px; padding-right: 14px; text-align: left; white-space: nowrap; }
+.irc-menu > button:hover:not(:disabled),
+.irc-menu > button:focus-visible { background: var(--irc-navy); color: #fff; outline: 0; }
+.irc-menu > button:disabled { color: #808080; text-shadow: 1px 1px #fff; }
+.irc-check { flex-shrink: 0; width: 22px; text-align: center; font-size: 11px; }
+.irc-hint { padding-left: 24px; }
+.irc-menu-sep { display: block; height: 2px; margin: 3px 2px; border-top: 1px solid #808080; border-bottom: 1px solid #fff; }
+.irc-menu-title {
+  margin-bottom: 2px;
+  padding: 3px 8px;
+  overflow: hidden;
+  font-weight: 700;
+  color: #fff;
+  white-space: nowrap;
+  text-overflow: ellipsis;
+  background: linear-gradient(90deg, var(--irc-navy), var(--irc-sky));
+}
+@keyframes irc-fade { from { opacity: 0; } to { opacity: 1; } }
+
+/* ───────── Toolbar and switchbar ───────── */
+
+.irc-toolbar {
+  display: flex;
+  flex-shrink: 0;
+  align-items: center;
+  gap: 1px;
+  height: 34px;
+  padding: 0 4px;
+  border-top: 1px solid #808080;
+  border-bottom: 1px solid #808080;
+  box-shadow: inset 0 1px #fff, 0 1px #fff;
+}
+.irc-tool { position: relative; display: grid; place-items: center; width: 31px; height: 28px; }
+.irc-tool:hover:not(:disabled) { box-shadow: var(--irc-thin-out); }
+.irc-tool:active:not(:disabled),
+.irc-tool[aria-pressed="true"] { box-shadow: var(--irc-thin-in); }
+.irc-tool:active:not(:disabled) > *,
+.irc-tool[aria-pressed="true"] > * { translate: 1px 1px; }
+.irc-tool:disabled .irc-tool-icon { filter: grayscale(1) opacity(0.45); }
+.irc-tool-icon { width: 22px; height: 22px; object-fit: contain; filter: drop-shadow(0 1px 0.5px rgba(0, 0, 0, 0.18)); }
+/* Tooltips, in the pale yellow everyone remembers. */
+.irc-tool[data-tip]::after {
+  content: attr(data-tip);
+  position: absolute;
+  top: calc(100% + 5px);
+  left: 6px;
+  z-index: 70;
+  padding: 2px 5px;
+  font-size: 11px;
+  white-space: nowrap;
+  color: #000;
+  background: #ffffe1;
+  border: 1px solid #000;
+  box-shadow: 2px 2px 3px rgba(0, 0, 0, 0.25);
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity 0.1s;
+}
+.irc-tool:hover::after { opacity: 1; transition-delay: 0.5s; }
+.irc-sep { flex-shrink: 0; width: 2px; height: 22px; margin: 0 4px; border-left: 1px solid #808080; border-right: 1px solid #fff; }
+.irc-online {
+  margin-left: auto;
+  padding: 3px 8px;
+  font-size: 11px;
+  white-space: nowrap;
+  font-variant-numeric: tabular-nums;
+  box-shadow: var(--irc-thin-in);
+}
+
+.irc-switchbar { display: flex; flex-shrink: 0; gap: 3px; height: 29px; padding: 3px 2px 2px; }
+.irc-switch {
+  display: flex;
+  align-items: center;
+  gap: 5px;
+  width: 172px;
+  min-width: 0;
+  height: 24px;
+  padding: 0 7px;
+  text-align: left;
+  background: var(--irc-face);
+  box-shadow: var(--irc-out);
+}
+.irc-switch[aria-selected="true"] {
+  font-weight: 700;
+  box-shadow: var(--irc-in);
+  /* The dithered "pressed" look of a Windows 2000 taskbar button. */
+  background: repeating-conic-gradient(#fff 0 25%, #e4e1db 0 50%) 0 0 / 2px 2px;
+}
+.irc-switch[data-unread] span { position: relative; }
+.irc-switch[data-unread="1"] span { color: #0000fc; }
+.irc-switch[data-unread="2"] span { color: #fc0000; }
+.irc-switch[data-unread]::after {
+  content: "";
+  flex-shrink: 0;
+  width: 6px;
+  height: 6px;
+  margin-left: auto;
+  border-radius: 50%;
+  background: currentColor;
+  color: #fc0000;
+  animation: irc-pulse 1.4s ease-in-out infinite;
+}
+.irc-switch[data-unread="1"]::after { color: #0000fc; }
+@keyframes irc-pulse { 0%, 100% { opacity: 1; transform: scale(1); } 50% { opacity: 0.35; transform: scale(0.7); } }
+
+/* ───────── The MDI area and its windows ───────── */
+
+.irc-mdi { position: relative; flex: 1; min-height: 0; overflow: hidden; box-shadow: var(--irc-in); background: #0b1a44; }
+.irc-mdi-bg { position: absolute; inset: 2px; overflow: hidden; }
+.irc-mdi-bg img { width: 100%; height: 100%; max-width: none; object-fit: cover; animation: irc-pan 80s ease-in-out infinite alternate; }
+@keyframes irc-pan { from { transform: scale(1); } to { transform: scale(1.06) translateX(-1.5%); } }
+/* The drawn stand-in: a 3am sky over a glowing screen. */
+.irc-mdi-night {
+  position: absolute;
+  inset: 0;
+  background:
+    radial-gradient(1px 1px at 22px 34px, #fff, transparent),
+    radial-gradient(1px 1px at 120px 80px, rgba(255, 255, 255, 0.8), transparent),
+    radial-gradient(1.5px 1.5px at 190px 20px, #fff, transparent),
+    radial-gradient(1px 1px at 60px 140px, rgba(255, 255, 255, 0.6), transparent),
+    radial-gradient(1px 1px at 240px 120px, rgba(190, 220, 255, 0.9), transparent),
+    radial-gradient(ellipse 70% 55% at 85% 110%, rgba(84, 170, 255, 0.5), transparent 70%),
+    radial-gradient(ellipse 50% 40% at 10% -10%, rgba(156, 0, 156, 0.28), transparent 70%),
+    linear-gradient(180deg, #050d2c 0%, #0b1d4f 55%, #18397a 100%);
+  background-size: 260px 170px, 260px 170px, 260px 170px, 260px 170px, 260px 170px, auto, auto, auto;
+}
+.irc-mdi-hash {
+  position: absolute;
+  right: 4%;
+  bottom: -18%;
+  font: 700 420px/1 var(--irc-ui);
+  font-style: normal;
+  color: rgba(150, 205, 255, 0.07);
+  text-shadow: 0 0 60px rgba(120, 190, 255, 0.35);
+  transform: rotate(-10deg);
+  user-select: none;
+}
+
+.irc-child {
+  position: absolute;
+  z-index: 1;
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
+  min-height: 0;
+  padding: 3px;
+  background: var(--irc-face);
+  box-shadow: var(--irc-out), 0 14px 34px -10px rgba(0, 0, 0, 0.55);
+}
+.irc-child[data-slot="a"] { inset: 8px 52px 44px 8px; }
+.irc-child[data-slot="b"] { inset: 36px 8px 8px 34px; }
+.irc-child[data-active] { z-index: 2; }
+.irc-child[data-min] { display: none; }
+.irc-mdi[data-max] .irc-child { inset: 2px; padding: 2px; box-shadow: none; }
+/* Hidden, not removed, so lines waiting to slide in keep their timing. */
+.irc-mdi[data-max] .irc-child:not([data-active]) { visibility: hidden; pointer-events: none; }
+
+.irc-childbar {
+  display: flex;
+  flex-shrink: 0;
+  align-items: center;
+  gap: 5px;
+  height: 20px;
+  padding: 0 2px 0 4px;
+  overflow: hidden;
+  font-size: 11.5px;
+  font-weight: 700;
+  color: #d8d4cc;
+  user-select: none;
+  background: linear-gradient(90deg, #808080, #c0c0c0);
+}
+.irc-childbar[data-active] { color: #fff; background: linear-gradient(90deg, var(--irc-navy) 0%, #24508f 50%, var(--irc-sky) 100%); }
+.irc-childbar .irc-cap { width: 16px; height: 14px; }
+.irc-childbar .irc-cap:last-child { margin-left: 2px; }
+
+/* Minimized windows sit on the backdrop, under any window that's open, as in real MDI. */
+.irc-minbar {
+  position: absolute;
+  bottom: 8px;
+  z-index: 0;
+  display: flex;
+  align-items: center;
+  gap: 5px;
+  width: 164px;
+  height: 24px;
+  padding: 0 3px 0 4px;
+  font-size: 11.5px;
+  font-weight: 700;
+  color: #fff;
+  background: linear-gradient(90deg, #808080, #c0c0c0);
+  box-shadow: var(--irc-out), 0 6px 16px -6px rgba(0, 0, 0, 0.6);
+  animation: irc-fade 0.15s ease-out;
+}
+.irc-minbar .irc-cap { width: 16px; height: 14px; margin-left: auto; }
+
+/* ───────── Inside a window ───────── */
+
+.irc-text { font-family: var(--irc-mono); font-size: 16px; line-height: 20px; -webkit-font-smoothing: none; font-smooth: never; }
+
+.irc-topic { display: flex; flex-shrink: 0; align-items: center; gap: 6px; height: 24px; margin-top: 3px; font-size: 11.5px; }
+.irc-topic b { padding-left: 2px; color: var(--irc-navy); }
+.irc-topic-text {
+  flex: 1;
+  min-width: 0;
+  height: 22px;
+  padding: 0 6px;
+  font: 15px/22px var(--irc-mono);
+  -webkit-font-smoothing: none;
+  background: #fff;
+  box-shadow: var(--irc-thin-in);
+  animation: irc-topic 1.8s ease-out;
+}
+@keyframes irc-topic { 0%, 30% { background: #ffffa0; } 100% { background: #fff; } }
+.irc-topic-count { flex-shrink: 0; padding-right: 2px; color: #404040; white-space: nowrap; }
+
+.irc-panes { display: flex; flex: 1; gap: 3px; min-height: 0; margin-top: 3px; }
+.irc-logwrap { position: relative; flex: 1; min-width: 0; overflow: hidden; background: #fff; box-shadow: var(--irc-in); }
+.irc-panes > .irc-log { flex: 1; min-width: 0; background: #fff; box-shadow: var(--irc-in); }
+.irc-log {
+  position: relative;
+  height: 100%;
+  overflow-x: hidden;
+  overflow-y: auto;
+  padding: 4px 7px 30px;
+  scrollbar-color: #b8b4ac var(--irc-face);
+}
+.irc-log-bg { position: absolute; inset: 2px; width: calc(100% - 4px); height: calc(100% - 4px); max-width: none; object-fit: cover; object-position: 100% 100%; opacity: 0.55; pointer-events: none; }
+.irc-logwrap[data-kicked] .irc-log { opacity: 0.5; filter: grayscale(1); transition: opacity 0.2s, filter 0.2s; }
+
+.irc-row { margin: 0; white-space: pre-wrap; overflow-wrap: anywhere; color: #000; }
+.irc-row[data-in] { animation: irc-in 0.18s ease-out both; }
+@keyframes irc-in { from { opacity: 0; transform: translateY(3px); } to { opacity: 1; transform: none; } }
+.irc-ts { color: #7f7f7f; }
+.irc-ts-blank { visibility: hidden; }
+.irc-row[data-tone="action"] { color: #9c009c; }
+.irc-row[data-tone="join"],
+.irc-row[data-tone="part"],
+.irc-row[data-tone="mode"],
+.irc-row[data-tone="topic"],
+.irc-row[data-tone="kick"],
+.irc-row[data-tone="nick"] { color: #009300; }
+.irc-row[data-tone="quit"],
+.irc-row[data-tone="info"] { color: #00007f; }
+.irc-row[data-tone="info2"] { color: #0000fc; }
+.irc-row[data-tone="notice"],
+.irc-row[data-tone="server"] { color: #7f0000; }
+.irc-row[data-tone="ctcp"],
+.irc-row[data-tone="error"] { color: #fc0000; }
+.irc-row[data-tone] .irc-ts { color: #7f7f7f; }
+/* Someone said your nick: a modern highlight band, mIRC's red. */
+.irc-row[data-hl] { margin: 0 -7px; padding: 0 7px; background: linear-gradient(90deg, rgba(252, 0, 0, 0.1), rgba(252, 0, 0, 0) 85%); box-shadow: inset 3px 0 #fc0000; }
+.irc-url { color: #0000fc; text-decoration: underline; text-underline-offset: 2px; }
+[data-light] { text-shadow: 1px 1px 0 rgba(0, 0, 0, 0.45); }
+.irc-pre { margin: 0; font: inherit; white-space: pre; overflow-x: auto; scrollbar-width: none; }
+.irc-rainbow {
+  width: max-content;
+  color: transparent;
+  background: linear-gradient(90deg, #fc0000, #fc7f00 20%, #d9b800 38%, #009300 55%, #0000fc 75%, #9c009c);
+  -webkit-background-clip: text;
+  background-clip: text;
+}
+
+/* "nick is typing...", which IRC never had. */
+.irc-typing {
+  position: absolute;
+  bottom: 6px;
+  left: 8px;
+  z-index: 2;
+  padding: 0 8px;
+  font-size: 14px;
+  line-height: 20px;
+  color: #6f6f6f;
+  background: rgba(255, 255, 255, 0.94);
+  border: 1px solid #c8c4bc;
+  box-shadow: 0 3px 8px rgba(0, 0, 0, 0.08);
+  animation: irc-in 0.2s ease-out both;
+}
+.irc-pen { display: inline-block; width: 7px; height: 12px; margin-right: 2px; vertical-align: -1px; background: currentColor; animation: irc-blink 1.05s steps(1) infinite; }
+.irc-pen-sm { width: 5px; height: 10px; margin-left: 3px; color: #2a45c4; }
+.irc-nicks button[data-sel] .irc-pen-sm { color: #fff; }
+.irc-dots i { font-style: normal; animation: irc-dot 1.2s infinite; }
+.irc-dots i:nth-child(2) { animation-delay: 0.2s; }
+.irc-dots i:nth-child(3) { animation-delay: 0.4s; }
+@keyframes irc-blink { 50% { opacity: 0; } }
+@keyframes irc-dot { 0%, 60%, 100% { opacity: 0.2; } 30% { opacity: 1; } }
+
+/* The nick list */
+.irc-nicks {
+  flex-shrink: 0;
+  width: 160px;
+  margin: 0;
+  padding: 3px 2px;
+  overflow-y: auto;
+  list-style: none;
+  background: #fff;
+  box-shadow: var(--irc-in);
+  font-size: 15px;
+}
+.irc-nicks button { display: flex; align-items: center; width: 100%; height: 19px; padding: 0 3px; text-align: left; }
+.irc-nicks button:hover { background: #e6ecf8; }
+.irc-nicks button[data-sel] { color: #fff; background: var(--irc-navy); outline: 1px dotted #fff; outline-offset: -1px; }
+.irc-nicks button[data-away] { color: #8a8a8a; }
+.irc-nicks li { animation: irc-fade 0.3s ease-out; }
+.irc-mode { flex-shrink: 0; min-width: 9px; }
+.irc-nick-gpty { display: grid; flex-shrink: 0; place-items: center; width: 16px; height: 16px; margin-left: 4px; }
+
+/* The edit box */
+.irc-inputrow { position: relative; display: flex; flex-shrink: 0; gap: 3px; margin-top: 3px; }
+.irc-input {
+  flex: 1;
+  min-width: 0;
+  height: 26px;
+  padding: 0 7px;
+  color: #000;
+  background: #fff;
+  border: 0;
+  outline: 0;
+  box-shadow: var(--irc-in);
+  font-size: 16px;
+}
+.irc-input::placeholder { color: #a9a59d; }
+.irc-input-idle { display: block; }
+.irc-palette-btn { display: grid; flex-shrink: 0; place-items: center; width: 26px; height: 26px; background: var(--irc-face); box-shadow: var(--irc-out); }
+.irc-palette-btn:active { box-shadow: var(--irc-in); }
+.irc-palette-btn span { width: 12px; height: 12px; border: 1px solid #000; box-shadow: 2px 2px 0 #fc0000, 4px 4px 0 #0000fc; translate: -2px -2px; }
+.irc-palette {
+  position: absolute;
+  right: 0;
+  bottom: calc(100% + 4px);
+  z-index: 30;
+  padding: 5px;
+  background: var(--irc-face);
+  box-shadow: var(--irc-out), 3px 5px 14px rgba(0, 0, 0, 0.32);
+  animation: irc-fade 0.12s ease-out;
+}
+.irc-palette-grid { display: grid; grid-template-columns: repeat(8, 24px); gap: 2px; margin-bottom: 5px; }
+.irc-palette-grid button { display: grid; place-items: center; height: 20px; box-shadow: inset 0 0 0 1px #000; font: 11px var(--irc-mono); }
+.irc-palette-grid button[aria-pressed="true"] { outline: 2px solid #000; outline-offset: 1px; }
+.irc-palette-inline { margin: 2px 0 0; }
+
+/* /help, /list, /whois */
+.irc-block { margin: 4px -7px; padding: 4px 7px 6px; background: linear-gradient(90deg, #eef2fb, rgba(238, 242, 251, 0) 90%); box-shadow: inset 3px 0 var(--irc-navy); }
+.irc-block-title { margin-bottom: 2px; color: #00007f; }
+.irc-block button { display: flex; gap: 12px; width: 100%; padding: 0 4px; text-align: left; white-space: nowrap; }
+.irc-block button:hover { color: #fff; background: var(--irc-navy); }
+.irc-block button:hover * { color: #fff; }
+.irc-block-cmd { flex-shrink: 0; min-width: 17ch; color: #9c009c; }
+.irc-block-num { flex-shrink: 0; width: 4ch; text-align: right; color: #009300; }
+.irc-block-foot { margin-top: 4px; font-size: 14px; color: #7f7f7f; }
+
+.irc-whois { display: flex; gap: 10px; align-items: flex-start; max-width: 620px; margin: 4px 0; padding: 6px; background: #f6f4f0; border: 1px solid #c8c4bc; }
+.irc-whois-pic { display: grid; flex-shrink: 0; place-items: center; width: 80px; height: 80px; overflow: hidden; background: radial-gradient(circle at 50% 35%, #3b5fb0, #0a1a48 75%); box-shadow: var(--irc-in); }
+.irc-whois-pic img { width: 100%; height: 100%; object-fit: cover; }
+.irc-whois pre { min-width: 0; margin: 0; font: inherit; white-space: pre-wrap; overflow-wrap: anywhere; color: #00007f; }
+
+/* DCC Send: Windows 2000's segmented progress bar, crawling. */
+.irc-dcc { display: flex; align-items: center; gap: 8px; max-width: 520px; margin: 2px 0 2px 2ch; font-size: 14px; color: #000; }
+.irc-dcc-bar { flex-shrink: 0; width: 150px; height: 14px; padding: 2px; background: #fff; box-shadow: var(--irc-thin-in); }
+.irc-dcc-bar i { display: block; width: 0; height: 100%; background: repeating-linear-gradient(90deg, var(--irc-navy) 0 8px, transparent 8px 10px); }
+.irc-dcc[data-state="sending"] .irc-dcc-bar i { animation: irc-crawl 7.2s linear forwards; }
+.irc-dcc[data-state="failed"] .irc-dcc-bar i { width: 14%; background: repeating-linear-gradient(90deg, #c00000 0 8px, transparent 8px 10px); }
+.irc-dcc[data-state="failed"] { color: #c00000; }
+.irc-dcc[data-state="canceled"] { color: #7f7f7f; }
+@keyframes irc-crawl { from { width: 2%; } to { width: 14%; } }
+
+/* ───────── The large trout ───────── */
+
+.irc-trout { position: absolute; top: 30%; z-index: 6; width: 170px; pointer-events: none; animation: irc-trout-out 1.25s cubic-bezier(0.3, 0.1, 0.3, 1) forwards; }
+.irc-trout[data-dir="in"] { animation-name: irc-trout-in; }
+.irc-trout[data-dir="in"] .irc-trout-img { transform: scaleX(-1); }
+.irc-trout-img { display: block; width: 100%; height: auto; filter: drop-shadow(0 8px 10px rgba(0, 0, 0, 0.28)); }
+.irc-trout::after {
+  content: "*SLAP*";
+  position: absolute;
+  top: -18px;
+  font: 22px/1 var(--irc-mono);
+  color: #fc0000;
+  text-shadow: 2px 2px 0 #ffff00, -1px -1px 0 #ffff00;
+  opacity: 0;
+  animation: irc-slap 1.25s ease-out forwards;
+}
+.irc-trout[data-dir="out"]::after { right: -30px; }
+.irc-trout[data-dir="in"]::after { left: -30px; }
+@keyframes irc-trout-out {
+  0% { left: -200px; transform: translateY(40px) rotate(-28deg); opacity: 0; }
+  12% { opacity: 1; }
+  50% { left: calc(100% - 215px); transform: translateY(-16px) rotate(12deg); }
+  58% { left: calc(100% - 190px); transform: translateY(-2px) rotate(-16deg); }
+  72% { left: calc(100% - 200px); transform: translateY(2px) rotate(4deg); opacity: 1; }
+  100% { left: calc(100% - 190px); transform: translateY(110px) rotate(80deg); opacity: 0; }
+}
+@keyframes irc-trout-in {
+  0% { left: calc(100% + 30px); transform: translateY(40px) rotate(28deg); opacity: 0; }
+  12% { opacity: 1; }
+  50% { left: 40px; transform: translateY(-16px) rotate(-12deg); }
+  58% { left: 16px; transform: translateY(-2px) rotate(16deg); }
+  72% { left: 26px; transform: translateY(2px) rotate(-4deg); opacity: 1; }
+  100% { left: 16px; transform: translateY(110px) rotate(-80deg); opacity: 0; }
+}
+@keyframes irc-slap { 0%, 52% { opacity: 0; transform: scale(0.4); } 58% { opacity: 1; transform: scale(1.25) rotate(-6deg); } 82% { opacity: 1; transform: scale(1) rotate(-6deg); } 100% { opacity: 0; transform: scale(1) rotate(-6deg); } }
+
+/* ───────── Status bar, tray and balloon ───────── */
+
+.irc-statusbar { display: flex; flex-shrink: 0; align-items: stretch; gap: 2px; height: 22px; margin-top: 3px; font-size: 11px; }
+.irc-panel { display: flex; align-items: center; gap: 5px; padding: 0 7px; white-space: nowrap; box-shadow: var(--irc-thin-in); }
+.irc-panel-grow { flex: 1; min-width: 0; }
+.irc-away { color: #7f7f7f; }
+.irc-lag { font-variant-numeric: tabular-nums; }
+.irc-lag[data-bad] { color: #c00000; }
+.irc-y2k { font-variant-numeric: tabular-nums; }
+.irc-tray { gap: 6px; padding: 0 8px 0 6px; }
+.irc-tray time { font-variant-numeric: tabular-nums; }
+.irc-modem { width: 20px; height: 16px; }
+.irc-grip {
+  flex-shrink: 0;
+  width: 13px;
+  align-self: flex-end;
+  height: 13px;
+  background:
+    linear-gradient(135deg, transparent 0 45%, #fff 45% 52%, #808080 52% 62%, transparent 62% 70%, #fff 70% 77%, #808080 77% 87%, transparent 87%);
+}
+
+.irc-balloon {
+  position: absolute;
+  right: 22px;
+  bottom: 38px;
+  z-index: 80;
+  width: 270px;
+  max-width: calc(100% - 30px);
+  padding: 7px 8px 9px 10px;
+  font-size: 11.5px;
+  line-height: 1.4;
+  color: #000;
+  background: #ffffe1;
+  border: 1px solid #000;
+  border-radius: 8px;
+  box-shadow: 3px 5px 14px rgba(0, 0, 0, 0.32);
+  animation: irc-balloon 7s ease forwards;
+}
+.irc-balloon::before,
+.irc-balloon::after { content: ""; position: absolute; right: 40px; clip-path: polygon(0 0, 100% 0, 82% 100%); }
+.irc-balloon::before { bottom: -15px; width: 20px; height: 15px; background: #000; }
+.irc-balloon::after { bottom: -13px; right: 41px; width: 18px; height: 14px; background: #ffffe1; }
+.irc-balloon-head { display: flex; align-items: center; gap: 6px; margin-bottom: 3px; }
+.irc-balloon-head button { display: grid; place-items: center; width: 16px; height: 15px; margin-left: auto; border: 1px solid transparent; border-radius: 2px; }
+.irc-balloon-head button:hover { border-color: #808080; background: #fff; }
+.irc-balloon-head .irc-glyph { width: 7px; height: 7px; }
+@keyframes irc-balloon { 0% { opacity: 0; transform: translateY(8px); } 4%, 92% { opacity: 1; transform: none; } 100% { opacity: 0; transform: none; } }
+
+/* ───────── Dialogs ───────── */
+
+.irc-dialog-wrap { position: absolute; inset: 0; z-index: 40; display: grid; place-items: center; padding: 12px; background: rgba(4, 10, 40, 0.18); animation: irc-fade 0.15s ease-out; }
+.irc-dialog {
+  width: min(400px, 100%);
+  padding: 3px;
+  background: var(--irc-face);
+  box-shadow: var(--irc-out), 0 24px 60px -16px rgba(0, 0, 0, 0.6);
+  animation: irc-pop 0.16s cubic-bezier(0.3, 1.3, 0.5, 1);
+}
+@keyframes irc-pop { from { opacity: 0; transform: scale(0.96); } to { opacity: 1; transform: none; } }
+.irc-dialog-body { display: flex; gap: 14px; padding: 16px 16px 6px; line-height: 1.5; }
+.irc-dialog-body p + p { margin-top: 6px; }
+.irc-dialog-fine { display: block; margin-top: 6px; font-size: 11px; color: #505050; }
+.irc-dialog-btns { display: flex; justify-content: flex-end; gap: 6px; padding: 10px 10px 8px; }
+.irc-btn { min-width: 76px; height: 23px; padding: 0 10px; background: var(--irc-face); box-shadow: var(--irc-out); }
+.irc-btn:active:not(:disabled) { box-shadow: var(--irc-in); }
+.irc-btn-default { box-shadow: 0 0 0 1px #000, var(--irc-out); }
+.irc-btn-sm { min-width: 0; height: 19px; padding: 0 7px; font: 11px var(--irc-ui); }
+.irc-options { display: grid; gap: 8px; padding: 10px 12px 2px; }
+.irc-options fieldset { padding: 3px 9px 8px; border: 1px solid #808080; box-shadow: 1px 1px #fff, inset 1px 1px #fff; }
+.irc-options legend { padding: 0 3px; }
+.irc-field { display: flex; align-items: center; gap: 8px; }
+.irc-field input { flex: 1; min-width: 0; height: 21px; padding: 0 5px; background: #fff; box-shadow: var(--irc-in); outline: 0; }
+.irc-field input:disabled { background: var(--irc-face); color: #808080; }
+.irc-checkbox { display: flex; align-items: center; gap: 6px; height: 20px; }
+.irc-checkbox input { width: 13px; height: 13px; accent-color: var(--irc-navy); }
+
+/* ───────── Small and short screens ───────── */
+
+@container irc (max-width: 900px) {
+  .irc-online { display: none; }
+  .irc-nicks { width: 136px; }
+}
+@container irc (max-width: 660px) {
+  .irc-nicks, .irc-topic-count, .irc-lag, .irc-sep { display: none; }
+  .irc-switch { flex: 1; width: auto; }
+  .irc-tool { width: 28px; }
+  .irc-text { font-size: 15px; }
+}
+@container irc (max-width: 470px) {
+  .irc-tool[data-id="chat"], .irc-tool[data-id="notify"], .irc-tool[data-id="options"] { display: none; }
+  .irc-panel-grow, .irc-mdi-caps { display: none; }
+  .irc-y2k { flex: 1; }
+  .irc-menubar { overflow-x: auto; scrollbar-width: none; }
+  .irc-menubar > div > button { padding: 0 5px; }
+}
+@media (max-height: 700px) {
+  .irc-switchbar { display: none; }
+  .irc-toolbar { height: 30px; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .irc *, .irc *::before, .irc *::after { animation: none !important; transition: none !important; }
+  .irc-balloon { animation: irc-balloon 7s linear forwards !important; }
+  .irc-trout { display: none; }
+}
+
+/* ───────── The open mIRC agent in the sidebar ───────── */
+
+.irc-pick {
+  position: relative;
+  display: flex;
+  align-items: center;
+  gap: 11px;
+  width: 100%;
+  padding: 3px;
+  text-align: left;
+  font-family: Tahoma, "Segoe UI", Verdana, sans-serif;
+  color: #fff;
+  text-shadow: none;
+  background: #d4d0c8;
+  box-shadow:
+    inset -1px -1px #404040, inset 1px 1px #fff, inset -2px -2px #808080, inset 2px 2px #e8e6e2,
+    0 12px 26px -12px rgba(0, 0, 0, 0.7);
+  animation: irc-pick-in 0.28s cubic-bezier(0.3, 1.4, 0.5, 1);
+}
+.irc-pick-inner {
+  display: flex;
+  flex: 1;
+  align-items: center;
+  gap: 10px;
+  min-width: 0;
+  padding: 5px 10px 5px 6px;
+  background: linear-gradient(90deg, #0a246a 0%, #24508f 55%, #6f9fd4 100%);
+}
+.irc-pick:hover .irc-pick-inner { background: linear-gradient(90deg, #0d2c80 0%, #2c5ea6 55%, #86b2e2 100%); }
+.irc-pick:focus-visible { outline: 2px solid #fff; outline-offset: 2px; }
+.irc-pick-av { display: grid; flex-shrink: 0; place-items: center; width: 34px; height: 34px; background: radial-gradient(circle at 50% 35%, #3b5fb0, #0a1a48 75%); box-shadow: inset 1px 1px #404040, inset -1px -1px #fff; }
+.irc-pick-name { display: flex; align-items: baseline; gap: 6px; min-width: 0; font-size: 14px; font-weight: 700; line-height: 1.25; }
+.irc-pick-tag { flex-shrink: 0; font-size: 11px; font-weight: 400; color: #cfe2fa; }
+.irc-pick-sub { display: block; margin-top: 1px; overflow: hidden; font: 13px/16px var(--font-irc-pixel), "Lucida Console", monospace; white-space: nowrap; text-overflow: ellipsis; color: #e4eefb; -webkit-font-smoothing: none; }
+.irc-pick-sub .irc-pen { color: #fff; }
+@keyframes irc-pick-in { from { transform: scale(0.97); opacity: 0.5; } to { transform: none; opacity: 1; } }
+@media (prefers-reduced-motion: reduce) {
+  .irc-pick, .irc-pick * { animation: none !important; transition: none !important; }
+}

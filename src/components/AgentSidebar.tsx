@@ -2,7 +2,7 @@
 
 import { ArrowUpRight, Info } from "lucide-react";
 import { AGENTS, type Agent, agentEra } from "@/lib/agents";
-import { ACTIVE_ROWS, HOVER_BADGES } from "./activeRows";
+import { ACTIVE_ROWS } from "./activeRows";
 import { Gpty, type Mood } from "./Gpty";
 
 /** Each agent is a little gpty: its own shape and color, with eyes. */
@@ -93,8 +93,8 @@ export function AgentSidebar({
           </a>
           <button
             onClick={onAbout}
-            aria-label={`About ${current?.name ?? "this gpty"}`}
-            title={`About ${current?.name ?? "this gpty"}`}
+            aria-label={`About ${current?.name ?? "this Gpty"}`}
+            title={`About ${current?.name ?? "this Gpty"}`}
             className="grid h-8 w-8 place-items-center rounded-lg transition-colors hover:bg-[var(--shell-hover)] hover:text-[var(--shell-text)]"
           >
             <Info className="h-[18px] w-[18px]" />
@@ -114,19 +114,24 @@ export function AgentSidebar({
           }`}
         >
           <Family />
-          <span className="min-w-0 flex-1 truncate text-[15px] font-medium tracking-wide">Meet the gptys</span>
+          <span className="min-w-0 flex-1 truncate text-[15px] font-medium tracking-wide">Meet the Gptys</span>
         </button>
       </div>
 
       <nav className="no-scrollbar min-h-0 flex-1 overflow-y-auto px-3 pb-3 pt-3" aria-label="Agents">
         <ul className="space-y-0.5">
-          {AGENTS.map((a) => {
+          {/* Hidden agents stay out of the list unless one is open (e.g. via its URL). */}
+          {AGENTS.filter((a) => !a.hidden || a.id === agentId).flatMap((a, i, shown) => {
+            // A hairline between the real chat apps and the stylized worlds (Grug on).
+            const divider = a.themed && i > 0 && !shown[i - 1].themed && (
+              <li key={`${a.id}-divider`} role="separator" aria-hidden className="mx-3 my-2 h-px bg-[var(--shell-ring)]" />
+            );
             const open = !meet && a.id === agentId;
             // The open agent can dress its row as its own app.
             const Themed = open ? ACTIVE_ROWS[a.id] : undefined;
-            const Badge = HOVER_BADGES[a.id];
             if (Themed) {
-              return (
+              return [
+                divider,
                 <li key={a.id}>
                   <Themed
                     agent={a}
@@ -135,10 +140,11 @@ export function AgentSidebar({
                     aria-current={isDraft ? "page" : undefined}
                     title={`New chat with ${a.name}`}
                   />
-                </li>
-              );
+                </li>,
+              ];
             }
-            return (
+            return [
+              divider,
               <li key={a.id}>
                 <button
                   onClick={() => onOpenAgent(a.id)}
@@ -152,19 +158,15 @@ export function AgentSidebar({
                 >
                   <AgentAvatar agent={a} mood={open ? mood : "idle"} />
                   <span className="shrink-0 text-[16px] font-medium tracking-wide">{a.name}</span>
-                  {/* On hover: the app this gpty lives in, as its own badge if it has one. It truncates, never the name. */}
-                  {Badge ? (
-                    <span className="ml-auto flex shrink-0 opacity-0 transition-opacity duration-150 group-hover:opacity-100 group-focus-visible:opacity-100">
-                      <Badge agent={a} />
+                  {/* On hover: the app this gpty lives in. It truncates, never the name. */}
+                  <span className="shell-badge ml-auto min-w-0 text-[12px] font-medium text-[var(--shell-soft)] opacity-0 transition-opacity duration-150 group-hover:opacity-100 group-focus-visible:opacity-100">
+                    <span className="truncate">
+                      {a.costume.short ? `${a.costume.short} · ${a.costume.year}` : agentEra(a)}
                     </span>
-                  ) : (
-                    <span className="ml-auto min-w-0 truncate text-[12px] text-[var(--shell-muted)] opacity-0 transition-opacity duration-150 group-hover:opacity-100 group-focus-visible:opacity-100">
-                      {agentEra(a)}
-                    </span>
-                  )}
+                  </span>
                 </button>
-              </li>
-            );
+              </li>,
+            ];
           })}
         </ul>
       </nav>

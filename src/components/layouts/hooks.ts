@@ -57,18 +57,21 @@ export function useOnNewReply(
   }, [lastReplyId]);
 }
 
-/** Where each costume's window was dragged to, so it stays put across chats. */
-const spots = new Map<string, { x: number; y: number }>();
+/** Sent when the chat window appears (a new agent, chat or a return from the
+ * Meet page), so a window that was dragged away goes back to the center. */
+export const WINDOW_APPEAR = "gpty:window-appear";
 
 /**
  * Lets a window that's smaller than the chat area be dragged around it by its
  * title bar, like a window on a desktop. Put `ref` on the window and spread
  * `handle` on the title bar; double-click the title bar to put it back. The
- * window can't leave its container. Moves with the CSS `translate` property,
- * so transform animations (MSN's nudge shake) still work on top.
+ * window can't leave its container, and it always appears centered: where it
+ * was dragged to is forgotten when it closes. Moves with the CSS `translate`
+ * property, so transform animations (MSN's nudge shake) still work on top.
  */
-export function useDesktopDrag<T extends HTMLElement>(key: string) {
+export function useDesktopDrag<T extends HTMLElement>() {
   const ref = useRef<T>(null);
+  const spot = useRef({ x: 0, y: 0 });
   const drag = useRef<{ id: number; x: number; y: number; from: { x: number; y: number } } | null>(null);
 
   /** Moves the window to `p`, kept inside its container. */
@@ -77,7 +80,7 @@ export function useDesktopDrag<T extends HTMLElement>(key: string) {
       const el = ref.current;
       const box = el?.parentElement;
       if (!el || !box) return;
-      const now = spots.get(key) ?? { x: 0, y: 0 };
+      const now = spot.current;
       const r = el.getBoundingClientRect();
       const b = box.getBoundingClientRect();
       // Where the window sits with no offset.
@@ -85,28 +88,35 @@ export function useDesktopDrag<T extends HTMLElement>(key: string) {
       const top = r.top - now.y;
       const clamp = (v: number, min: number, max: number) => Math.round(Math.min(Math.max(v, Math.min(min, 0)), Math.max(max, 0)));
       const next = { x: clamp(p.x, b.left - left, b.right - (left + r.width)), y: clamp(p.y, b.top - top, b.bottom - (top + r.height)) };
-      spots.set(key, next);
+      spot.current = next;
       el.style.translate = next.x || next.y ? `${next.x}px ${next.y}px` : "";
     },
-    [key],
+    [],
   );
 
-  // Restore the last spot, and keep the window inside when the area resizes.
+  // Keep the window inside when the area resizes.
   useLayoutEffect(() => {
     const box = ref.current?.parentElement;
-    place(spots.get(key) ?? { x: 0, y: 0 });
     if (!box) return;
-    const ro = new ResizeObserver(() => place(spots.get(key) ?? { x: 0, y: 0 }));
+    const ro = new ResizeObserver(() => place(spot.current));
     ro.observe(box);
-    return () => ro.disconnect();
-  }, [key, place]);
+    const recenter = () => {
+      spot.current = { x: 0, y: 0 };
+      if (ref.current) ref.current.style.translate = "";
+    };
+    window.addEventListener(WINDOW_APPEAR, recenter);
+    return () => {
+      ro.disconnect();
+      window.removeEventListener(WINDOW_APPEAR, recenter);
+    };
+  }, [place]);
 
   const handle = {
     onPointerDown(e: React.PointerEvent<HTMLElement>) {
       // Buttons in the title bar stay clickable.
       if (e.button !== 0 || (e.target as HTMLElement).closest("button, a, input, textarea")) return;
       e.currentTarget.setPointerCapture(e.pointerId);
-      drag.current = { id: e.pointerId, x: e.clientX, y: e.clientY, from: spots.get(key) ?? { x: 0, y: 0 } };
+      drag.current = { id: e.pointerId, x: e.clientX, y: e.clientY, from: spot.current };
       ref.current?.setAttribute("data-dragging", "");
     },
     onPointerMove(e: React.PointerEvent<HTMLElement>) {

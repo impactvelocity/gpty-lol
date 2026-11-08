@@ -1,0 +1,617 @@
+/*
+ * Mortimer's séance, 1888. No window: a candlelit spirit board floats in a
+ * dark room, engraved in antique gold and bone on warm charcoal, seen
+ * through old film. The board, the candles, the words and your question all
+ * hang in the air. Everything is scoped under .seance (or an sp- class) so
+ * it can't leak into the other costumes.
+ */
+
+.seance {
+  --sp-sc: var(--font-fell-sc), "IM Fell English SC", "Iowan Old Style", Georgia, serif;
+  --sp-serif: var(--font-fell), "IM Fell English", "Iowan Old Style", Georgia, serif;
+  --sp-char: #110e0c;
+  --sp-bone: #ece3cf;
+  --sp-bone-2: rgba(236, 227, 207, 0.8);
+  --sp-mute: #a99c86;
+  --sp-line: rgba(201, 165, 90, 0.3);
+  --sp-gold: #c9a55a;
+  --sp-gold-hi: #e2c27e;
+  --sp-ember: #ff6a2b;
+  --sp-ember-hi: #ffe2b8;
+  --sp-blood: #d0503f;
+  --sp-oxblood: #5e140e;
+  font-family: var(--sp-serif);
+  color: var(--sp-bone);
+  -webkit-font-smoothing: antialiased;
+}
+.seance ::selection { background: rgba(201, 165, 90, 0.38); color: #fff8e8; }
+.seance :focus-visible { outline: 1px solid var(--sp-gold-hi); outline-offset: 3px; }
+.seance button { cursor: pointer; }
+.seance button:disabled { cursor: default; }
+/* The site gives headers and navs an ink shadow for its own sidebar; not in here. */
+.seance header, .seance nav, .seance aside { text-shadow: none; }
+
+.sp-desk { display: flex; height: 100%; align-items: center; justify-content: center; }
+
+/* ───────── The room: no window, just darkness ───────── */
+
+.sp-window {
+  position: relative;
+  isolation: isolate;
+  display: flex;
+  width: 100%;
+  height: 100%;
+  /* Clipped without becoming a scroller, so nothing floating can nudge the page. */
+  overflow: clip;
+  container: sp / size;
+}
+/* Pale smoke along the floor; it rises while a spirit speaks. */
+.sp-mist { position: absolute; inset: 0; z-index: 0; overflow: hidden; pointer-events: none; opacity: 0.6; transition: opacity 1.4s ease; -webkit-mask-image: radial-gradient(closest-side, #000 40%, transparent 100%); mask-image: radial-gradient(closest-side, #000 40%, transparent 100%); }
+.sp-mist i {
+  position: absolute;
+  bottom: -20%;
+  width: 70%;
+  height: 46%;
+  border-radius: 50%;
+  background: radial-gradient(closest-side, rgba(236, 227, 207, 0.07), rgba(236, 227, 207, 0.02) 60%, transparent);
+  filter: blur(12px);
+  animation: sp-mist 34s ease-in-out infinite alternate;
+}
+.sp-mist i:nth-child(1) { left: -18%; }
+.sp-mist i:nth-child(2) { left: 32%; bottom: -26%; animation-duration: 46s; animation-delay: -12s; }
+.sp-mist i:nth-child(3) { left: 52%; bottom: 26%; width: 50%; height: 30%; opacity: 0.6; animation-duration: 58s; animation-delay: -30s; }
+@keyframes sp-mist { from { transform: translateX(-8%) scale(1); } to { transform: translateX(12%) scale(1.15); } }
+.sp-window[data-live] .sp-mist { opacity: 1; }
+.sp-window[data-closed] .sp-mist { opacity: 0.25; }
+
+/* Shared line and fill colors for the drawings. */
+.seance .sp-bone-line { stroke: var(--sp-bone); }
+.seance .sp-gold-line { stroke: var(--sp-gold); }
+.seance .sp-bone-fill { fill: var(--sp-bone); }
+.seance .sp-gold-fill { fill: var(--sp-gold); }
+.seance .sp-dots { fill: none; stroke: var(--sp-gold); stroke-width: 1.8; stroke-dasharray: 0.1 9; stroke-linecap: round; opacity: 0.55; }
+.sp-twinkle { transform-box: fill-box; transform-origin: center; animation: sp-twinkle 3.2s ease-in-out infinite; }
+@keyframes sp-twinkle { 0%, 100% { opacity: 0.25; transform: scale(0.72); } 50% { opacity: 1; transform: scale(1); } }
+@keyframes sp-spin { to { transform: rotate(360deg); } }
+
+/* Everything that floats bobs on its own slow breath. `translate`, so it stacks with other transforms. */
+@keyframes sp-hover { 0%, 100% { translate: 0 0; } 50% { translate: 0 -5px; } }
+@keyframes sp-levitate { 0%, 100% { translate: 0 0; rotate: -0.25deg; } 50% { translate: 0 -12px; rotate: 0.3deg; } }
+
+/* ───────── The medium's ledger (threads; the site hides these) ───────── */
+
+.sp-ledger { position: relative; z-index: 2; display: flex; width: 230px; flex: none; flex-direction: column; padding: 22px 12px 18px 22px; }
+.sp-ledger-new { display: flex; align-items: center; gap: 8px; height: 36px; padding: 0 8px; font-family: var(--sp-sc); font-size: 15px; letter-spacing: 0.1em; color: var(--sp-gold-hi); }
+.sp-ledger-new .sp-ic { width: 18px; height: 18px; }
+.sp-ledger-list { min-height: 0; flex: 1; overflow-y: auto; margin-top: 8px; }
+.sp-ledger-h { padding: 12px 8px 4px; font-family: var(--sp-sc); font-size: 12px; letter-spacing: 0.22em; color: var(--sp-mute); }
+.sp-ledger-row { display: flex; align-items: center; }
+.sp-ledger-row[data-on] .sp-ledger-t { color: var(--sp-gold-hi); }
+.sp-ledger-t { min-width: 0; flex: 1; overflow: hidden; padding: 6px 8px; font-style: italic; font-size: 15px; text-align: left; text-overflow: ellipsis; white-space: nowrap; color: var(--sp-bone-2); }
+.sp-ledger-x { display: none; padding: 0 4px; color: var(--sp-mute); }
+.sp-ledger-row:hover .sp-ledger-x { display: block; }
+
+.sp-main { position: relative; z-index: 2; display: flex; min-width: 0; flex: 1; flex-direction: column; }
+
+/* ───────── The board, levitating ───────── */
+
+.sp-stage { position: relative; z-index: 3; display: flex; flex: none; flex-direction: column; align-items: center; padding: 28px 28px 0; }
+.sp-float { display: flex; width: 100%; justify-content: center; animation: sp-levitate 8s ease-in-out infinite; }
+/* Sized by width (the board's height follows), from about 40% of the room's height. */
+.sp-boardwrap {
+  position: relative;
+  width: min(100%, clamp(375px, 80cqh, 780px));
+  aspect-ratio: 1000 / 480;
+}
+.sp-main[data-empty] .sp-boardwrap { width: min(100%, clamp(416px, 86cqh, 860px)); }
+/* Its shadow on the floor, shrinking as it rises. */
+.sp-shadow {
+  width: min(62%, 520px);
+  height: 22px;
+  margin-top: -2px;
+  border-radius: 50%;
+  background: radial-gradient(closest-side, rgba(0, 0, 0, 0.75), transparent);
+  animation: sp-shadow 8s ease-in-out infinite;
+}
+@keyframes sp-shadow { 0%, 100% { scale: 1 1; opacity: 0.8; } 50% { scale: 0.84 0.8; opacity: 0.45; } }
+
+.sp-board { display: block; width: 100%; height: 100%; overflow: visible; }
+.sp-board-fill { fill: url(#sp-board-grad); filter: drop-shadow(0 26px 34px rgba(0, 0, 0, 0.7)); }
+.sp-burst { fill: none; stroke: var(--sp-gold); stroke-width: 0.8; opacity: 0.08; }
+.sp-sun-rays { transform-box: fill-box; transform-origin: center; animation: sp-spin 160s linear infinite; }
+
+.sp-glyph { font-family: var(--sp-sc); fill: var(--sp-bone); transition: fill 1.4s ease; }
+.sp-key { cursor: pointer; outline: none; }
+.sp-board[data-disabled] .sp-key { cursor: default; }
+.sp-board:not([data-disabled]) .sp-key:hover .sp-glyph { fill: #fff6e2; transition-duration: 0.2s; }
+.sp-key[data-on] .sp-glyph { fill: var(--sp-ember-hi); filter: url(#sp-ember); transition: fill 0.2s ease; }
+.sp-word-t { letter-spacing: 5px; fill: var(--sp-gold-hi); }
+.sp-hit { fill: transparent; }
+.sp-bracket { fill: none; stroke: var(--sp-gold); stroke-width: 1.4; transition: stroke 1s ease; }
+.sp-word[data-on] .sp-bracket { stroke: var(--sp-ember); transition-duration: 0.2s; }
+.sp-word:focus-visible .sp-bracket { stroke: var(--sp-ember-hi); stroke-width: 2.2; }
+.sp-board:not([data-disabled]) .sp-word:hover .sp-bracket { stroke: var(--sp-gold-hi); }
+
+.sp-eye-white { fill: #141110; }
+.sp-iris { fill: #1c1713; stroke: var(--sp-gold); stroke-width: 1.4; }
+.sp-pupil { fill: #070505; stroke: var(--sp-bone); stroke-width: 1; transition: r 0.6s ease; }
+.sp-window[data-live] .sp-pupil { r: 9.5px; }
+.sp-blink { transform-box: fill-box; transform-origin: center; animation: sp-blink 7s infinite; }
+@keyframes sp-blink { 0%, 94%, 100% { transform: scaleY(1); } 95.5% { transform: scaleY(0.06); } }
+
+.sp-plan { pointer-events: none; }
+.sp-plan-glass { fill: rgba(24, 19, 16, 0.84); }
+.sp-lens-back { fill: #0c0908; }
+.sp-lens-ring { transition: stroke 0.3s ease; }
+.sp-plan[data-reading] .sp-lens-ring { stroke: var(--sp-ember); filter: url(#sp-ember); }
+
+.sp-ripples circle { fill: none; stroke: var(--sp-ember); stroke-width: 1.3; opacity: 0; vector-effect: non-scaling-stroke; }
+
+/* ───────── Candles, floating beside the board ───────── */
+
+.sp-candle { position: absolute; bottom: -1%; z-index: 1; width: 104px; pointer-events: none; animation: sp-hover 6s ease-in-out infinite; }
+.sp-candle[data-side="l"] { right: calc(100% + 4px); }
+.sp-candle[data-side="r"] { left: calc(100% + 4px); animation-delay: -2.6s; animation-duration: 7s; }
+.sp-candles { display: block; width: 100%; height: auto; overflow: visible; }
+.seance .sp-wax { fill: var(--sp-char); }
+.sp-halo { opacity: 0; transition: opacity 0.6s ease; }
+.sp-halo[data-on] { opacity: 1; }
+.sp-halo circle { animation: sp-candle-glow 2.4s ease-in-out infinite; }
+@keyframes sp-candle-glow { 0%, 100% { opacity: 1; } 30% { opacity: 0.78; } 55% { opacity: 0.95; } 80% { opacity: 0.7; } }
+.sp-flame-wrap { transform-box: fill-box; transform-origin: 50% 100%; transform: scale(0.2); opacity: 0; transition: transform 0.45s cubic-bezier(0.3, 1.6, 0.5, 1), opacity 0.3s ease; }
+.sp-flame-wrap[data-on] { transform: scale(1); opacity: 1; }
+.sp-flame { transform-box: fill-box; transform-origin: 50% 100%; animation: sp-flame 1.6s ease-in-out infinite; }
+@keyframes sp-flame {
+  0%, 100% { transform: scale(1, 1) skewX(0deg); }
+  20% { transform: scale(0.92, 1.1) skewX(-3deg); }
+  45% { transform: scale(1.05, 0.94) skewX(2deg); }
+  70% { transform: scale(0.96, 1.06) skewX(-1deg); }
+}
+.sp-smoke { opacity: 0; transition: opacity 0.6s ease; }
+.sp-smoke[data-on] { opacity: 1; }
+.sp-smoke path { animation: sp-smoke 3.4s ease-out infinite; }
+@keyframes sp-smoke { 0% { transform: translateY(2px); opacity: 0; } 25% { opacity: 0.45; } 100% { transform: translateY(-10px); opacity: 0; } }
+/* A moth that can't keep away from the flames. */
+.sp-moth { position: absolute; top: 4%; left: 38%; opacity: 0; transition: opacity 0.8s ease; }
+.sp-moth[data-on] { opacity: 0.85; }
+.sp-candle[data-side="l"] .sp-moth { animation: sp-moth 6.5s ease-in-out infinite; }
+.sp-candle[data-side="r"] .sp-moth { left: 30%; animation: sp-moth 7.4s ease-in-out -2.5s infinite reverse; }
+.sp-moth-wings { display: block; animation: sp-moth-flap 0.2s ease-in-out infinite; }
+@keyframes sp-moth {
+  0%, 100% { transform: translate(0, 0) rotate(-10deg); }
+  20% { transform: translate(30px, -20px) rotate(15deg); }
+  40% { transform: translate(48px, 6px) rotate(40deg); }
+  55% { transform: translate(24px, 24px) rotate(-20deg); }
+  75% { transform: translate(-14px, 4px) rotate(-35deg); }
+}
+@keyframes sp-moth-flap { 0%, 100% { transform: scaleX(1); } 50% { transform: scaleX(0.3); } }
+
+/* Sparks drifting up off the board while a spirit spells. */
+.sp-embers { position: absolute; inset: auto 0 18% 0; height: 0; pointer-events: none; }
+.sp-embers span {
+  position: absolute;
+  bottom: 0;
+  display: block;
+  border-radius: 50%;
+  background: #ffb46b;
+  box-shadow: 0 0 8px var(--sp-ember);
+  opacity: 0;
+  visibility: hidden;
+  animation: sp-ember 6s ease-out infinite;
+}
+.sp-window[data-live] .sp-embers span { visibility: visible; }
+@keyframes sp-ember { 0% { transform: translate(0, 0) scale(1); opacity: 0; } 10% { opacity: 0.9; } 100% { transform: translate(var(--drift, 0px), -320px) scale(0.3); opacity: 0; } }
+
+/* ───────── What the board spells ───────── */
+
+.sp-callout { display: flex; flex: none; align-items: center; justify-content: center; gap: 14px; height: 30px; max-width: 100%; overflow: hidden; white-space: nowrap; }
+.sp-callout::before, .sp-callout::after { content: ""; width: 54px; height: 1px; flex: none; background: linear-gradient(90deg, transparent, var(--sp-line)); }
+.sp-callout::after { background: linear-gradient(-90deg, transparent, var(--sp-line)); }
+.sp-callout-k { font-family: var(--sp-sc); font-size: 12.5px; letter-spacing: 0.32em; text-transform: uppercase; color: var(--sp-mute); }
+.sp-callout-err { color: var(--sp-blood); }
+.sp-callout-w { display: flex; align-items: baseline; font-family: var(--sp-sc); }
+.sp-callout-w em { margin-right: 0.3em; font-style: normal; color: var(--sp-mute); }
+.sp-callout-w b { font-size: 18px; font-weight: 400; line-height: 1; color: var(--sp-ember-hi); text-shadow: 0 0 12px rgba(255, 106, 43, 0.75); animation: sp-letter 0.45s ease-out both; }
+.sp-callout-w b + b::before { content: "·"; margin: 0 0.42em; color: rgba(236, 227, 207, 0.35); text-shadow: none; }
+@keyframes sp-letter { from { opacity: 0; transform: translateY(-3px); filter: blur(3px); } to { opacity: 1; transform: none; filter: none; } }
+
+.sp-shimmer {
+  color: transparent;
+  background: linear-gradient(90deg, rgba(236, 227, 207, 0.42) 0%, rgba(236, 227, 207, 0.42) 35%, #ffe8c4 50%, rgba(236, 227, 207, 0.42) 65%, rgba(236, 227, 207, 0.42) 100%) 0 0 / 250% 100%;
+  -webkit-background-clip: text;
+  background-clip: text;
+  animation: sp-shimmer 2.4s linear infinite;
+}
+@keyframes sp-shimmer { from { background-position: 100% 0; } to { background-position: -150% 0; } }
+
+/* ───────── Words in the air ───────── */
+
+.sp-scroll {
+  position: relative;
+  z-index: 2;
+  display: flex;
+  min-height: 0;
+  flex: 1;
+  flex-direction: column;
+  overflow-x: hidden;
+  overflow-y: auto;
+  overscroll-behavior: contain;
+  scrollbar-width: none;
+  /* Older words dissolve upward into the dark. */
+  -webkit-mask-image: linear-gradient(180deg, transparent 0, rgba(0, 0, 0, 0.35) 40px, #000 110px, #000 calc(100% - 24px), transparent);
+  mask-image: linear-gradient(180deg, transparent 0, rgba(0, 0, 0, 0.35) 40px, #000 110px, #000 calc(100% - 24px), transparent);
+}
+.sp-scroll::-webkit-scrollbar { display: none; }
+.sp-main[data-empty] .sp-scroll { -webkit-mask-image: none; mask-image: none; }
+.sp-col { width: 100%; max-width: 680px; margin: 0 auto; padding: 70px 32px 18px; text-align: center; }
+
+/* Each entry materializes out of the dark, then hovers on its own slow breath. */
+.sp-row {
+  animation:
+    sp-materialize 1.3s cubic-bezier(0.2, 0.7, 0.2, 1) backwards,
+    sp-hover 7s ease-in-out calc(var(--i, 0) * -1.45s) infinite;
+  transition: opacity 1.4s ease;
+}
+@keyframes sp-materialize { from { opacity: 0; transform: translateY(18px) scale(0.985); filter: blur(8px); } to { opacity: 1; transform: none; filter: blur(0); } }
+/* What came before your latest question drifts back into the dark. */
+.sp-row[data-past], .sp-sep[data-past] { opacity: 0.42; }
+.sp-col:hover .sp-row[data-past], .sp-col:hover .sp-sep[data-past] { opacity: 0.85; }
+
+/* Between one question and the next: ☾ ✦ ☽ */
+.sp-sep { display: flex; align-items: center; justify-content: center; margin: 10px 0 2px; transition: opacity 1.4s ease; }
+.sp-sep svg { width: 54px; height: 11px; }
+.sp-sep-moon { fill: none; stroke: var(--sp-mute); stroke-width: 0.9; }
+.sp-sep-star { fill: var(--sp-gold); }
+
+/* You: your question, in your own hand, hanging in the air. */
+.sp-ask { display: flex; flex-direction: column; align-items: center; margin: 14px 0 22px; }
+.sp-ask-l { margin-bottom: 4px; font-family: var(--sp-sc); font-size: 11.5px; letter-spacing: 0.3em; text-transform: uppercase; color: rgba(169, 156, 134, 0.85); }
+.sp-ask-t { max-width: 560px; margin: 0; font-size: 20px; font-style: italic; line-height: 1.4; white-space: pre-wrap; overflow-wrap: anywhere; color: rgba(236, 227, 207, 0.66); text-shadow: 0 0 20px rgba(0, 0, 0, 0.9); }
+.sp-ask-t[data-word] { font-family: var(--sp-sc); font-style: normal; letter-spacing: 0.3em; color: var(--sp-gold-hi); }
+
+/* Mortimer: words spelled out of the dark, faintly glowing. */
+.sp-spirit { margin: 4px 0 26px; }
+.sp-who { display: flex; align-items: center; justify-content: center; gap: 7px; margin-bottom: 8px; font-family: var(--sp-sc); font-size: 12.5px; letter-spacing: 0.28em; text-transform: uppercase; color: var(--sp-gold); }
+.sp-who time { margin-left: 4px; font-family: var(--sp-serif); font-size: 13.5px; font-style: italic; letter-spacing: 0.01em; text-transform: none; color: var(--sp-mute); }
+.sp-words {
+  margin: 0;
+  font-family: var(--sp-sc);
+  font-size: 22px;
+  line-height: 1.55;
+  letter-spacing: 0.04em;
+  white-space: pre-wrap;
+  overflow-wrap: anywhere;
+  color: var(--sp-bone);
+  text-shadow: 0 0 18px rgba(236, 227, 207, 0.22), 0 0 46px rgba(201, 165, 90, 0.12), 0 2px 12px rgba(0, 0, 0, 0.9);
+}
+/* Each new letter catches like an ember, then cools to bone. */
+.sp-ink { animation: sp-ink 0.7s ease-out backwards; color: var(--sp-ember-hi); text-shadow: 0 0 14px rgba(255, 106, 43, 0.75); }
+@keyframes sp-ink { from { opacity: 0; filter: blur(5px); } to { opacity: 1; filter: blur(0); } }
+.sp-nib { display: inline-block; width: 6px; height: 6px; margin-left: 5px; vertical-align: 0.15em; rotate: 45deg; background: var(--sp-ember); box-shadow: 0 0 10px var(--sp-ember); animation: sp-breathe 0.9s ease-in-out infinite; }
+
+/* Raps on the table. */
+.sp-knock { display: flex; align-items: center; justify-content: center; gap: 10px; margin: 8px 0 22px; font-size: 16.5px; font-style: italic; color: var(--sp-gold-hi); }
+.sp-knock small { font-family: var(--sp-sc); font-size: 11.5px; font-style: normal; letter-spacing: 0.26em; text-transform: uppercase; color: var(--sp-mute); }
+.sp-knock small::before { content: "· "; }
+.sp-knock[data-mine] { color: rgba(236, 227, 207, 0.66); }
+.sp-knuckles { display: flex; gap: 4px; }
+.sp-knuckles i { width: 7px; height: 7px; border-radius: 50%; background: var(--sp-ember); box-shadow: 0 0 9px var(--sp-ember); animation: sp-rap 0.5s cubic-bezier(0.3, 1.6, 0.5, 1) both; }
+.sp-knock[data-mine] .sp-knuckles i { background: var(--sp-bone-2); box-shadow: none; }
+@keyframes sp-rap { from { transform: scale(0); } to { transform: scale(1); } }
+
+.sp-wait { display: flex; align-items: center; justify-content: center; gap: 9px; min-height: 34px; font-size: 18px; font-style: italic; }
+.sp-wait-p { width: 20px; height: 20px; color: var(--sp-gold-hi); animation: sp-wander 2.6s ease-in-out infinite; }
+@keyframes sp-wander { 0%, 100% { transform: translate(0, 0) rotate(-8deg); } 33% { transform: translate(4px, -2px) rotate(6deg); } 66% { transform: translate(-3px, 1px) rotate(-2deg); } }
+
+.sp-err { display: flex; align-items: center; justify-content: center; gap: 10px; margin: 4px 0 18px; font-family: var(--sp-sc); font-size: 16px; letter-spacing: 0.08em; color: var(--sp-blood); }
+.sp-err .sp-ic { width: 22px; height: 22px; flex: none; }
+
+/* ───────── The empty sitting ───────── */
+
+.sp-hero { display: flex; width: 100%; min-width: 0; flex-direction: column; align-items: center; margin: auto 0; padding: 4px 28px 14px; text-align: center; }
+.sp-kicker { display: flex; align-items: center; gap: 8px; margin: 0; font-family: var(--sp-sc); font-size: 12.5px; letter-spacing: 0.32em; text-transform: uppercase; color: var(--sp-gold); animation: sp-materialize 1.2s 0.9s ease backwards; }
+.sp-hero-h { margin: 6px 0 0; font-size: clamp(26px, 3.6cqi, 40px); font-weight: 400; font-style: italic; line-height: 1.1; color: var(--sp-bone); text-shadow: 0 0 30px rgba(201, 165, 90, 0.25), 0 2px 18px rgba(0, 0, 0, 0.9); animation: sp-materialize 1.2s 0.15s ease backwards, sp-hover 9s ease-in-out infinite; }
+.sp-hero-sub { max-width: 620px; margin: 6px 0 0; font-size: 16px; line-height: 1.4; color: var(--sp-mute); animation: sp-materialize 1.2s 0.3s ease backwards; }
+.sp-sugs { display: flex; flex-wrap: wrap; justify-content: center; gap: 9px; max-width: 720px; margin-top: 16px; }
+.sp-sug {
+  display: flex;
+  align-items: center;
+  gap: 7px;
+  height: 38px;
+  padding: 0 15px 0 12px;
+  border-radius: 999px;
+  font-size: 16.5px;
+  font-style: italic;
+  white-space: nowrap;
+  color: var(--sp-bone-2);
+  background: rgba(20, 16, 13, 0.6);
+  box-shadow: 0 0 0 1px rgba(201, 165, 90, 0.34), 0 12px 26px -12px rgba(0, 0, 0, 0.9);
+  -webkit-backdrop-filter: blur(6px);
+  backdrop-filter: blur(6px);
+  animation:
+    sp-materialize 1s calc(0.45s + var(--i, 0) * 0.08s) ease backwards,
+    sp-hover 6s ease-in-out calc(var(--i, 0) * -1.2s) infinite;
+  transition: color 0.2s ease, box-shadow 0.2s ease, background-color 0.2s ease;
+}
+.sp-sug .sp-ic { color: var(--sp-gold); }
+.sp-sug:hover:not(:disabled) { color: var(--sp-bone); background: rgba(40, 28, 20, 0.7); box-shadow: 0 0 0 1px rgba(226, 194, 126, 0.75), 0 0 24px -4px rgba(255, 106, 43, 0.35), 0 12px 26px -12px rgba(0, 0, 0, 0.9); }
+.sp-fine { margin: 14px 0 0; font-size: 13px; font-style: italic; color: rgba(169, 156, 134, 0.75); animation: sp-materialize 1.2s 0.7s ease backwards; }
+
+/* ───────── Your question, on a floating slip ───────── */
+
+.sp-dock { position: relative; z-index: 4; display: flex; flex: none; justify-content: center; padding: 6px 24px 30px; }
+.sp-prompt {
+  position: relative;
+  display: flex;
+  width: min(100%, 640px);
+  align-items: flex-end;
+  gap: 6px;
+  padding: 7px;
+  border-radius: 30px;
+  background: linear-gradient(180deg, rgba(32, 26, 22, 0.8), rgba(17, 14, 12, 0.88));
+  box-shadow:
+    0 0 0 1px rgba(201, 165, 90, 0.45),
+    0 26px 60px -14px rgba(0, 0, 0, 0.9),
+    0 0 60px -16px rgba(255, 106, 43, 0.18);
+  -webkit-backdrop-filter: blur(10px);
+  backdrop-filter: blur(10px);
+  animation: sp-hover 7s ease-in-out -3s infinite;
+  transition: box-shadow 0.3s ease;
+}
+/* An inner hairline, like the double rule round the board. */
+.sp-prompt::before { content: ""; position: absolute; inset: 4px; border-radius: 26px; box-shadow: inset 0 0 0 1px rgba(201, 165, 90, 0.16); pointer-events: none; }
+.sp-prompt:focus-within {
+  box-shadow:
+    0 0 0 1px rgba(226, 194, 126, 0.8),
+    0 26px 60px -14px rgba(0, 0, 0, 0.9),
+    0 0 70px -10px rgba(255, 106, 43, 0.32);
+}
+.sp-cbtn { display: grid; place-items: center; width: 44px; height: 44px; flex: none; border-radius: 50%; color: var(--sp-gold); transition: color 0.15s ease, background-color 0.15s ease; }
+.sp-cbtn:hover, .sp-cbtn[aria-expanded="true"] { color: var(--sp-gold-hi); background: rgba(201, 165, 90, 0.1); }
+.sp-input {
+  min-width: 0;
+  flex: 1;
+  max-height: 140px;
+  margin: 0;
+  padding: 10px 4px 11px;
+  resize: none;
+  border: 0;
+  outline: 0;
+  background: transparent;
+  font-family: var(--sp-serif);
+  font-size: 19px;
+  font-style: italic;
+  line-height: 1.3;
+  color: var(--sp-bone);
+  caret-color: var(--sp-ember);
+  overflow-y: hidden;
+  scrollbar-width: thin;
+  scrollbar-color: rgba(236, 227, 207, 0.2) transparent;
+}
+.sp-input:focus-visible { outline: 0; }
+.sp-input::placeholder { color: rgba(169, 156, 134, 0.75); }
+/* Send: an oxblood seal set in gold. */
+.sp-send {
+  display: grid;
+  place-items: center;
+  width: 44px;
+  height: 44px;
+  flex: none;
+  border-radius: 50%;
+  color: #f6ebd9;
+  background: radial-gradient(circle at 40% 32%, #8a2418, var(--sp-oxblood) 70%);
+  box-shadow: 0 0 0 1px rgba(226, 194, 126, 0.85), 0 0 0 3px var(--sp-char), 0 0 0 4px rgba(201, 165, 90, 0.35), 0 6px 16px rgba(0, 0, 0, 0.6);
+  transition: filter 0.15s ease, background 0.2s ease, color 0.2s ease;
+}
+.sp-send:not(:disabled):hover { filter: brightness(1.15); box-shadow: 0 0 0 1px rgba(226, 194, 126, 1), 0 0 0 3px var(--sp-char), 0 0 0 4px rgba(201, 165, 90, 0.5), 0 0 22px rgba(255, 106, 43, 0.45); }
+.sp-send:disabled { color: rgba(236, 227, 207, 0.35); background: #241c17; box-shadow: 0 0 0 1px rgba(201, 165, 90, 0.3), 0 0 0 3px var(--sp-char), 0 0 0 4px rgba(201, 165, 90, 0.12); }
+.sp-send .sp-ic { width: 22px; height: 22px; }
+
+.sp-closed {
+  display: flex;
+  width: min(100%, 640px);
+  align-items: center;
+  justify-content: center;
+  gap: 12px;
+  min-height: 58px;
+  padding: 8px 10px 8px 18px;
+  border-radius: 30px;
+  font-size: 16.5px;
+  font-style: italic;
+  color: var(--sp-bone-2);
+  background: rgba(17, 14, 12, 0.72);
+  box-shadow: 0 0 0 1px rgba(201, 165, 90, 0.35), 0 26px 60px -14px rgba(0, 0, 0, 0.9);
+  animation: sp-materialize 0.9s ease backwards, sp-hover 7s ease-in-out infinite;
+}
+.sp-closed .sp-ic { color: var(--sp-gold); }
+.sp-closed button { margin-left: 4px; height: 38px; padding: 0 16px; border-radius: 999px; font-family: var(--sp-sc); font-size: 13px; letter-spacing: 0.16em; text-transform: uppercase; color: #f6ebd9; background: var(--sp-oxblood); box-shadow: 0 0 0 1px rgba(226, 194, 126, 0.8); transition: filter 0.15s ease; }
+.sp-closed button:hover { filter: brightness(1.2); }
+
+/* The Rites menu. */
+.sp-pop-wrap { position: relative; }
+.sp-pop {
+  position: absolute;
+  bottom: calc(100% + 16px);
+  left: -6px;
+  z-index: 10;
+  width: 280px;
+  padding: 10px;
+  border-radius: 20px;
+  background: rgba(19, 15, 13, 0.97);
+  box-shadow: 0 0 0 1px rgba(201, 165, 90, 0.5), inset 0 0 0 4px rgba(19, 15, 13, 1), inset 0 0 0 5px rgba(201, 165, 90, 0.14), 0 30px 60px -18px rgba(0, 0, 0, 0.95);
+  animation: sp-pop 0.2s cubic-bezier(0.3, 1.3, 0.5, 1);
+  transform-origin: 24px 100%;
+}
+@keyframes sp-pop { from { opacity: 0; transform: translateY(6px) scale(0.97); filter: blur(3px); } to { opacity: 1; transform: none; filter: none; } }
+.sp-pop-h { padding: 4px 8px 6px; font-family: var(--sp-sc); font-size: 12px; letter-spacing: 0.28em; text-transform: uppercase; color: var(--sp-gold); }
+.sp-mi { display: flex; align-items: center; gap: 12px; width: 100%; padding: 7px 8px; border-radius: 12px; text-align: left; color: var(--sp-bone); transition: background-color 0.12s ease; }
+.sp-mi:hover { background: rgba(201, 165, 90, 0.1); }
+.sp-mi-raps { display: flex; width: 26px; flex: none; justify-content: center; gap: 3px; }
+.sp-mi-raps i { width: 6px; height: 6px; border-radius: 50%; background: var(--sp-ember); box-shadow: 0 0 6px rgba(255, 106, 43, 0.6); }
+.sp-mi-ic { width: 26px; color: var(--sp-gold); }
+.sp-mi-l { display: flex; min-width: 0; flex-direction: column; }
+.sp-mi-l b { font-size: 17px; font-weight: 400; line-height: 1.2; }
+.sp-mi-l small { font-size: 13.5px; font-style: italic; color: var(--sp-mute); }
+.sp-pop-rule { height: 1px; margin: 6px 8px; background: linear-gradient(90deg, transparent, var(--sp-line), transparent); }
+
+.sp-down {
+  position: absolute;
+  top: -40px;
+  left: 50%;
+  display: grid;
+  place-items: center;
+  width: 36px;
+  height: 36px;
+  border-radius: 50%;
+  translate: -50% 0;
+  color: var(--sp-bone);
+  background: rgba(19, 15, 13, 0.9);
+  box-shadow: 0 0 0 1px var(--sp-line), 0 10px 20px -8px rgba(0, 0, 0, 0.8);
+}
+.sp-down:hover { color: var(--sp-gold-hi); }
+
+.sp-toast {
+  position: absolute;
+  top: 70px;
+  left: 50%;
+  z-index: 12;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  height: 40px;
+  padding: 0 18px 0 14px;
+  border-radius: 999px;
+  font-size: 16px;
+  font-style: italic;
+  white-space: nowrap;
+  color: var(--sp-bone);
+  background: rgba(19, 15, 13, 0.92);
+  box-shadow: 0 0 0 1px rgba(201, 165, 90, 0.55), 0 20px 40px -14px rgba(0, 0, 0, 0.9);
+  translate: -50% 0;
+  animation: sp-toast 2.8s ease both;
+  pointer-events: none;
+}
+.sp-toast .sp-ic { color: var(--sp-gold-hi); }
+@keyframes sp-toast { 0% { opacity: 0; transform: translateY(-6px); filter: blur(4px); } 10%, 86% { opacity: 1; transform: none; filter: none; } 100% { opacity: 0; filter: blur(3px); } }
+
+/* ───────── Old film, over everything ───────── */
+
+.sp-film {
+  position: absolute;
+  inset: 0;
+  z-index: 8;
+  overflow: hidden;
+  pointer-events: none;
+  /* Gone well before the edges, so it never shows as a box. */
+  -webkit-mask-image: radial-gradient(closest-side, #000 35%, transparent 100%);
+  mask-image: radial-gradient(closest-side, #000 35%, transparent 100%);
+}
+.sp-film-dust { position: absolute; display: block; background: var(--sp-bone); }
+.sp-film-speck { position: absolute; display: block; opacity: 0; animation: sp-speck 4s steps(1, end) infinite; }
+@keyframes sp-speck { 0%, 96% { opacity: 0; } 97% { opacity: var(--o, 0.3); } }
+.sp-film-scratch { position: absolute; display: block; width: 1px; transform-origin: top; }
+.sp-film-scratch i { display: block; width: 100%; height: 100%; background: linear-gradient(180deg, transparent, var(--sp-bone) 15%, var(--sp-bone) 80%, transparent); animation: sp-scratch 3s steps(1, end) infinite; }
+@keyframes sp-scratch { 0% { translate: 0 0; opacity: 1; } 22% { translate: 3px 0; opacity: 0.4; } 41% { translate: -2px 0; opacity: 1; } 63% { translate: 1px 0; opacity: 0; } 71% { translate: -4px 0; opacity: 0.8; } }
+.sp-film-line { position: absolute; top: 0; bottom: 0; display: block; width: 1px; background: linear-gradient(180deg, transparent, var(--sp-bone) 10%, var(--sp-bone) 90%, transparent); opacity: 0; --o: 0.06; animation: sp-film-line 9.3s steps(1, end) -2s infinite; }
+@keyframes sp-film-line {
+  0% { left: 23%; opacity: 0; }
+  30% { left: 23%; opacity: var(--o); }
+  33% { left: 24%; opacity: var(--o); }
+  35% { left: 61%; opacity: var(--o); }
+  38% { opacity: 0; }
+  70% { left: 82%; opacity: var(--o); }
+  72% { left: 81%; opacity: var(--o); }
+  74% { opacity: 0; }
+}
+.sp-film-leak { position: absolute; inset: 0; background: radial-gradient(ellipse 45% 65% at 100% 15%, rgba(255, 140, 60, 0.9), transparent 70%); mix-blend-mode: screen; opacity: 0; animation: sp-leak 11s ease-in-out infinite; }
+@keyframes sp-leak { 0%, 100% { opacity: 0; } 40% { opacity: 0.08; } 55% { opacity: 0.05; } 70% { opacity: 0.09; } }
+
+/* ───────── Icons ───────── */
+
+.sp-ic { width: 20px; height: 20px; flex: none; }
+.sp-ic-sm { width: 17px; height: 17px; }
+.sp-ic-xs { width: 14px; height: 14px; }
+
+/* ───────── Smaller rooms ───────── */
+
+@container sp (max-width: 760px) {
+  .sp-candle { display: none; }
+}
+@container sp (max-width: 600px) {
+  .sp-stage { padding: 14px 10px 0; }
+  .sp-col { padding: 50px 18px 12px; }
+  .sp-dock { padding: 4px 12px 16px; }
+  .sp-words { font-size: 19.5px; }
+  .sp-ask-t { font-size: 18px; }
+  .sp-callout-k { letter-spacing: 0.2em; }
+  .sp-callout::before, .sp-callout::after { width: 24px; }
+  .sp-sugs { max-width: none; flex-wrap: nowrap; justify-content: flex-start; overflow-x: auto; align-self: stretch; margin: 14px -28px 0; padding: 4px 28px 10px; scrollbar-width: none; }
+  .sp-hero-h { font-size: 27px; }
+  .sp-hero-sub { font-size: 15px; }
+  .sp-kicker { font-size: 11px; letter-spacing: 0.18em; }
+  .sp-kicker .sp-ic { display: none; }
+  .sp-closed { flex-wrap: wrap; text-align: center; border-radius: 22px; }
+}
+@container sp (max-height: 700px) {
+  .sp-boardwrap { width: min(100%, clamp(354px, 72cqh, 625px)); }
+  .sp-main[data-empty] .sp-boardwrap { width: min(100%, clamp(375px, 80cqh, 667px)); }
+  .sp-hero-sub { display: none; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .seance *, .seance *::before, .seance *::after { animation: none !important; transition: none !important; }
+}
+
+/* ───────── The site's sidebar: Mortimer's row ───────── */
+
+/*
+ * The open Mortimer in the site's agent list: a small card in warm charcoal
+ * and gold, his ghost in an oval cameo, and a planchette that stirs while he
+ * spells. Lives outside the séance, so it brings its own variables.
+ */
+.sp-pick {
+  --sp-sc: var(--font-fell-sc), "IM Fell English SC", Georgia, serif;
+  --sp-serif: var(--font-fell), "IM Fell English", Georgia, serif;
+  position: relative;
+  isolation: isolate;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  width: 100%;
+  padding: 8px 12px 8px 10px;
+  border-radius: 18px;
+  font-family: var(--sp-serif);
+  text-align: left;
+  color: #ece3cf;
+  text-shadow: none;
+  background: radial-gradient(120% 140% at 0% 0%, rgba(201, 165, 90, 0.12), transparent 60%), linear-gradient(170deg, #211c18, #120f0d);
+  box-shadow: 0 0 0 1px rgba(201, 165, 90, 0.5), inset 0 0 0 4px #15110f, inset 0 0 0 5px rgba(201, 165, 90, 0.14), 0 14px 26px -12px rgba(0, 0, 0, 0.8);
+  animation: sp-pick-in 0.32s cubic-bezier(0.3, 1.4, 0.5, 1);
+}
+.sp-pick:hover { filter: brightness(1.08); }
+.sp-pick:focus-visible { outline: 1px solid #e2c27e; outline-offset: 3px; }
+@keyframes sp-pick-in { from { transform: scale(0.97); opacity: 0.5; } to { transform: none; opacity: 1; } }
+.sp-pick-cameo {
+  display: grid;
+  flex: none;
+  place-items: center;
+  width: 36px;
+  height: 42px;
+  border-radius: 50%;
+  background: radial-gradient(closest-side, rgba(180, 172, 217, 0.32), rgba(180, 172, 217, 0.05) 72%, transparent), #110e0c;
+  box-shadow: inset 0 0 0 1px rgba(236, 227, 207, 0.45), 0 0 0 2.5px #15110f, 0 0 0 3.5px rgba(201, 165, 90, 0.6);
+}
+.sp-pick-cameo .gpty { filter: drop-shadow(0 0 7px rgba(180, 172, 217, 0.6)); }
+.sp-pick-name { display: flex; align-items: baseline; gap: 8px; font-family: var(--sp-sc); font-size: 18px; line-height: 1.1; letter-spacing: 0.12em; }
+.sp-pick-name small { font-family: var(--sp-serif); font-size: 13px; font-style: italic; letter-spacing: 0.02em; color: #c9a55a; }
+.sp-pick-sub { display: flex; align-items: center; gap: 6px; margin-top: 2px; overflow: hidden; font-size: 13.5px; font-style: italic; white-space: nowrap; text-overflow: ellipsis; color: #a99c86; }
+.sp-pick-spell { display: inline-flex; gap: 3px; font-family: var(--sp-sc); font-style: normal; letter-spacing: 0.06em; color: #ffe2b8; }
+.sp-pick-spell i { font-style: normal; animation: sp-pick-letter 1.5s ease-in-out infinite; }
+.sp-pick-spell i:nth-child(2) { animation-delay: 0.25s; }
+.sp-pick-spell i:nth-child(3) { animation-delay: 0.5s; }
+@keyframes sp-pick-letter { 0%, 100% { opacity: 0.25; } 30% { opacity: 1; text-shadow: 0 0 8px rgba(255, 106, 43, 0.9); } }
+.sp-pick-plan { width: 22px; height: 22px; flex: none; margin-left: auto; color: #c9a55a; }
+.sp-pick[data-busy] .sp-pick-plan { color: #ffe2b8; filter: drop-shadow(0 0 6px rgba(255, 106, 43, 0.7)); animation: sp-wander 1.8s ease-in-out infinite; }
+@media (prefers-reduced-motion: reduce) {
+  .sp-pick, .sp-pick * { animation: none !important; }
+}

@@ -9,7 +9,7 @@
   --icq-font: Tahoma, "Segoe UI", Verdana, Geneva, sans-serif;
   --icq-face: #d9d5cc;
   --icq-hi: #ffffff;
-  --icq-lite: #ecE9e1;
+  --icq-lite: #ece9e1;
   --icq-shade: #8c887f;
   --icq-dark: #33322e;
   --icq-navy: #0a1f8f;
@@ -53,7 +53,7 @@
 .icq ::-webkit-scrollbar-button:single-button:vertical:increment { background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='8' height='8'%3E%3Cpath d='M.6 2.6h6.8L4 6.4Z' fill='%23000'/%3E%3C/svg%3E"); }
 .icq ::-webkit-scrollbar-corner { background: var(--icq-face); }
 @supports not selector(::-webkit-scrollbar) {
-  .icq * { scrollbar-color: #b9b5ab #ecE9e1; }
+  .icq * { scrollbar-color: #b9b5ab #ece9e1; }
 }
 
 /* ───────── Window ───────── */
@@ -203,8 +203,26 @@
 }
 @keyframes icq-ad-in { from { opacity: 0; } to { opacity: 1; } }
 .icq-ad:focus-visible { outline-offset: -5px; }
-.icq-ad-img { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; object-position: right center; }
-.icq-ad-img + .icq-ad-wash { position: absolute; inset: 0; }
+/*
+ * The picture is a whole strip, shown at full height on the right and fading
+ * into the ad's own color on the left, so nothing in it gets cropped.
+ */
+.icq-ad-img {
+  position: absolute;
+  top: 0;
+  right: 92px;
+  width: auto;
+  max-width: none;
+  height: 100%;
+  -webkit-mask-image: linear-gradient(90deg, transparent 0%, #000 30%, #000 88%, transparent 100%);
+  mask-image: linear-gradient(90deg, transparent 0%, #000 30%, #000 88%, transparent 100%);
+}
+/* A wash in the ad's own color keeps the headline readable wherever the two overlap. */
+.icq-ad-wash { position: absolute; inset: 0; background: linear-gradient(90deg, var(--wash) 0%, var(--wash) 26%, transparent 52%); }
+.icq-ad-visitor { --wash: rgba(150, 0, 0, 0.82); }
+.icq-ad-smileys { --wash: rgba(235, 247, 255, 0.86); }
+.icq-ad-modem { --wash: rgba(5, 11, 36, 0.86); }
+.icq-ad-homepage { --wash: rgba(7, 5, 26, 0.86); }
 .icq-ad > :not(.icq-ad-img):not(.icq-ad-wash) { position: relative; }
 .icq-ad-art { display: flex; flex: none; align-items: center; justify-content: center; width: 64px; height: 50px; }
 .icq-ad-copy { display: flex; flex: 1; flex-direction: column; min-width: 0; line-height: 1.15; }
@@ -230,7 +248,7 @@
 .icq-ad-visitor .icq-burst { position: absolute; width: 62px; height: 62px; animation: icq-spin 9s linear infinite; }
 .icq-ad-visitor .icq-trophy { position: relative; width: 34px; height: 34px; animation: icq-hop 1.2s ease-in-out infinite; }
 /* 2: free smileys */
-.icq-ad-smileys { background: linear-gradient(180deg, #8fd4ff 0%, #d8f1ff 60%, #fff 100%); color: #003a8c; }
+.icq-ad-smileys { background: linear-gradient(90deg, #6fbcf2 0%, #8ccdf7 60%, #a9dbfa 100%); color: #003a8c; }
 .icq-ad-smileys .icq-ad-copy b { color: #0047c2; text-shadow: 1px 1px 0 #fff; }
 .icq-ad-smileys .icq-ad-art .icq-emote { width: 22px; height: 22px; margin: 0 -2px; animation: icq-hop 1s ease-in-out infinite; }
 .icq-ad-smileys .icq-ad-art .icq-emote:nth-child(2) { animation-delay: -0.33s; }
@@ -445,7 +463,7 @@
 .icq-smiley-btn:hover .icq-emote { transform: scale(1.18); }
 
 /* User Details: a little dialog with tabs. */
-.icq-dialog { position: absolute; top: calc(100% + 2px); right: 0; z-index: 30; width: 318px; padding: 3px; background: var(--icq-grain), var(--icq-face); box-shadow: var(--icq-raised), 4px 6px 18px rgba(0, 0, 0, 0.32); animation: icq-in 0.14s ease-out; }
+.icq-dialog { position: absolute; top: calc(100% + 2px); right: 0; z-index: 30; width: min(352px, calc(100cqw - 16px)); padding: 3px; background: var(--icq-grain), var(--icq-face); box-shadow: var(--icq-raised), 4px 6px 18px rgba(0, 0, 0, 0.32); animation: icq-in 0.14s ease-out; }
 .icq-dialog .icq-titlebar { height: 20px; font-size: 11.5px; cursor: default; }
 .icq-dialog-x { display: grid; place-items: center; width: 16px; height: 14px; margin-left: auto; color: #000; background: var(--icq-face); box-shadow: var(--icq-raised); }
 .icq-tabs { display: flex; gap: 0; padding: 7px 5px 0; }
@@ -540,13 +558,13 @@
 /* ───────── Small windows ───────── */
 
 @container icq-window (max-width: 780px) {
-  .icq-tools { order: 3; flex: 1 0 100%; justify-content: flex-start; margin-left: 74px; padding-top: 3px; box-shadow: inset 0 1px var(--icq-shade), inset 0 2px var(--icq-hi); }
+  .icq-tools { order: 3; flex: 0 0 calc(100% - 76px); justify-content: flex-start; margin-left: 76px; padding-top: 3px; box-shadow: inset 0 1px var(--icq-shade), inset 0 2px var(--icq-hi); }
   .icq-tool { flex-direction: row; gap: 5px; min-width: 0; padding: 3px 7px 3px 4px; }
   .icq-tool > :first-child { width: 20px; height: 20px; }
 }
 @container icq-window (max-width: 600px) {
   .icq-photo, .icq-adwrap { display: none; }
-  .icq-tools { margin-left: 0; }
+  .icq-tools { flex-basis: 100%; margin-left: 0; }
   .icq-fields { grid-template-columns: auto minmax(0, 1fr) auto minmax(0, 0.7fr); }
   .icq-hide-sm { display: none; }
   .icq-tool span { display: none; }
@@ -582,9 +600,7 @@
   border-radius: 2px;
   background: var(--icq-grain), linear-gradient(180deg, #ebe8e0, #d6d2c8);
   box-shadow: var(--icq-raised), 0 12px 26px -14px rgba(0, 0, 0, 0.7);
-  animation: icq-pick-in 0.22s steps(4, end);
 }
-@keyframes icq-pick-in { from { clip-path: inset(0 100% 0 0); } to { clip-path: inset(0); } }
 .icq-pick:active { box-shadow: var(--icq-pressed), 0 12px 26px -14px rgba(0, 0, 0, 0.7); }
 .icq-pick:focus-visible { outline: 1px dotted #000; outline-offset: -5px; }
 .icq-pick-icon { display: grid; flex: none; place-items: center; width: 42px; height: 42px; padding: 2px; background: var(--icq-face); box-shadow: var(--icq-sunken); }

@@ -142,7 +142,7 @@ export function FacebookLayout({ costume, lines, busy, waiting, error, onSend, o
   const [kayleigh, cal, nick, daisy, dale] = friends;
 
   const { value, setValue, submit, onKeyDown } = useComposer(onSend, busy);
-  const { ref: win, handle } = useDesktopDrag<HTMLDivElement>(costume.id);
+  const { ref: win, handle } = useDesktopDrag<HTMLDivElement>();
   const page = useRef<HTMLDivElement>(null);
   const input = useRef<HTMLTextAreaElement>(null);
   const dock = useRef<HTMLDivElement>(null);
@@ -292,7 +292,7 @@ export function FacebookLayout({ costume, lines, busy, waiting, error, onSend, o
   const markPic = (size: number, m: Mood = "idle") => <MarkPicture agent={agent} mood={m} size={size} />;
 
   return (
-    <div className="fb flex h-full justify-center">
+    <div className="fb flex h-full items-center justify-center">
       <div ref={win} className="fb-window" style={{ maxWidth: costume.window.w, maxHeight: costume.window.h }}>
         <FbDefs />
 

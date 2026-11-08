@@ -1,6 +1,6 @@
 "use client";
 
-import type { ActiveRowProps, HoverBadgeProps } from "@/components/activeRows";
+import type { ActiveRowProps } from "@/components/activeRows";
 import { Gpty } from "@/components/Gpty";
 import { Pencil } from "./art";
 import "./facebook.css";
@@ -34,14 +34,5 @@ export function FacebookActiveRow({ agent, mood, ...button }: ActiveRowProps) {
         </span>
       </span>
     </button>
-  );
-}
-
-/** Facebook's hover label in the sidebar: the lowercase wordmark and the year. */
-export function FacebookHoverBadge({ agent }: HoverBadgeProps) {
-  return (
-    <span className="fb-hover truncate">
-      facebook<span>· {agent.costume.year}</span>
-    </span>
   );
 }

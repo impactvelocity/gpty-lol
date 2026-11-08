@@ -11,17 +11,23 @@ import { AboutModal } from "./AboutModal";
 import { AgentSidebar, Logo } from "./AgentSidebar";
 import { MeetPage } from "./MeetPage";
 import { toneOf } from "./Scenes";
+import { SongPlayer } from "./SongPlayer";
+import { usePaused, useSong } from "./useSong";
 import { Wallpaper } from "./Wallpaper";
 import type { Mood } from "./Gpty";
 import { LAYOUTS } from "./layouts";
+import { WINDOW_APPEAR } from "./layouts/hooks";
 import { NUDGE } from "./layouts/MsnLayout";
 import type { ChatLine, ThreadItem } from "./layouts/types";
 
-/** The new window settles in with a small, quick bounce. */
+/**
+ * The new window is there at once (no fade) and does a small hop: it lifts,
+ * then eases back down and slows to a soft landing.
+ */
 const SETTLE: Keyframe[] = [
-  { opacity: 0.4, transform: "translateY(8px)" },
-  { opacity: 1, transform: "translateY(-2px)", offset: 0.6 },
-  { opacity: 1, transform: "none" },
+  { transform: "none", easing: "cubic-bezier(.33,1,.68,1)" },
+  { transform: "translateY(-7px)", offset: 0.3, easing: "cubic-bezier(.22,1,.36,1)" },
+  { transform: "none" },
 ];
 
 /** An agent in the URL (/msn) opens a new chat with that agent. */
@@ -55,30 +61,39 @@ export function ChatApp({ costume: fromRoute }: { costume?: string }) {
     () => window.location.pathname.split("/")[1] === MEET || (fromRoute === MEET && !fromUrl),
   );
   const stageRef = useRef<HTMLDivElement>(null);
+  const [paused, togglePaused] = usePaused();
+  const song = useSong(meet ? undefined : agent.song?.src, paused);
 
   useEffect(() => {
-    document.title = meet ? "Meet the gptys — gpty.lol" : `${agent.name} · ${agentEra(agent)} — gpty.lol`;
+    document.title = meet ? "Meet the Gptys — gpty.lol" : `${agent.name} · ${agentEra(agent)} — gpty.lol`;
     rememberPath(meet ? MEET : agent.id);
   }, [agent, meet]);
 
-  /** Swap what the window shows, then settle it in with a short bounce. */
-  const transition = useCallback((change: () => void) => {
+  /**
+   * Swap what the window shows, put it back in the center, and bounce it in.
+   * No bounce when the same window stays up (clicking the agent that's open).
+   */
+  const transition = useCallback((change: () => void, bounce = true) => {
     setDrawer(false);
     flushSync(change);
+    window.dispatchEvent(new Event(WINDOW_APPEAR));
     const el = stageRef.current;
-    if (!el || window.matchMedia("(prefers-reduced-motion: reduce)").matches) return;
+    if (!bounce || !el || window.matchMedia("(prefers-reduced-motion: reduce)").matches) return;
     el.getAnimations().forEach((a) => a.cancel());
-    el.animate(SETTLE, { duration: 280, easing: "cubic-bezier(.3,.7,.4,1)" });
+    el.animate(SETTLE, { duration: 560 });
   }, []);
 
   const { openAgent, select, deleteThread } = store;
   const onOpenAgent = useCallback(
     (id: string) =>
-      transition(() => {
-        setMeet(false);
-        openAgent(id);
-      }),
-    [transition, openAgent],
+      transition(
+        () => {
+          setMeet(false);
+          openAgent(id);
+        },
+        meet || id !== store.agentId,
+      ),
+    [transition, openAgent, meet, store.agentId],
   );
   const onSelectThread = useCallback(
     (id: string) =>
@@ -88,7 +103,7 @@ export function ChatApp({ costume: fromRoute }: { costume?: string }) {
       }),
     [transition, select],
   );
-  const onMeet = useCallback(() => transition(() => setMeet(true)), [transition]);
+  const onMeet = useCallback(() => transition(() => setMeet(true), !meet), [transition, meet]);
 
   const items: ThreadItem[] = useMemo(
     () => [
@@ -154,22 +169,30 @@ export function ChatApp({ costume: fromRoute }: { costume?: string }) {
           </button>
           <Logo />
         </header>
-        <div ref={stageRef} className="min-h-0 flex-1 px-2 pb-2 md:py-6 md:pl-2 md:pr-6">
-          {meet && <MeetPage onOpenAgent={onOpenAgent} />}
-          {/* The chat stays mounted under the page, so a reply in progress isn't lost. */}
-          <div className={meet ? "hidden" : "h-full"}>
-            <ChatView
-              key={store.activeId}
-              threadId={store.activeId}
-              initial={initial}
-              agent={agent}
-              onSave={store.saveMessages}
-              threads={items}
-              onSelectThread={onSelectThread}
-              onNewThread={() => onOpenAgent(agent.id)}
-              onDeleteThread={deleteThread}
-              onMood={setMood}
-            />
+        <div className="flex min-h-0 flex-1 flex-col px-2 pb-2 md:p-6">
+          {/* The agent's song: a bar as wide as its window, level with the logo. */}
+          {song && (
+            <div className="tune-row mx-auto mb-2 flex w-full shrink-0 md:mb-3" style={{ maxWidth: agent.costume.window.w }}>
+              <SongPlayer agent={agent} song={song} onToggle={togglePaused} />
+            </div>
+          )}
+          <div ref={stageRef} className="min-h-0 flex-1">
+            {meet && <MeetPage onOpenAgent={onOpenAgent} />}
+            {/* The chat stays mounted under the page, so a reply in progress isn't lost. */}
+            <div className={meet ? "hidden" : "h-full"}>
+              <ChatView
+                key={store.activeId}
+                threadId={store.activeId}
+                initial={initial}
+                agent={agent}
+                onSave={store.saveMessages}
+                threads={items}
+                onSelectThread={onSelectThread}
+                onNewThread={() => onOpenAgent(agent.id)}
+                onDeleteThread={deleteThread}
+                onMood={setMood}
+              />
+            </div>
           </div>
         </div>
       </main>

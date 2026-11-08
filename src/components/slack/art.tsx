@@ -22,25 +22,26 @@ export type ArtSlot =
 
 /**
  * Generated pictures that replace the drawn fallbacks (prompts and sizes in
- * src/components/slack/ART.md). Add a line once its file is in public/slack/;
- * remove one to fall back to the drawing.
+ * src/components/slack/ART.md). Remove a line to fall back to the drawing.
+ * Avatars are 256px, GIF stills 640px and the team logo 512px WebP; the
+ * wallpaper stays 1536px.
  */
 const FILES: Partial<Record<ArtSlot, string>> = {
-  // wallpaper: "/slack/wallpaper.webp",
-  // team: "/slack/team.webp",
-  // channing: "/slack/dp-channing.webp",
-  // you: "/slack/dp-you.webp",
-  // marcus: "/slack/dp-marcus.webp",
-  // linda: "/slack/dp-linda.webp",
-  // gary: "/slack/dp-gary.webp",
-  // brad: "/slack/dp-brad.webp",
-  // priya: "/slack/dp-priya.webp",
-  // devon: "/slack/dp-devon.webp",
-  // tiff: "/slack/dp-tiff.webp",
-  // gif1: "/slack/gif-1.webp",
-  // gif2: "/slack/gif-2.webp",
-  // gif3: "/slack/gif-3.webp",
-  // gif4: "/slack/gif-4.webp",
+  wallpaper: "/slack/wallpaper.webp",
+  team: "/slack/team.webp",
+  channing: "/slack/dp-channing.webp",
+  you: "/slack/dp-you.webp",
+  marcus: "/slack/dp-marcus.webp",
+  linda: "/slack/dp-linda.webp",
+  gary: "/slack/dp-gary.webp",
+  brad: "/slack/dp-brad.webp",
+  priya: "/slack/dp-priya.webp",
+  devon: "/slack/dp-devon.webp",
+  tiff: "/slack/dp-tiff.webp",
+  gif1: "/slack/gif-1.webp",
+  gif2: "/slack/gif-2.webp",
+  gif3: "/slack/gif-3.webp",
+  gif4: "/slack/gif-4.webp",
 };
 
 /** The picture for a slot, or undefined to draw the fallback. */
@@ -72,11 +73,6 @@ export function HashMark({ className = "h-5 w-5" }: { className?: string }) {
 
 /** The team's own logo: a flat "P" with the long shadow every 2014 logo had. */
 export function TeamLogo({ className = "h-9 w-9" }: { className?: string }) {
-  const src = art("team");
-  if (src) {
-    // eslint-disable-next-line @next/next/no-img-element
-    return <img src={src} alt="" className={`${className} rounded-[8px] object-cover`} draggable={false} />;
-  }
   return <Custom id="paradigm" className={className} />;
 }
 
@@ -304,6 +300,12 @@ export type CustomEmoji = "simple_smile" | "synergy" | "rip-email" | "paradigm" 
 /** Drawn emoji the team uploaded (or, for :simple_smile:, the one only Slack had). */
 export function Custom({ id, className = "sl-emoji" }: { id: CustomEmoji; className?: string }) {
   const clip = `sl-clip-${useId().replace(/:/g, "")}`;
+  // The team's own logo, once its picture is in.
+  const team = id === "paradigm" ? art("team") : undefined;
+  if (team) {
+    // eslint-disable-next-line @next/next/no-img-element
+    return <img src={team} alt=":paradigm:" className={`${className} rounded-[22%] object-cover`} draggable={false} />;
+  }
   return (
     <svg viewBox="0 0 22 22" className={className} role="img" aria-label={`:${id}:`}>
       {id === "simple_smile" && (

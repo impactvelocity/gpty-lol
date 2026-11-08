@@ -23,18 +23,18 @@ export type ArtSlot =
  * Icons are 128px and pictures 512px WebP; wide ones stay 1536px.
  */
 const FILES: Partial<Record<ArtSlot, string>> = {
-  // wallpaper: "/icq/wallpaper.webp",
-  // buddyPicture: "/icq/dp-buddy.webp",
-  // backdrop: "/icq/backdrop.webp",
-  // info: "/icq/icon-info.webp",
-  // file: "/icq/icon-file.webp",
-  // chat: "/icq/icon-chat.webp",
-  // random: "/icq/icon-random.webp",
-  // history: "/icq/icon-history.webp",
-  // adVisitor: "/icq/ad-visitor.webp",
-  // adSmileys: "/icq/ad-smileys.webp",
-  // adModem: "/icq/ad-modem.webp",
-  // adHomepage: "/icq/ad-homepage.webp",
+  wallpaper: "/icq/wallpaper.webp",
+  buddyPicture: "/icq/dp-buddy.webp",
+  backdrop: "/icq/backdrop.webp",
+  info: "/icq/icon-info.webp",
+  file: "/icq/icon-file.webp",
+  chat: "/icq/icon-chat.webp",
+  random: "/icq/icon-random.webp",
+  history: "/icq/icon-history.webp",
+  adVisitor: "/icq/ad-visitor.webp",
+  adSmileys: "/icq/ad-smileys.webp",
+  adModem: "/icq/ad-modem.webp",
+  adHomepage: "/icq/ad-homepage.webp",
 };
 
 /** The picture for a slot, or undefined to draw the fallback. */

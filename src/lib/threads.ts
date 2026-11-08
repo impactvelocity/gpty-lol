@@ -1,7 +1,7 @@
 "use client";
 
 import { useCallback, useState } from "react";
-import { DEFAULT_AGENT, isAgent } from "./agents";
+import { currentAgentId, DEFAULT_AGENT } from "./agents";
 import type { ChatMessage } from "./types";
 
 /**
@@ -62,12 +62,15 @@ function getUserId() {
   return id;
 }
 
-/** Threads saved before agents existed: file them under the costume they were started in. */
+/**
+ * Threads saved before agents existed are filed under the costume they were
+ * started in; threads with a retired agent go to the agent that replaced it.
+ */
 function agentOf(t: Thread) {
-  if (isAgent(t.agentId)) return t.agentId;
+  const own = currentAgentId(t.agentId);
+  if (own) return own;
   const meta = t.messages.find((m) => m.metadata?.agent || m.metadata?.costume)?.metadata;
-  const legacy = meta?.agent ?? meta?.costume;
-  return isAgent(legacy) ? legacy : DEFAULT_AGENT;
+  return currentAgentId(meta?.agent ?? meta?.costume) ?? DEFAULT_AGENT;
 }
 
 function loadThreads(): Thread[] {
@@ -112,7 +115,7 @@ export function useThreads(initialAgent?: string) {
       return { agentId: initialAgent, threadId: newId("t") };
     if (saved) return { agentId: saved.agentId, threadId: saved.id };
     const agent = localStorage.getItem(AGENT_KEY);
-    return { agentId: isAgent(agent) ? agent : DEFAULT_AGENT, threadId: newId("t") };
+    return { agentId: currentAgentId(agent) ?? DEFAULT_AGENT, threadId: newId("t") };
   });
 
   const commit = useCallback((fn: (prev: Thread[]) => Thread[]) => {

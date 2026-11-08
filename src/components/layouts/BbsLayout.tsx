@@ -1,7 +1,7 @@
 "use client";
 
 import { useCallback, useEffect, useLayoutEffect, useMemo, useRef, useState } from "react";
-import { art, Floppy, KnobMark, PixelArt, PowerMark, splashGrid } from "@/components/bbs/art";
+import { art, Floppy, KnobMark, PixelArt, PowerMark, SPLASH, splashGrid } from "@/components/bbs/art";
 import "@/components/bbs/bbs.css";
 import { useNow } from "./hooks";
 import type { ChatLine, LayoutProps } from "./types";
@@ -22,6 +22,7 @@ const CONNECT = `CONNECT ${BAUD}/ARQ/V42BIS`;
 const session = { dialed: false, start: 0, monitorOn: true };
 
 /** When each piece of the first-visit connection appears, in ms. */
+const SPLASH_ROWS = SPLASH.h / 2;
 const T = {
   ok: 280,
   atdt: 520,
@@ -29,13 +30,20 @@ const T = {
   connect: 1900,
   paint: 2080,
   paintRow: 105,
-  info: 3540,
-  login: 3700,
+  info: 2080 + SPLASH_ROWS * 105 + 120,
+  login: 2080 + SPLASH_ROWS * 105 + 280,
   loginStep: 170,
-  banner: 4450,
-  greet: 4650,
+  banner: 2080 + SPLASH_ROWS * 105 + 1000,
+  greet: 2080 + SPLASH_ROWS * 105 + 1200,
 };
-const SPLASH_ROWS = 13;
+/** Every moment something new arrives during the dial-in. */
+const BEATS = [
+  T.ok, T.atdt, T.ring, T.connect,
+  ...Array.from({ length: SPLASH_ROWS }, (_, i) => T.paint + i * T.paintRow),
+  T.info,
+  ...Array.from({ length: 4 }, (_, i) => T.login + i * T.loginStep),
+  T.banner, T.greet,
+];
 
 /* ───────── What the BBS has in it ───────── */
 
@@ -154,12 +162,22 @@ const DOORS = [
 ];
 
 const BULLETINS = [
-  "NODE 1 IS NOW 14.4K!! Thanks to everyone who chipped in. (Still on 2400? Upgrade!)",
+  "SAVING UP FOR A 14.4K MODEM. Donations welcome. (Mom says no second phone line.)",
   "NO WAREZ. I mean it. -Dale",
   "BBS is down Sundays 6-8pm. Mom calls Aunt Linda.",
   "NEW: 40 ANSI screens in File Area 3.",
   "FidoNet mail goes out at 4am. Be patient.",
 ];
+
+/** The BBS's main menu, as hotkeys under the chat. */
+const COMMANDS = [
+  ["F", "iles", "files"],
+  ["D", "oors", "doors"],
+  ["W", "ho's on", "who"],
+  ["B", "ulletins", "bulletins"],
+  ["P", "age SysOp", "page"],
+  ["G", "oodbye", "bye"],
+] as const;
 
 /* ───────── What the history shows ───────── */
 
@@ -202,8 +220,8 @@ function reducedMotion() {
 
 /* ───────── Monitor knobs ───────── */
 
-const KNOB_KEY = "gpty.bbs.knobs";
-const KNOB_DEFAULT = { bright: 0.5, contrast: 0.5 };
+const KNOB_KEY = "gpty.bbs.knobs.v2";
+const KNOB_DEFAULT = { bright: 0.75, contrast: 0.6 };
 
 function loadKnobs() {
   try {
@@ -230,15 +248,19 @@ export function BbsLayout({ costume, lines, busy, waiting, error, onSend, onStop
   /* Connection */
 
   // New chats on the first visit dial in; everything else opens connected.
-  const [intro, setIntro] = useState(() => !session.dialed && lines.length === 0 && !reducedMotion());
+  // `clock` is how far into the dial-in we are (ms); Infinity once it's done.
+  const [clock, setClock] = useState(() => (!session.dialed && lines.length === 0 && !reducedMotion() ? 0 : Infinity));
+  const intro = clock < Infinity;
   // The greeting types itself in at the end of the dial-in, unless the dial-in was skipped.
   const [introAtMount] = useState(intro);
   const [skipped, setSkipped] = useState(false);
   const [link, setLink] = useState<Link>(() => (intro ? "dialing" : "up"));
   const [upSince, setUpSince] = useState(() => (intro ? 0 : Date.now()));
+  useState(() => {
+    if (!session.start) session.start = Date.now();
+  });
   useEffect(() => {
     session.dialed = true;
-    if (!session.start) session.start = Date.now();
   }, []);
 
   const timers = useRef(new Set<ReturnType<typeof setTimeout>>());
@@ -259,11 +281,12 @@ export function BbsLayout({ costume, lines, busy, waiting, error, onSend, onStop
   useEffect(() => {
     if (!intro) return;
     introTimers.current = [
+      ...BEATS.map((t) => later(t, () => setClock((c) => (c < Infinity ? Math.max(c, t) : c)))),
       later(T.connect, () => {
         setLink("up");
         setUpSince(Date.now());
       }),
-      later(T.greet, () => setIntro(false)),
+      later(T.greet, () => setClock(Infinity)),
     ];
     // Only on mount: skipping clears these.
     // eslint-disable-next-line react-hooks/exhaustive-deps
@@ -275,7 +298,7 @@ export function BbsLayout({ costume, lines, busy, waiting, error, onSend, onStop
       clearTimeout(t);
       timers.current.delete(t);
     });
-    setIntro(false);
+    setClock(Infinity);
     setSkipped(true);
     setLink("up");
     setUpSince((s) => s || Date.now());
@@ -482,9 +505,9 @@ export function BbsLayout({ costume, lines, busy, waiting, error, onSend, onStop
 
   /* Keyboard: Alt shortcuts, Esc, and any key skips the dial-in */
 
-  const keys = useRef({ hangUp, clear, scrollBack, skipIntro, closeDialog, dialog, intro });
+  const keys = useRef({ hangUp, clear, scrollBack, skipIntro, closeDialog, dialog, intro, on });
   useEffect(() => {
-    keys.current = { hangUp, clear, scrollBack, skipIntro, closeDialog, dialog, intro };
+    keys.current = { hangUp, clear, scrollBack, skipIntro, closeDialog, dialog, intro, on };
   });
   useEffect(() => {
     const onKey = (e: KeyboardEvent) => {
@@ -495,7 +518,7 @@ export function BbsLayout({ costume, lines, busy, waiting, error, onSend, onStop
         k.closeDialog();
         return;
       }
-      if (!e.altKey || e.ctrlKey || e.metaKey) return;
+      if (!e.altKey || e.ctrlKey || e.metaKey || !k.on) return;
       const act: Record<string, () => void> = {
         KeyZ: () => setDialog((d) => (d === "help" ? null : "help")),
         KeyD: () => setDialog((d) => (d === "dir" ? null : "dir")),
@@ -558,16 +581,15 @@ export function BbsLayout({ costume, lines, busy, waiting, error, onSend, onStop
           {
             maxWidth: costume.window.w,
             maxHeight: costume.window.h,
-            "--bbs-bright": 0.55 + knobs.bright * 0.9,
-            "--bbs-contrast": 0.7 + knobs.contrast * 0.6,
-            "--bbs-glow": 0.35 + knobs.bright * 1.1,
+            // The knobs never dim the text: brightness sets how much the phosphor glows,
+            // contrast how strong the scanlines are.
+            "--bbs-glow": 0.7 + knobs.bright * 0.9,
+            "--bbs-scan": 0.02 + knobs.contrast * 0.1,
             ...(plastic ? { "--bbs-plastic": `url(${plastic})` } : {}),
           } as React.CSSProperties
         }
       >
         <div className="bbs-monitor">
-          <StickyNote user={me} />
-
           <div className="bbs-bevel">
             <div className="bbs-recess">
               <div
@@ -575,16 +597,14 @@ export function BbsLayout({ costume, lines, busy, waiting, error, onSend, onStop
                 className={`bbs-glass ${powerAnim ? `bbs-power-${powerAnim}` : ""}`}
                 data-power={on ? "on" : "off"}
                 onAnimationEnd={(e) => {
-                  if (e.target === glass.current) glass.current?.classList.remove("bbs-degauss");
+                  if (e.animationName === "bbs-degauss") glass.current?.classList.remove("bbs-degauss");
+                  if (e.animationName === "bbs-dot" || e.animationName === "bbs-on") setPowerAnim(null);
                 }}
               >
                 <div
                   className={`bbs-screen ${intro ? "bbs-intro" : ""}`}
                   style={{ "--name": `${nameCols}ch` } as React.CSSProperties}
                   onPointerDown={skipIntro}
-                  onAnimationEnd={(e) => {
-                    if (e.target === e.currentTarget) setPowerAnim(null);
-                  }}
                   inert={!on}
                 >
                   <div className="bbs-top">
@@ -601,7 +621,7 @@ export function BbsLayout({ costume, lines, busy, waiting, error, onSend, onStop
                   <div ref={log} className="bbs-log" aria-live="polite">
                     <div ref={inner} className="bbs-log-inner">
                       {cleared === null ? (
-                        <Preamble intro={intro} me={me} sysop={sysop} />
+                        <Preamble clock={clock} me={me} sysop={sysop} />
                       ) : (
                         <button type="button" className="bbs-hint" onClick={scrollBack}>
                           [Alt-B] Scroll back
@@ -609,7 +629,7 @@ export function BbsLayout({ costume, lines, busy, waiting, error, onSend, onStop
                       )}
 
                       {shown.map((r) =>
-                        r.kind === "msg" ? (
+                        r.key === "greeting" && clock < T.greet ? null : r.kind === "msg" ? (
                           <div key={r.key} className={`bbs-msg ${r.mine ? "bbs-mine" : "bbs-theirs"}`}>
                             <span className="bbs-who">
                               {r.mine ? me : sysop}
@@ -622,7 +642,6 @@ export function BbsLayout({ costume, lines, busy, waiting, error, onSend, onStop
                                 <Baud
                                   text={r.text}
                                   live={r.live}
-                                  delay={r.key === "greeting" ? T.greet : 0}
                                   skip={r.key === "greeting" && skipped}
                                   streaming={busy && r.key === lines.at(-1)?.id}
                                   onActive={setRx}
@@ -656,17 +675,8 @@ export function BbsLayout({ costume, lines, busy, waiting, error, onSend, onStop
                   </div>
 
                   <nav className="bbs-keys" aria-label="BBS commands">
-                    {(
-                      [
-                        ["F", "iles", () => run("files")],
-                        ["D", "oors", () => run("doors")],
-                        ["W", "ho's on", () => run("who")],
-                        ["B", "ulletins", () => run("bulletins")],
-                        ["P", "age SysOp", () => run("page")],
-                        ["G", "oodbye", hangUp],
-                      ] as const
-                    ).map(([k, rest, fn]) => (
-                      <button key={k} type="button" className="bbs-key" onClick={fn}>
+                    {COMMANDS.map(([k, rest, id]) => (
+                      <button key={k} type="button" className="bbs-key" onClick={() => (id === "bye" ? hangUp() : run(id))}>
                         <span className="bbs-key-k">[{k}]</span>
                         {rest}
                       </button>
@@ -720,7 +730,7 @@ export function BbsLayout({ costume, lines, busy, waiting, error, onSend, onStop
 
                   <div className="bbs-status">
                     <button type="button" onClick={() => setDialog("help")}>
-                      ALT-Z FOR HELP
+                      <span className="bbs-wide">ALT-Z FOR </span>HELP
                     </button>
                     <span className="max-sm:hidden">ANSI-BBS</span>
                     <span>{BAUD} N81</span>
@@ -762,6 +772,8 @@ export function BbsLayout({ costume, lines, busy, waiting, error, onSend, onStop
                   <i className="bbs-fx-mask" />
                   <i className="bbs-fx-scan" />
                   <i className="bbs-fx-roll" />
+                  <i className="bbs-fx-curve" />
+                  {/* On the glass itself, so above the tube's dark edges. */}
                   {reflection ? (
                     // eslint-disable-next-line @next/next/no-img-element
                     <img src={reflection} alt="" className="bbs-fx-photo" />
@@ -769,13 +781,13 @@ export function BbsLayout({ costume, lines, busy, waiting, error, onSend, onStop
                     <i className="bbs-fx-window" />
                   )}
                   <i className="bbs-fx-glare" />
-                  <i className="bbs-fx-curve" />
                 </div>
               </div>
             </div>
           </div>
 
           <div className="bbs-chin">
+            <StickyNote user={me} />
             <div className="bbs-badge">
               <b>GPTY</b>
               <span>14&quot; Color VGA</span>
@@ -806,7 +818,7 @@ export function BbsLayout({ costume, lines, busy, waiting, error, onSend, onStop
         </div>
 
         <div className="bbs-desk">
-          <button type="button" className="bbs-floppy" onClick={() => setDialog("dir")} title="Dialing directory (Alt-D)">
+          <button type="button" className="bbs-floppy" onClick={() => on && setDialog("dir")} title="Dialing directory (Alt-D)">
             <Floppy label="BBS LIST" />
           </button>
           <div className="bbs-stand" aria-hidden>
@@ -822,17 +834,12 @@ export function BbsLayout({ costume, lines, busy, waiting, error, onSend, onStop
 
 /* ───────── On the screen ───────── */
 
-function Line({ at, intro, children, className = "" }: { at: number; intro: boolean; children: React.ReactNode; className?: string }) {
-  return (
-    <div className={`${intro ? "bbs-at" : ""} ${className}`} style={{ "--at": `${at}ms` } as React.CSSProperties}>
-      {children}
-    </div>
-  );
-}
-
 /** What a terminal shows above the chat: the dial-in, the splash, the login. */
-function Preamble({ intro, me, sysop }: { intro: boolean; me: string; sysop: string }) {
+function Preamble({ clock, me, sysop }: { clock: number; me: string; sysop: string }) {
   const g = splashGrid();
+  // During the dial-in each piece arrives at its moment, so the terminal scrolls as it draws.
+  const has = (at: number) => clock >= at;
+  const painted = clock === Infinity ? SPLASH_ROWS : BEATS.filter((t) => t >= T.paint && t < T.info && t <= clock).length;
   const info = [
     ["Node 1 of 1", "Est. 1991", "FidoNet 1:340/93"],
     [`SysOp: ${sysop}`, "2,048 files", "24 hrs*"],
@@ -845,62 +852,72 @@ function Preamble({ intro, me, sysop }: { intro: boolean; me: string; sysop: str
   ];
   return (
     <div className="bbs-pre">
-      <Line at={0} intro={intro} className="t-cmd">
-        <span className={intro ? "bbs-typed" : ""} style={{ "--n": 3 } as React.CSSProperties}>ATZ</span>
-      </Line>
-      <Line at={T.ok} intro={intro}>OK</Line>
-      <Line at={T.atdt} intro={intro} className="t-cmd">
-        <span className={intro ? "bbs-typed" : ""} style={{ "--n": 15 } as React.CSSProperties}>
-          ATDT {PHONE}
-        </span>
-      </Line>
-      <Line at={T.ring} intro={intro}>RINGING</Line>
-      <Line at={T.connect} intro={intro} className="t-ok">{CONNECT}</Line>
-
-      <div className="bbs-splash" role="img" aria-label="Midnight BBS: a crescent moon over a sleeping town, with one basement window lit.">
-        <PixelArt g={g} className="block h-auto w-full" />
-        {intro &&
-          Array.from({ length: SPLASH_ROWS }, (_, i) => (
-            <span
-              key={i}
-              className="bbs-cover"
-              style={
-                {
-                  top: `${(i / SPLASH_ROWS) * 100}%`,
-                  height: `${100 / SPLASH_ROWS + 0.4}%`,
-                  "--at": `${T.paint + i * T.paintRow}ms`,
-                } as React.CSSProperties
-              }
-            />
-          ))}
+      <div className="t-cmd">
+        <span className="bbs-typed" style={{ "--n": 3 } as React.CSSProperties}>ATZ</span>
       </div>
+      {has(T.ok) && <div>OK</div>}
+      {has(T.atdt) && (
+        <div className="t-cmd">
+          <span className="bbs-typed" style={{ "--n": 15 } as React.CSSProperties}>
+            ATDT {PHONE}
+          </span>
+        </div>
+      )}
+      {has(T.ring) && <div>RINGING</div>}
+      {has(T.connect) && <div className="t-ok">{CONNECT}</div>}
 
-      <Line at={T.info} intro={intro} className="bbs-info">
-        {info.map((row, i) => (
-          <div key={i}>
-            {row.map((s, j) => (
-              <span key={j}>
-                {j > 0 && <span className="t-dark"> · </span>}
-                {s}
-              </span>
-            ))}
+      {painted > 0 && (
+        <div
+          className="bbs-splash"
+          role="img"
+          aria-label="Midnight BBS: a crescent moon over a sleeping town, with one basement window lit."
+          style={{ aspectRatio: `${SPLASH.w} / ${painted * 2}` }}
+        >
+          <div className="bbs-splash-art" style={{ aspectRatio: `${SPLASH.w} / ${SPLASH.h}` }}>
+            <PixelArt g={g} className="block h-full w-full" />
+            {painted < SPLASH_ROWS || clock < T.info ? (
+              <span
+                key={painted}
+                className="bbs-cover"
+                style={{ top: `${((painted - 1) / SPLASH_ROWS) * 100}%`, height: `${100 / SPLASH_ROWS + 0.3}%` }}
+              />
+            ) : null}
           </div>
-        ))}
-        <div className="t-dark">*except when Mom needs the phone</div>
-      </Line>
+        </div>
+      )}
+
+      {has(T.info) && (
+        <div className="bbs-info">
+          {info.map((row, i) => (
+            <div key={i}>
+              {row.map((s, j) => (
+                <span key={j}>
+                  {j > 0 && <span className="t-dark"> · </span>}
+                  {s}
+                </span>
+              ))}
+            </div>
+          ))}
+          <div className="t-dark">*except when Mom needs the phone</div>
+        </div>
+      )}
 
       <div className="bbs-login">
-        {login.map(([q, a], i) => (
-          <Line key={i} at={T.login + i * T.loginStep} intro={intro}>
-            <span className="t-gray">{q}</span>
-            <span className="t-hi">{a}</span>
-          </Line>
-        ))}
+        {login.map(([q, a], i) =>
+          has(T.login + i * T.loginStep) ? (
+            <div key={i}>
+              <span className="t-gray">{q}</span>
+              <span className="t-hi">{a}</span>
+            </div>
+          ) : null,
+        )}
       </div>
 
-      <Line at={T.banner} intro={intro} className="bbs-banner">
-        <span>*** {sysop} (SysOp) has entered chat mode ***</span>
-      </Line>
+      {has(T.banner) && (
+        <div className="bbs-banner">
+          <span>*** {sysop} (SysOp) has entered chat mode ***</span>
+        </div>
+      )}
     </div>
   );
 }
@@ -913,44 +930,28 @@ function Preamble({ intro, me, sysop }: { intro: boolean; me: string; sysop: str
 function Baud({
   text,
   live,
-  delay = 0,
   skip = false,
   streaming,
   onActive,
 }: {
   text: string;
   live: boolean;
-  delay?: number;
   skip?: boolean;
   streaming: boolean;
   onActive: (on: boolean) => void;
 }) {
   const [n, setN] = useState(live && !reducedMotion() ? 0 : text.length);
   const pos = useRef(n);
-  const startAt = useRef(0);
   const target = text.length;
-  const typing = n < target;
+  // A skipped dial-in shows the greeting whole.
+  const shown = skip ? target : n;
+  const typing = shown < target;
 
   useEffect(() => {
-    startAt.current = performance.now() + delay;
-    // Once, at mount.
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, []);
-
-  useEffect(() => {
-    if (skip) {
-      pos.current = target;
-      setN(target);
-      return;
-    }
-    if (pos.current >= target) return;
+    if (skip || pos.current >= target) return;
     let raf = 0;
     let last = 0;
     const tick = (t: number) => {
-      if (t < startAt.current) {
-        raf = requestAnimationFrame(tick);
-        return;
-      }
       const dt = last ? Math.min(0.1, (t - last) / 1000) : 0;
       last = t;
       const backlog = target - pos.current;
@@ -970,7 +971,7 @@ function Baud({
 
   return (
     <>
-      {text.slice(0, n)}
+      {text.slice(0, shown)}
       {(typing || streaming) && <i className="bbs-cursor" />}
     </>
   );
@@ -1257,9 +1258,9 @@ function Directory({ link, onClose, onDial }: { link: Link; onClose: () => void;
       <div className="bbs-dir-head" aria-hidden>
         <span>#</span>
         <span>Name</span>
-        <span className="max-sm:hidden">Number</span>
-        <span className="max-md:hidden">Baud</span>
-        <span className="max-md:hidden">Last call</span>
+        <span className="bbs-dir-num">Number</span>
+        <span className="bbs-dir-more">Baud</span>
+        <span className="bbs-dir-more">Last call</span>
       </div>
       <div className="bbs-dlg-list">
         {DIRECTORY.map((d, i) => (
@@ -1269,9 +1270,9 @@ function Directory({ link, onClose, onDial }: { link: Link; onClose: () => void;
               {d.name}
               {d.id === "midnight" && link === "up" && <span className="t-ok"> *</span>}
             </span>
-            <span className="max-sm:hidden">{d.number}</span>
-            <span className="max-md:hidden">{d.baud}</span>
-            <span className="max-md:hidden">{d.last}</span>
+            <span className="bbs-dir-num">{d.number}</span>
+            <span className="bbs-dir-more">{d.baud}</span>
+            <span className="bbs-dir-more">{d.last}</span>
           </button>
         ))}
       </div>
@@ -1306,7 +1307,7 @@ function OnLine({ since }: { since: number }) {
 function TimeLeft({ onHour }: { onHour: () => void }) {
   const now = useNow(10_000);
   const start = session.start || now;
-  const mins = Math.floor((now - start) / 60_000);
+  const mins = Math.max(0, Math.floor((now - start) / 60_000));
   const hour = Math.floor(mins / 60);
   // The hour this screen opened in doesn't count; only ones that run out while you watch.
   const [opened] = useState(hour);
@@ -1374,6 +1375,7 @@ function Modem({ leds }: { leds: LedState }) {
 
 /** A monitor knob: drag up or down, scroll, or use the arrow keys. Double-click resets. */
 function Knob({ kind, label, value, onTurn }: { kind: "bright" | "contrast"; label: string; value: number; onTurn: (v: number) => void }) {
+  const defaultValue = KNOB_DEFAULT[kind];
   const drag = useRef<{ id: number; y: number; v: number } | null>(null);
   return (
     <span className="bbs-ctl">
@@ -1397,7 +1399,7 @@ function Knob({ kind, label, value, onTurn }: { kind: "bright" | "contrast"; lab
         onPointerUp={() => (drag.current = null)}
         onPointerCancel={() => (drag.current = null)}
         onWheel={(e) => onTurn(value - e.deltaY / 900)}
-        onDoubleClick={() => onTurn(0.5)}
+        onDoubleClick={() => onTurn(defaultValue)}
         onKeyDown={(e) => {
           const step = { ArrowUp: 0.05, ArrowRight: 0.05, ArrowDown: -0.05, ArrowLeft: -0.05 }[e.key];
           if (step === undefined) return;

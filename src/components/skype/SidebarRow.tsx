@@ -1,6 +1,6 @@
 "use client";
 
-import type { ActiveRowProps, HoverBadgeProps } from "@/components/activeRows";
+import type { ActiveRowProps } from "@/components/activeRows";
 import { Gpty } from "@/components/Gpty";
 import { Pencil } from "./art";
 import { rounded, segoe } from "./font";
@@ -48,9 +48,4 @@ export function SkypeActiveRow({ agent, mood, ...button }: ActiveRowProps) {
       </span>
     </button>
   );
-}
-
-/** Skype's hover label in the sidebar: "Skype · 2007", a touch brighter than the others. */
-export function SkypeHoverBadge({ agent }: HoverBadgeProps) {
-  return <span className="truncate text-[12px] font-medium text-[var(--shell-soft)]">Skype · {agent.costume.year}</span>;
 }

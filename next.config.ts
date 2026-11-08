@@ -5,6 +5,10 @@ const nextConfig: NextConfig = {
   devIndicators: false,
   cacheComponents: true,
   partialPrefetching: true,
+  // Dottie (Messenger) was retired; Mark (Facebook) took over the chats.
+  async redirects() {
+    return [{ source: "/messenger", destination: "/facebook", permanent: false }];
+  },
   turbopack: {
     rules: {
       "*.css": {

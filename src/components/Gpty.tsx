@@ -56,6 +56,22 @@ const SHAPES: Record<GptyShape, { d: string; eyes: number }> = {
     d: "M10 34C6 30 6 22 10 18C12 12 18 8 25 9C31 8 37 11 39 17C43 21 44 28 41 33C38 39 31 42 24 41C17 42 13 39 10 34Z",
     eyes: 24,
   },
+  alien: {
+    // A wide head with one antenna and a ball on top. All three parts wind the
+    // same way, so where the stalk meets the head stays filled.
+    d: "M5.5 28.5a18.5 12.5 0 1 0 37 0a18.5 12.5 0 1 0 -37 0Z" +
+      "M25.9 17.4C26.7 13.6 29 10.9 32.2 9.4L31.2 7.6C27.4 9.4 24.6 12.6 23.6 17.2Z" +
+      "M30 6a3.6 3.6 0 1 0 7.2 0a3.6 3.6 0 1 0 -7.2 0Z",
+    eyes: 27.5,
+  },
+  slot: {
+    // A one-armed bandit: a domed cabinet, the arm out to the right and the
+    // ball on top. All three parts wind clockwise, so the joins stay filled.
+    d: "M11 21C11 13.5 16.5 9 24 9C31.5 9 37 13.5 37 21V38Q37 43 32 43H16Q11 43 11 38Z" +
+      "M36 27H39.2V13H42V31H36Z" +
+      "M37 9.8a3.6 3.6 0 1 1 7.2 0a3.6 3.6 0 1 1 -7.2 0Z",
+    eyes: 25,
+  },
 };
 
 /** How far the eyes travel when following the pointer, in 48-box units. */

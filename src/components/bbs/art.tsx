@@ -15,15 +15,15 @@ export type ArtSlot = "wallpaper" | "reflection" | "floppy" | "plastic";
 
 /**
  * Generated pictures that replace the drawn fallbacks (prompts in
- * src/components/bbs/ART.md). Uncomment a line once its file is in
- * public/bbs/. The wallpaper and reflection stay 1536px wide WebP, the
- * floppy 256px with transparency, the plastic a 512px tile.
+ * src/components/bbs/ART.md). Remove a line to fall back to the drawing.
+ * The wallpaper and reflection are 1536px wide WebP, the floppy 256px with
+ * transparency, the plastic a 512px tile.
  */
 const FILES: Partial<Record<ArtSlot, string>> = {
-  // wallpaper: "/bbs/wallpaper.webp",
-  // reflection: "/bbs/reflection.webp",
-  // floppy: "/bbs/floppy.webp",
-  // plastic: "/bbs/plastic.webp",
+  wallpaper: "/bbs/wallpaper.webp",
+  reflection: "/bbs/reflection.webp",
+  floppy: "/bbs/floppy.webp",
+  plastic: "/bbs/plastic.webp",
 };
 
 /** The picture for a slot, or undefined to draw the fallback. */
@@ -282,42 +282,44 @@ function dale(g: Grid, x0: number, y0: number) {
 /* ───────── Pictures ───────── */
 
 /** The login splash: night sky, crescent moon, logo, and the town asleep but one basement. */
+export const SPLASH = { w: 80, h: 28 };
+
 function buildSplash(): Grid {
-  const W = 80;
-  const H = 26;
+  const { w: W, h: H } = SPLASH;
   const g = grid(W, H);
   const r = rand(1993);
+  const ground = H - 1;
 
   // Stars, a few of them blinking (the ANSI blink attribute).
   const STAR = [K.White, K.LCyan, K.Gray, K.Dark, K.Yellow, K.Gray];
-  for (let i = 0; i < 52; i++) {
+  for (let i = 0; i < 56; i++) {
     const x = Math.floor(r() * W);
-    const y = Math.floor(r() * 17);
+    const y = Math.floor(r() * 19);
     put(g, x, y, { c: STAR[Math.floor(r() * STAR.length)], blink: r() < 0.16 ? "on" : undefined });
   }
 
-  moon(g, 70, 5.5, 5.2);
+  moon(g, 69, 4.4, 4.3);
 
   // A faint city glow along the horizon.
   for (let x = 0; x < W; x++) {
-    put(g, x, 18, r() < 0.5 ? { c: K.Blue, s: 1 } : null);
-    put(g, x, 19, { c: K.Blue, s: 1 });
-    put(g, x, 20, { c: K.Blue, s: 2 });
+    put(g, x, ground - 7, r() < 0.5 ? { c: K.Blue, s: 1 } : null);
+    put(g, x, ground - 6, { c: K.Blue, s: 1 });
+    put(g, x, ground - 5, { c: K.Blue, s: 2 });
   }
 
   // Far skyline: dim blue towers.
   for (let x = 0; x < W; ) {
     const w = 3 + Math.floor(r() * 4);
     const h = 3 + Math.floor(r() * 6);
-    for (let dx = 0; dx < w; dx++) for (let y = 25 - h; y < 25; y++) put(g, x + dx, y, { c: K.Blue, s: 3, b: K.Black });
+    for (let dx = 0; dx < w; dx++) for (let y = ground - h; y < ground; y++) put(g, x + dx, y, { c: K.Blue, s: 3, b: K.Black });
     x += w + Math.floor(r() * 2);
   }
   // Near skyline: dark blocks with lit windows.
-  for (let x = 30; x < W; ) {
+  for (let x = 39; x < W; ) {
     const w = 4 + Math.floor(r() * 5);
     const h = 2 + Math.floor(r() * 5);
     for (let dx = 0; dx < w; dx++) {
-      for (let y = 25 - h; y < 25; y++) {
+      for (let y = ground - h; y < ground; y++) {
         const win = dx % 2 === 1 && y % 2 === 0 && dx < w - 1 && r() < 0.45;
         put(
           g,
@@ -334,40 +336,47 @@ function buildSplash(): Grid {
 
   // Dale's house: red roof, brown walls, everyone asleep but the basement.
   const hx = 6;
-  for (let y = 21; y < 25; y++) for (let x = hx; x < hx + 13; x++) put(g, x, y, { c: K.Brown, s: 3, b: K.Black });
-  for (let i = 0; i < 5; i++) {
-    for (let x = hx + 4 - i * 1.5; x <= hx + 8 + i * 1.5; x++) put(g, x, 16 + i, i === 0 ? { c: K.LRed, s: 2, b: K.Red } : { c: K.Red });
+  const wall = ground - 4;
+  for (let y = wall; y < ground; y++) for (let x = hx; x < hx + 13; x++) put(g, x, y, { c: K.Brown, s: 3, b: K.Black });
+  for (let i = 0; i < 4; i++) {
+    for (let x = hx + 4 - i * 2; x <= hx + 8 + i * 2; x++) put(g, x, wall - 4 + i, i === 0 ? { c: K.LRed, s: 2, b: K.Red } : { c: K.Red });
   }
-  for (let y = 22; y < 25; y++) put(g, hx + 2, y, { c: K.Black });
-  put(g, hx + 3, 22, { c: K.Black });
-  put(g, hx + 6, 22, { c: K.Dark });
-  put(g, hx + 7, 22, { c: K.Dark });
+  for (let y = wall + 1; y < ground; y++) put(g, hx + 2, y, { c: K.Black });
+  put(g, hx + 3, wall + 1, { c: K.Black });
+  put(g, hx + 6, wall + 1, { c: K.Dark });
+  put(g, hx + 7, wall + 1, { c: K.Dark });
   // The basement window: a CRT glowing at midnight.
-  for (const x of [hx + 8, hx + 9, hx + 10]) put(g, x, 24, { c: K.LCyan });
-  for (const x of [hx + 7, hx + 11]) put(g, x, 24, { c: K.Cyan, s: 2, b: K.Brown });
-  put(g, hx + 9, 23, { c: K.Cyan, s: 1, b: K.Brown });
+  for (const x of [hx + 8, hx + 9, hx + 10]) put(g, x, ground - 1, { c: K.LCyan });
+  for (const x of [hx + 7, hx + 11]) put(g, x, ground - 1, { c: K.Cyan, s: 2, b: K.Brown });
+  put(g, hx + 9, ground - 2, { c: K.Cyan, s: 1, b: K.Brown });
 
   // The phone pole, with the line running to the house.
-  const px = 26;
-  for (let y = 15; y < 25; y++) put(g, px, y, { c: K.Brown });
-  for (let x = px - 2; x <= px + 2; x++) put(g, x, 16, { c: K.Brown });
-  put(g, px - 2, 15, { c: K.Gray });
-  put(g, px + 2, 15, { c: K.Gray });
+  const px = 25;
+  const arm = ground - 8;
+  for (let y = arm - 1; y < ground; y++) put(g, px, y, { c: K.Brown });
+  for (let x = px - 2; x <= px + 2; x++) put(g, x, arm, { c: K.Brown });
+  put(g, px - 2, arm - 1, { c: K.Gray });
+  put(g, px + 2, arm - 1, { c: K.Gray });
   for (let x = hx + 13; x < px - 2; x++) {
     const t = (x - (hx + 13)) / (px - 2 - (hx + 13));
-    put(g, x, 18 + Math.sin(t * Math.PI) * 1.6 - t * 2, { c: K.Dark });
+    put(g, x, wall - 1 + Math.sin(t * Math.PI) * 1.2 - t * 2, { c: K.Dark });
+  }
+  // And off across town.
+  for (let x = px + 3; x < 38; x++) {
+    const t = (x - (px + 3)) / (38 - (px + 3));
+    put(g, x, arm - 1 + Math.sin(t * Math.PI) * 1.5 + t, { c: K.Dark });
   }
 
-  dale(g, px - 10, 18);
+  dale(g, 30, ground - 7);
 
   // Grass.
-  for (let x = 0; x < W; x++) put(g, x, 25, { c: K.Green, s: r() < 0.5 ? 2 : 3, b: K.Black });
+  for (let x = 0; x < W; x++) put(g, x, ground, { c: K.Green, s: r() < 0.5 ? 2 : 3, b: K.Black });
 
   // The logo, over everything, with its drop shadow.
   const logo = grid(W, H);
   const total = wordWidth("MIDNIGHT") + 3 + wordWidth("BBS");
   const lx = Math.floor((W - total) / 2);
-  const ly = 7;
+  const ly = 10;
   const end = word(logo, "MIDNIGHT", lx, ly, CYAN_RAMP);
   word(logo, "BBS", end + 4, ly, PINK_RAMP);
   shadow(g, lx, ly, lx + total, ly + 6, logo);

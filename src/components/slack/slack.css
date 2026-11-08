@@ -67,7 +67,7 @@
   display: flex;
   flex: none;
   flex-direction: column;
-  width: 220px;
+  width: 232px;
   color: var(--sl-side-text);
   background:
     radial-gradient(120% 40% at 0% 0%, rgba(255, 255, 255, 0.06), transparent 70%),
@@ -84,9 +84,9 @@
   padding: 1px 4px 1px 2px;
   margin-left: -2px;
   border-radius: 5px;
-  font-size: 18px;
+  font-size: 17px;
   font-weight: 900;
-  letter-spacing: -0.01em;
+  letter-spacing: -0.015em;
   color: #fff;
   transition: background 0.15s;
 }
@@ -205,7 +205,7 @@
 }
 .sl-me:hover { background: rgba(0, 0, 0, 0.16); }
 .sl-me b { display: block; overflow: hidden; font-size: 15px; font-weight: 900; color: #fff; white-space: nowrap; text-overflow: ellipsis; }
-.sl-me span { display: flex; align-items: center; gap: 5px; font-size: 12px; }
+.sl-me-status { display: flex; align-items: center; gap: 5px; font-size: 12px; }
 .sl-me .sl-gear { margin-left: auto; color: var(--sl-side-text); }
 
 /* ───────── Main ───────── */
@@ -407,6 +407,8 @@ button.sl-chanlink:hover, .sl-link:hover { text-decoration: underline; }
 .sl-gif-cap button { margin-left: 4px; color: var(--sl-mute); }
 .sl-gif-cap button:hover { color: var(--sl-ink); }
 .sl-gif img, .sl-gif-stand { display: block; width: 100%; aspect-ratio: 16 / 10; border-radius: 6px; object-fit: cover; background: #222; }
+/* The GIF stills are 3:2, like most reaction GIFs of the time. */
+.sl-gif img { aspect-ratio: 3 / 2; }
 .sl-gif-stand {
   position: relative;
   overflow: hidden;
@@ -489,10 +491,34 @@ button.sl-chanlink:hover, .sl-link:hover { text-decoration: underline; }
 .sl-dots i:nth-child(3) { animation-delay: 0.3s; }
 @keyframes sl-dot { 0%, 60%, 100% { transform: translateY(0); opacity: 0.4; } 30% { transform: translateY(-2px); opacity: 1; } }
 
-/* Viewing a channel you didn't write in: the join bar. */
-.sl-joinbar { display: flex; align-items: center; gap: 12px; margin-bottom: 26px; padding: 14px 16px; border: 1px solid var(--sl-line); border-radius: 7px; background: #f9f9f9; font-size: 14.5px; color: #555459; }
-.sl-joinbar b { color: var(--sl-ink); }
-.sl-joinbar .sl-btn { margin-left: auto; }
+/* In scripted rooms, instead of a composer: a way back to Channing. */
+.sl-demo {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 12px 14px;
+  border: 2px solid #e0e0e0;
+  border-radius: 7px;
+  background: linear-gradient(180deg, #fbfbfb, #f4f4f5);
+  animation: sl-fade 0.2s ease-out;
+}
+.sl-demo > div > b { display: block; overflow: hidden; font-size: 15px; font-weight: 900; color: var(--sl-ink); white-space: nowrap; text-overflow: ellipsis; }
+.sl-demo span { display: block; font-size: 13.5px; color: var(--sl-soft); }
+.sl-demo span b { color: var(--sl-ink); }
+.sl-demo em { font-style: normal; font-weight: 700; color: var(--sl-red); }
+.sl-demo .sl-btn { gap: 6px; height: 36px; padding: 0 16px; }
+@container sl (max-width: 520px) {
+  .sl-demo { flex-wrap: wrap; }
+  .sl-demo .sl-btn { width: 100%; justify-content: center; }
+}
+
+/* In the header of your chat: who's listening. */
+.sl-live { display: inline-flex; flex: none; align-items: center; gap: 5px; margin-left: 4px; padding: 1px 8px 1px 7px; border-radius: 999px; font-size: 11.5px; font-weight: 700; letter-spacing: 0; color: #1f7a55; background: #e3f6ed; }
+.sl-live::before { content: ""; width: 7px; height: 7px; border-radius: 50%; background: var(--sl-green); animation: sl-pulse 2.4s ease-out infinite; }
+@container sl (max-width: 520px) { .sl-live { display: none; } }
+
+/* Buttons */
+.sl-btn { margin-left: auto; }
 .sl-btn { display: inline-flex; flex: none; align-items: center; height: 32px; padding: 0 14px; border-radius: 5px; font-size: 14px; font-weight: 900; color: #fff; background: var(--sl-green); box-shadow: inset 0 -2px 0 rgba(0, 0, 0, 0.12); transition: filter 0.12s, transform 0.1s; }
 .sl-btn:hover { filter: brightness(1.06); }
 .sl-btn:active { transform: translateY(1px); }
@@ -506,6 +532,8 @@ button.sl-chanlink:hover, .sl-link:hover { text-decoration: underline; }
   overflow: hidden;
   border: 1px solid rgba(0, 0, 0, 0.13);
   border-radius: 8px;
+  /* Menus can open from the sidebar; don't take its muted text color with them. */
+  color: var(--sl-text);
   background: #fff;
   box-shadow: 0 18px 44px -12px rgba(30, 10, 30, 0.38), 0 3px 8px rgba(30, 10, 30, 0.1);
   animation: sl-popin 0.14s ease-out;
@@ -519,7 +547,7 @@ button.sl-chanlink:hover, .sl-link:hover { text-decoration: underline; }
 .sl-menu hr { margin: 6px 0; border: 0; border-top: 1px solid #ececec; }
 .sl-menu-head { padding: 8px 16px 10px; border-bottom: 1px solid #ececec; margin-bottom: 4px; }
 .sl-menu-head b { display: block; font-size: 16px; font-weight: 900; }
-.sl-menu-head span { font-size: 12.5px; color: var(--sl-mute); }
+.sl-menu-head span span { display: block; font-size: 12.5px; color: var(--sl-mute); }
 .sl-team-menu { top: 64px; left: 10px; }
 .sl-plus-menu { bottom: calc(100% + 4px); left: 20px; }
 .sl-cmds { right: 20px; bottom: calc(100% + 4px); left: 20px; max-height: 300px; overflow-y: auto; }

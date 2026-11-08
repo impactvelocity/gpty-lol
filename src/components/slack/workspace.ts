@@ -2,7 +2,8 @@
  * The workspace around your conversation: Paradigm Dynamics, a mid-size
  * company that "switched off email" in March 2014 and moved everyone onto
  * Slack. Your chats with Channing are channels Channing made for you; every
- * other channel, DM and group here is scripted, and plays back when you peek.
+ * other channel, DM and group here is scripted, to look around in (they have
+ * no composer, just a way back to Channing).
  */
 
 export const TEAM = {
@@ -72,8 +73,6 @@ export interface Room {
   /** Someone in here is always typing. */
   typing?: PersonId;
   messages: Scripted[];
-  /** What slackbot says when you post here. Your message never reaches anyone. */
-  bounce: string;
 }
 
 export const ROOMS: Room[] = [
@@ -86,7 +85,7 @@ export const ROOMS: Room[] = [
     unread: 4,
     mention: true,
     messages: [
-      { who: "marcus", at: "8:02 AM", text: "Team: effective today, Paradigm Dynamics is officially *email-free* :tada:\nAll internal communication happens here now. Let's make 2014 the year we shift the paradigm." },
+      { who: "marcus", at: "8:02 AM", text: "Team: one month *email-free* today! :tada:\nAll internal communication happens here now. Let's make 2014 the year we shift the paradigm. :paradigm:" },
       { who: "brad", at: "8:05 AM", text: "love it. sent you an email with my thoughts" },
       { who: "linda", at: "8:11 AM", text: "Friendly reminder that everything posted in Slack is discoverable. Everything. :grimacing:" },
       { who: "channing", at: "8:30 AM", text: "@channel I made 14 new channels this morning! Please join all of them :raised_hands: :raised_hands:" },
@@ -94,7 +93,6 @@ export const ROOMS: Room[] = [
       { who: "channing", at: "8:31 AM", text: ":no_mouth:" },
       { who: "tiff", at: "9:40 AM", text: "Reminder: the kombucha tap is for *everyone*. @you that includes you, have some!" },
     ],
-    bounce: "Only team admins can post in #general. @marcus turned that on at 8:32 AM. No reason given.",
   },
   {
     id: "random",
@@ -114,7 +112,6 @@ export const ROOMS: Room[] = [
       { who: "channing", at: "10:31 AM", text: "/giphy happy" },
       { who: "brad", at: "10:33 AM", text: "can someone email me the link to this channel" },
     ],
-    bounce: "#random moved 40 messages while you were typing. Yours is somewhere up there. Probably.",
   },
   {
     id: "standup",
@@ -130,7 +127,6 @@ export const ROOMS: Room[] = [
       { who: "channing", at: "9:17 AM", text: "Yesterday: made channels :white_check_mark:\nToday: more channels\nBlockers: Brad keeps emailing me" },
       { who: "gary", at: "9:21 AM", text: "Today: Windows XP. Tomorrow: Windows XP. Blockers: Windows XP" },
     ],
-    bounce: "Standup ended at 9:30. See you tomorrow at 9:15 sharp. Sitting is allowed. Barely.",
   },
   {
     id: "q1-synergy",
@@ -147,7 +143,6 @@ export const ROOMS: Room[] = [
       { who: "priya", at: "11:20 AM", text: "", file: { name: "Synergy_Deck_FINAL_v3_USE_THIS_ONE.pptx", size: "48 MB", kind: "pptx" } },
       { who: "channing", at: "11:21 AM", text: ":chart_with_upwards_trend: :rocket: :100: :synergy:" },
     ],
-    bounce: "Your message has been added to the agenda for the Q2 offsite.",
   },
   {
     id: "deploys",
@@ -164,7 +159,6 @@ export const ROOMS: Room[] = [
       { who: "heroku", at: "4:58 PM", text: "devon deployed paradigm-web *v214* to production (Friday, 4:58 PM)" },
       { who: "devon", at: "4:59 PM", text: "ok have a good weekend everyone" },
     ],
-    bounce: "Only integrations can post in #deploys. Are you an integration? (You are not an integration.)",
   },
   {
     id: "design",
@@ -180,7 +174,6 @@ export const ROOMS: Room[] = [
       { who: "marcus", at: "2:12 PM", text: "Also can we make it flat? Everyone's going flat now. Like iOS 7" },
       { who: "priya", at: "2:12 PM", text: "it is flat. it has a long shadow. it is extremely 2014" },
     ],
-    bounce: "@priya has muted #design. Nothing personal. It's v48.",
   },
   {
     id: "it-helpdesk",
@@ -198,7 +191,6 @@ export const ROOMS: Room[] = [
       { who: "tiff", at: "10:02 AM", text: "is the wifi password still paradigm2014! with the exclamation mark" },
       { who: "gary", at: "10:02 AM", text: "please stop posting the wifi password in channels" },
     ],
-    bounce: "Gary got your ticket (#4,211). Estimated response time: after April 8.",
   },
   {
     id: "lunch",
@@ -215,7 +207,6 @@ export const ROOMS: Room[] = [
       { who: "channing", at: "11:09 AM", text: "Made #lunch-tuesdays #lunch-wednesdays and #lunch-thursdays for this! :thumbsup:" },
       { who: "tiff", at: "11:09 AM", text: "please no" },
     ],
-    bounce: "Lunch orders closed at 11:45. Tiff has already left. You can hear the car.",
   },
   {
     id: "leadership-offsite",
@@ -230,7 +221,6 @@ export const ROOMS: Room[] = [
       { who: "marcus", at: "Yesterday", text: "Brad" },
       { who: "channing", at: "Yesterday", text: "hi! I invited myself :simple_smile:" },
     ],
-    bounce: "This group is read-only for associates. Channing still isn't sure how they got in.",
   },
   {
     id: "linda-bday",
@@ -245,7 +235,6 @@ export const ROOMS: Room[] = [
       { who: "linda", at: "1:15 PM", text: "Thank you, everyone. I will act surprised." },
       { who: "tiff", at: "1:15 PM", text: "CHANNING" },
     ],
-    bounce: "Surprise ruined. Linda has already acted surprised.",
   },
   // Direct messages (channing's is your conversation, so it isn't here).
   {
@@ -260,7 +249,6 @@ export const ROOMS: Room[] = [
       { who: "slackbot", at: "8:00 AM", text: "First things first: what should your teammates call you?" },
       { who: "slackbot", at: "8:01 AM", text: "Just checking in! You still haven't told me your name. Take your time. I'll be here. I'm always here." },
     ],
-    bounce: "I'm still only a bot. But I'll remember you said that. (I won't.)",
   },
   {
     id: "dm-brad",
@@ -273,7 +261,6 @@ export const ROOMS: Room[] = [
       { who: "brad", at: "9:03 AM", text: "hey quick q" },
       { who: "brad", at: "9:03 AM", text: "can you send me what you said in slack as an email? easier for me" },
     ],
-    bounce: "brad is away. He'll get an email about this.",
   },
   {
     id: "dm-devon",
@@ -286,7 +273,6 @@ export const ROOMS: Room[] = [
       { who: "devon", at: "Yesterday", text: "if prod goes down, I'm in a meeting" },
       { who: "devon", at: "Yesterday", text: "if prod stays up, I fixed it" },
     ],
-    bounce: "devon is in a meeting. (Prod is up. He fixed it.)",
   },
   {
     id: "dm-gary",
@@ -300,7 +286,6 @@ export const ROOMS: Room[] = [
       { who: "gary", at: "8:45 AM", text: "Did you install something called \"Slack\" on your work laptop" },
       { who: "gary", at: "8:46 AM", text: "Never mind. Marcus says everyone has to. I'll add it to the list." },
     ],
-    bounce: "Gary is typing a very long reply. He has been for a while.",
   },
   {
     id: "dm-linda",
@@ -313,7 +298,6 @@ export const ROOMS: Room[] = [
       { who: "linda", at: "Yesterday", text: "Please don't post contracts in #random." },
       { who: "linda", at: "Yesterday", text: "Or #lunch. Or anywhere. Contracts go in email. Which we no longer have. I'm working on it." },
     ],
-    bounce: "Linda has archived this message for legal hold.",
   },
   {
     id: "dm-marcus",
@@ -323,7 +307,6 @@ export const ROOMS: Room[] = [
     members: 2,
     unread: 0,
     messages: [{ who: "marcus", at: "Monday", text: "Do you have 5 minutes? (It's not bad.)" }],
-    bounce: "marcus is away. It wasn't bad. Probably.",
   },
   {
     id: "dm-priya",
@@ -336,7 +319,6 @@ export const ROOMS: Room[] = [
       { who: "priya", at: "2:15 PM", text: "if Marcus asks, v47 is the final one" },
       { who: "priya", at: "2:15 PM", text: "it is not the final one" },
     ],
-    bounce: "priya is in Photoshop. She'll see this after the render.",
   },
   {
     id: "dm-tiff",
@@ -346,7 +328,6 @@ export const ROOMS: Room[] = [
     members: 2,
     unread: 0,
     messages: [{ who: "tiff", at: "11:46 AM", text: "you missed the lunch order. again. :disappointed:" }],
-    bounce: "tiff is away. She left for burritos without you.",
   },
 ];
 

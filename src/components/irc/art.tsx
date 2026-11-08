@@ -20,11 +20,11 @@ export type ArtSlot =
  * public/irc/. Icons are 128px and pictures 512px WebP; wide ones 1536px.
  */
 const FILES: Partial<Record<ArtSlot, string>> = {
-  // wallpaper: "/irc/wallpaper.webp",
-  // scene: "/irc/scene.webp",
-  // backdrop: "/irc/backdrop.webp",
-  // nickPicture: "/irc/dp-nick.webp",
-  // trout: "/irc/trout.webp",
+  wallpaper: "/irc/wallpaper.webp",
+  scene: "/irc/scene.webp",
+  backdrop: "/irc/backdrop.webp",
+  nickPicture: "/irc/dp-nick.webp",
+  trout: "/irc/trout.webp",
   // connect: "/irc/icon-connect.webp",
   // options: "/irc/icon-options.webp",
   // channels: "/irc/icon-channels.webp",

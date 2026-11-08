@@ -1,0 +1,590 @@
+/*
+ * GrugPT, 10,000 BC: a modern AI chat app painted on a cave wall at red
+ * twilight. Everything is scoped under .cave (or a cv- class) so it can't
+ * leak into the other costumes.
+ */
+
+.cave {
+  --cv-font: var(--font-londrina), "Londrina Solid", "Arial Rounded MT Bold", system-ui, sans-serif;
+  --cv-ochre: #d65f2e;
+  --cv-ochre-hi: #ef7d3f;
+  --cv-gold: #eaa64e;
+  --cv-bone: #f2e0c4;
+  --cv-bone-2: rgba(242, 224, 196, 0.74);
+  --cv-mute: rgba(242, 224, 196, 0.5);
+  --cv-faint: rgba(242, 224, 196, 0.12);
+  --cv-char: #160b09;
+  --cv-plum: #4b2a4c;
+  /* Fine grain, like pigment on a rough wall (and the grainy prints it's styled after). */
+  --cv-grain: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='160' height='160'><filter id='g'><feTurbulence type='fractalNoise' baseFrequency='.85' numOctaves='2' stitchTiles='stitch'/><feColorMatrix values='1 0 0 0 0  1 0 0 0 0  1 0 0 0 0  0 0 0 0 .55'/></filter><rect width='100%' height='100%' filter='url(%23g)'/></svg>");
+  font-family: var(--cv-font);
+  color: var(--cv-bone);
+  -webkit-font-smoothing: antialiased;
+}
+.cave ::selection { background: rgba(214, 95, 46, 0.45); color: #fff6e8; }
+.cave :focus-visible { outline: 2px solid var(--cv-gold); outline-offset: 2px; border-radius: 10px; }
+.cave button { cursor: pointer; }
+.cave button:disabled { cursor: default; }
+
+/* ───────── Window: a slab of warm rock ───────── */
+
+.cv-window {
+  --tx: 50%;
+  --ty: 38%;
+  position: relative;
+  isolation: isolate;
+  display: flex;
+  width: 100%;
+  height: 100%;
+  overflow: hidden;
+  /* A slab of rock, not a box: no two corners alike. */
+  border-radius: 40px 20px 62px 24px / 26px 42px 32px 56px;
+  container: cv / inline-size;
+  background:
+    radial-gradient(70% 50% at 94% -12%, rgba(190, 64, 52, 0.3), transparent 70%),
+    linear-gradient(178deg, #45211a 0%, #361913 55%, #2a130f 100%);
+  box-shadow:
+    0 0 0 1px rgba(10, 3, 2, 0.75),
+    0 44px 100px -28px rgba(8, 2, 0, 0.85),
+    0 14px 34px -14px rgba(8, 2, 0, 0.6);
+}
+/* An edge that catches the light, and a little darkness in the corners. */
+.cv-window::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  z-index: 8;
+  border-radius: inherit;
+  pointer-events: none;
+  box-shadow:
+    inset 0 0 0 1px rgba(255, 190, 140, 0.07),
+    inset 1px 2px 0 rgba(255, 200, 150, 0.12),
+    inset -2px -3px 0 rgba(0, 0, 0, 0.3),
+    inset 0 0 110px rgba(10, 3, 2, 0.5);
+}
+.cv-window[data-dragging] { box-shadow: 0 0 0 1px rgba(10, 3, 2, 0.75), 0 54px 110px -26px rgba(8, 2, 0, 0.9), 0 18px 40px -14px rgba(8, 2, 0, 0.65); }
+.cv-window[data-dragging] * { cursor: grabbing !important; }
+/* The site gives headers and navs an ink shadow for its own sidebar; not in here. */
+.cave header, .cave nav, .cave aside { text-shadow: none; }
+
+/* Bumps of the rock, lit from the upper left, and the grain over it all. */
+.cv-rock {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  background: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='560' height='560'><filter id='r' x='0' y='0' width='100%' height='100%'><feTurbulence type='fractalNoise' baseFrequency='.008 .014' numOctaves='5' seed='11' stitchTiles='stitch'/><feDiffuseLighting lighting-color='%23fff' surfaceScale='6' diffuseConstant='1.15'><feDistantLight azimuth='235' elevation='40'/></feDiffuseLighting></filter><rect width='100%' height='100%' filter='url(%23r)'/></svg>") 0 0 / 560px;
+  mix-blend-mode: overlay;
+  opacity: 0.18;
+}
+/* The photo of the wall, laid thin over plain rock so it reads as stone, not pattern. */
+.cv-rock[data-photo] { background-size: cover; background-position: center; mix-blend-mode: normal; opacity: 0.42; filter: saturate(0.8) contrast(0.9); }
+/* Grain over the whole wall, like pigment on rough stone. */
+.cv-window::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  z-index: 0;
+  pointer-events: none;
+  background: var(--cv-grain) 0 0 / 160px;
+  mix-blend-mode: soft-light;
+  opacity: 0.26;
+}
+
+/* Fire below, the torch at your pointer. */
+.cv-glow {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  background:
+    radial-gradient(circle 340px at var(--tx) var(--ty), rgba(255, 150, 70, 0.09), transparent 70%),
+    radial-gradient(90% 46% at 50% 120%, rgba(255, 104, 30, 0.3), transparent 72%);
+  animation: cv-flicker 2.6s ease-in-out infinite;
+  transition: opacity 0.6s ease;
+}
+@keyframes cv-flicker { 0%, 100% { opacity: 0.88; } 30% { opacity: 1; } 55% { opacity: 0.78; } 80% { opacity: 0.95; } }
+
+/* Paintings from before Grug's time, faint until the torch finds them. */
+.cv-old {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  color: #b9472a;
+  --p2: #d99a48;
+  opacity: 0.78;
+  -webkit-mask-image: radial-gradient(circle 250px at var(--tx) var(--ty), #000 0%, rgba(0, 0, 0, 0.55) 40%, rgba(0, 0, 0, 0.1) 75%, rgba(0, 0, 0, 0.05) 100%);
+  mask-image: radial-gradient(circle 250px at var(--tx) var(--ty), #000 0%, rgba(0, 0, 0, 0.55) 40%, rgba(0, 0, 0, 0.1) 75%, rgba(0, 0, 0, 0.05) 100%);
+  transition: opacity 0.6s ease;
+}
+.cv-old-p { position: absolute; display: block; translate: -50% -50%; }
+
+/* ───────── Walls (threads; the site hides these for now) ───────── */
+
+.cv-threads {
+  position: relative;
+  z-index: 1;
+  display: flex;
+  flex-direction: column;
+  width: 236px;
+  flex: none;
+  padding: 14px 10px;
+  border-right: 1px solid rgba(0, 0, 0, 0.35);
+  background: rgba(14, 6, 5, 0.32);
+}
+.cv-newwall { display: flex; align-items: center; gap: 8px; height: 38px; padding: 0 10px; border-radius: 10px; font-size: 17px; text-transform: uppercase; color: var(--cv-bone); }
+.cv-newwall:hover { background: rgba(255, 255, 255, 0.06); }
+.cv-th-list { min-height: 0; flex: 1; overflow-y: auto; margin-top: 10px; }
+.cv-th-h { padding: 12px 10px 4px; font-size: 12.5px; font-weight: 300; letter-spacing: 0.12em; text-transform: uppercase; color: var(--cv-mute); }
+.cv-th { display: flex; align-items: center; border-radius: 9px; }
+.cv-th:hover, .cv-th[data-on] { background: rgba(255, 255, 255, 0.06); }
+.cv-th-t { min-width: 0; flex: 1; overflow: hidden; padding: 7px 10px; font-size: 15.5px; font-weight: 300; text-align: left; text-overflow: ellipsis; white-space: nowrap; color: var(--cv-bone-2); }
+.cv-th-x { display: none; padding: 0 6px; color: var(--cv-mute); }
+.cv-th:hover .cv-th-x { display: block; }
+.cv-th-x:hover { color: var(--cv-ochre-hi); }
+
+/* ───────── Main column ───────── */
+
+.cv-main { position: relative; display: flex; min-width: 0; flex: 1; flex-direction: column; }
+
+/* ───────── Top: a painted rule of dots, to drag the slab by ───────── */
+
+.cv-top { position: relative; z-index: 4; flex: none; padding: 16px 22px 6px; cursor: grab; user-select: none; }
+.cv-rule {
+  height: 6px;
+  background: radial-gradient(circle, var(--cv-ochre) 1.5px, transparent 2.3px) 0 50% / 13px 6px repeat-x;
+  opacity: 0.42;
+  -webkit-mask-image: linear-gradient(90deg, transparent, #000 12%, #000 88%, transparent);
+  mask-image: linear-gradient(90deg, transparent, #000 12%, #000 88%, transparent);
+}
+
+/* ───────── Popovers ───────── */
+
+.cv-pop-wrap { position: relative; }
+.cv-pop {
+  position: absolute;
+  z-index: 10;
+  padding: 6px;
+  border-radius: 18px;
+  color: var(--cv-bone);
+  background:
+    var(--cv-grain) 0 0 / 160px,
+    linear-gradient(170deg, #42211b, #2c1512);
+  background-blend-mode: soft-light, normal;
+  box-shadow:
+    0 0 0 1px rgba(10, 3, 2, 0.7),
+    inset 0 1px 0 rgba(255, 200, 150, 0.14),
+    0 24px 60px -14px rgba(5, 1, 0, 0.8);
+  animation: cv-pop-in 0.16s cubic-bezier(0.3, 1.3, 0.5, 1);
+}
+@keyframes cv-pop-in { from { opacity: 0; transform: translateY(-4px) scale(0.97); } to { opacity: 1; transform: none; } }
+.cv-pop-plus { bottom: 52px; left: -4px; width: 354px; transform-origin: 20px 100%; }
+.cv-pop-h { padding: 8px 10px 5px; font-size: 13px; font-weight: 300; letter-spacing: 0.14em; text-transform: uppercase; color: var(--cv-mute); }
+.cv-paints { display: grid; grid-template-columns: repeat(8, 1fr); gap: 2px; padding: 0 2px 4px; }
+.cv-paints button { display: grid; place-items: center; aspect-ratio: 1; border-radius: 10px; transition: background-color 0.12s ease, transform 0.12s ease; }
+.cv-paints button:hover { background: rgba(255, 220, 190, 0.08); transform: scale(1.12) rotate(-3deg); }
+.cv-paints .cv-picto { width: 28px; height: 28px; margin: 0; vertical-align: 0; }
+.cv-gifts { display: grid; grid-template-columns: repeat(3, 1fr); gap: 2px; padding: 0 2px 2px; }
+.cv-gifts button { display: flex; align-items: center; gap: 6px; padding: 7px 8px; border-radius: 10px; font-size: 14px; text-transform: uppercase; letter-spacing: 0.03em; text-align: left; color: var(--cv-bone-2); transition: background-color 0.12s ease; }
+.cv-gifts button:hover { background: rgba(255, 220, 190, 0.08); color: var(--cv-bone); }
+.cv-gifts .cv-picto { width: 26px; height: 26px; flex: none; margin: 0; vertical-align: 0; }
+
+/* ───────── The wall: conversation ───────── */
+
+.cv-scroll { position: relative; z-index: 1; min-height: 0; flex: 1; overflow-y: auto; overscroll-behavior: contain; scrollbar-width: thin; scrollbar-color: rgba(242, 224, 196, 0.18) transparent; }
+.cv-col { width: 100%; max-width: 780px; margin: 0 auto; padding: 26px 28px 18px; }
+
+/* Pictograms inside a sentence. */
+.cv-picto { display: inline-block; width: 1.32em; height: 1.32em; margin: 0 0.05em; vertical-align: -0.3em; color: var(--cv-ochre-hi); --p2: var(--cv-gold); overflow: visible; }
+
+/* You: just your words, on the right, in your own hand. */
+.cv-you { display: flex; flex-direction: column; align-items: flex-end; margin: 14px 0 22px; }
+.cv-tag { display: inline-flex; align-items: center; gap: 4px; margin-bottom: 3px; font-size: 13px; font-weight: 300; letter-spacing: 0.12em; text-transform: uppercase; color: var(--cv-gold); }
+.cv-tag .cv-picto { width: 18px; height: 18px; vertical-align: 0; }
+.cv-mine { max-width: min(78%, 560px); font-size: 20px; line-height: 1.42; letter-spacing: 0.025em; text-align: right; text-transform: uppercase; white-space: pre-wrap; overflow-wrap: anywhere; color: rgba(242, 224, 196, 0.72); }
+.cv-mine .cv-picto { color: var(--cv-gold); --p2: #ffd9a0; }
+
+/* Grug: painted straight onto the rock. */
+.cv-grug { margin: 6px 0 22px; }
+.cv-body { min-width: 0; }
+.cv-thought { display: inline-flex; align-items: center; gap: 5px; margin-bottom: 7px; padding: 2px 10px 2px 6px; border-radius: 999px; font-size: 13.5px; font-weight: 300; letter-spacing: 0.1em; text-transform: uppercase; color: var(--cv-gold); background: rgba(234, 166, 78, 0.09); }
+.cv-thought .cv-picto { width: 18px; height: 18px; vertical-align: 0; }
+.cv-text {
+  padding-top: 3px;
+  font-size: 20px;
+  font-weight: 400;
+  line-height: 1.42;
+  letter-spacing: 0.025em;
+  text-transform: uppercase;
+  white-space: pre-wrap;
+  overflow-wrap: anywhere;
+  color: var(--cv-bone);
+  text-shadow: 0 0 22px rgba(255, 130, 50, 0.16);
+  transition: color 1.6s ease;
+}
+/* A line of nothing but pictures is Grug's painting: painted large, between two rules of dots. */
+.cv-mural {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: flex-end;
+  gap: 6px 12px;
+  width: fit-content;
+  max-width: 100%;
+  margin: 4px 0 10px;
+  padding: 16px 6px 16px;
+  background:
+    radial-gradient(circle, rgba(214, 95, 46, 0.7) 1.5px, transparent 2.2px) 0 0 / 12px 6px repeat-x,
+    radial-gradient(circle, rgba(214, 95, 46, 0.7) 1.5px, transparent 2.2px) 6px 100% / 12px 6px repeat-x;
+}
+.cv-mural .cv-picto { width: 58px; height: 58px; margin: 0; vertical-align: 0; animation: cv-rise 0.5s cubic-bezier(0.3, 1.4, 0.5, 1) both; }
+.cv-mural .cv-picto:nth-child(2) { animation-delay: 0.08s; }
+.cv-mural .cv-picto:nth-child(3) { animation-delay: 0.16s; }
+.cv-mural .cv-picto:nth-child(4) { animation-delay: 0.24s; }
+.cv-mural .cv-picto:nth-child(5) { animation-delay: 0.32s; }
+.cv-mural .cv-picto:nth-child(n + 6) { animation-delay: 0.4s; }
+/* Wet paint: the newest words glow ochre, then dry to bone. */
+.cv-grug[data-live] .cv-text { color: #ffd2a1; transition: none; }
+.cv-blob { display: inline-block; width: 11px; height: 11px; margin-left: 5px; vertical-align: 0.02em; border-radius: 48% 52% 45% 55% / 55% 45% 55% 45%; background: var(--cv-ochre-hi); box-shadow: 0 0 10px rgba(255, 120, 40, 0.6); animation: cv-blob 0.9s ease-in-out infinite alternate; }
+@keyframes cv-blob { from { transform: scale(0.8); } to { transform: scale(1.12) rotate(20deg); } }
+
+@keyframes cv-tap { from { transform: scale(0.6) rotate(-10deg); } to { transform: none; } }
+
+/* Tooltips, painted in charcoal. */
+.cave [data-tip]::after {
+  content: attr(data-tip);
+  position: absolute;
+  left: 50%;
+  bottom: calc(100% + 6px);
+  z-index: 20;
+  padding: 4px 9px 3px;
+  border-radius: 8px;
+  font-family: var(--cv-font);
+  font-size: 13px;
+  font-weight: 400;
+  letter-spacing: 0.06em;
+  line-height: 1.1;
+  text-transform: uppercase;
+  white-space: nowrap;
+  color: var(--cv-bone);
+  background: var(--cv-char);
+  box-shadow: 0 0 0 1px rgba(242, 224, 196, 0.1), 0 6px 16px -6px rgba(0, 0, 0, 0.7);
+  opacity: 0;
+  pointer-events: none;
+  transform: translate(-50%, 3px);
+  transition: opacity 0.12s ease, transform 0.12s ease;
+}
+.cave [data-tip]:hover::after, .cave [data-tip]:focus-visible::after { opacity: 1; transform: translate(-50%, 0); transition-delay: 0.25s; }
+
+/* Thinking: the words shimmer, and pictures pass through Grug's head. */
+.cv-thinking { display: flex; align-items: center; gap: 10px; min-height: 32px; }
+.cv-shimmer {
+  font-size: 19px;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: transparent;
+  background: linear-gradient(90deg, rgba(242, 224, 196, 0.38) 0%, rgba(242, 224, 196, 0.38) 35%, #ffe2bd 50%, rgba(242, 224, 196, 0.38) 65%, rgba(242, 224, 196, 0.38) 100%) 0 0 / 250% 100%;
+  -webkit-background-clip: text;
+  background-clip: text;
+  animation: cv-shimmer 2s linear infinite;
+}
+@keyframes cv-shimmer { from { background-position: 100% 0; } to { background-position: -150% 0; } }
+.cv-cycle { position: relative; width: 26px; height: 26px; }
+.cv-cycle > span { position: absolute; inset: 0; opacity: 0; animation: cv-cycle 3.5s ease-in-out infinite; }
+.cv-cycle .cv-picto { width: 26px; height: 26px; margin: 0; vertical-align: 0; }
+@keyframes cv-cycle { 0% { opacity: 0; transform: scale(0.5) rotate(-12deg); } 5% { opacity: 1; transform: none; } 17% { opacity: 1; transform: none; } 22% { opacity: 0; transform: scale(1.2) translateY(-6px); } 100% { opacity: 0; } }
+
+.cv-err { display: flex; align-items: center; gap: 10px; width: fit-content; max-width: 100%; margin: 4px 0 18px; padding: 9px 16px 9px 12px; border-radius: 16px 10px 18px 12px; font-size: 17px; letter-spacing: 0.03em; text-transform: uppercase; color: #ffb796; background: rgba(160, 42, 22, 0.22); box-shadow: inset 0 0 0 1px rgba(255, 120, 80, 0.25); }
+.cv-err .cv-picto { width: 26px; height: 26px; flex: none; color: #ff8a5c; vertical-align: 0; }
+
+/* Gifts given and received. */
+.cv-gift { display: flex; align-items: center; justify-content: center; gap: 10px; margin: 10px 0 24px; font-size: 16px; letter-spacing: 0.08em; text-transform: uppercase; color: var(--cv-gold); }
+.cv-gift-ring { display: grid; place-items: center; width: 46px; height: 46px; border-radius: 50%; background: radial-gradient(circle, rgba(234, 166, 78, 0.16), transparent 70%); box-shadow: 0 0 0 2px transparent; position: relative; }
+.cv-gift-ring::before { content: ""; position: absolute; inset: 0; border-radius: 50%; border: 2.4px dotted rgba(214, 95, 46, 0.75); animation: cv-turn 24s linear infinite; }
+.cv-gift-ring .cv-picto { width: 30px; height: 30px; margin: 0; vertical-align: 0; }
+
+/* ───────── The empty wall ───────── */
+
+.cv-main[data-empty] .cv-scroll { display: flex; flex-direction: column; justify-content: center; }
+.cv-hero { display: flex; flex-direction: column; align-items: center; padding: 20px 24px 26px; text-align: center; }
+.cv-frieze { display: block; width: min(540px, 92%); height: auto; color: var(--cv-ochre); --p2: var(--cv-gold); overflow: visible; }
+.cv-hero-frieze { margin-bottom: 14px; opacity: 0.92; animation: cv-rise 0.6s cubic-bezier(0.3, 0.8, 0.4, 1) both; }
+.cv-frieze-img { opacity: 0.95; }
+.cv-run, .cv-sway, .cv-turn { transform-box: fill-box; transform-origin: 50% 80%; }
+.cv-run { animation: cv-run 0.75s ease-in-out infinite alternate; }
+.cv-sway { animation: cv-sway 3.2s ease-in-out infinite alternate; }
+.cv-turn { transform-origin: 50% 50%; animation: cv-turn 40s linear infinite; }
+@keyframes cv-run { from { transform: translateY(0) rotate(-2deg); } to { transform: translateY(-1.2px) rotate(2deg); } }
+@keyframes cv-sway { from { transform: rotate(-1.5deg); } to { transform: rotate(1.5deg); } }
+@keyframes cv-turn { to { rotate: 360deg; } }
+@keyframes cv-rise { from { opacity: 0; transform: translateY(8px); } to { opacity: 1; transform: none; } }
+.cv-hero-h {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 14px;
+  margin: 0;
+  font-size: clamp(28px, 4.4cqi, 46px);
+  font-weight: 900;
+  line-height: 1.05;
+  letter-spacing: 0.01em;
+  text-transform: uppercase;
+  color: var(--cv-bone);
+  text-shadow: 0 2px 0 rgba(10, 3, 2, 0.35), 0 0 40px rgba(255, 120, 40, 0.22);
+  animation: cv-rise 0.6s 0.08s cubic-bezier(0.3, 0.8, 0.4, 1) both;
+}
+.cv-hero-grug { display: grid; flex: none; place-items: center; }
+.cv-hero-grug .gpty { width: 1.2em; height: 1.2em; filter: drop-shadow(0 0 16px rgba(255, 120, 40, 0.4)); }
+
+/* ───────── Dock: the stone you write on ───────── */
+
+.cv-dock { position: relative; z-index: 3; flex: none; width: 100%; }
+/* Two rows of painted water above the writing band, wall to wall, in step with its wave. */
+.cv-waves {
+  height: 26px;
+  margin-bottom: -4px;
+  background:
+    url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='112' height='16'><path d='M0 8 Q28 -2 56 8 T112 8' fill='none' stroke='%23d65f2e' stroke-width='2.4' stroke-linecap='round'/></svg>") -14px 0 / 112px 16px repeat-x,
+    url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='112' height='16'><path d='M0 8 Q28 -2 56 8 T112 8' fill='none' stroke='%23eaa64e' stroke-width='2' stroke-linecap='round'/></svg>") -14px 9px / 112px 16px repeat-x;
+  opacity: 0.8;
+  filter: url(#cv-paint);
+  pointer-events: none;
+}
+/* The band you write in: a wash of dark pigment across the foot of the wall. */
+.cv-band { position: relative; isolation: isolate; padding: 23px max(20px, calc((100% - 780px) / 2)) 19px; }
+/* The wash rolls along the top in a slow wave, under the painted ones. */
+.cv-band::before {
+  content: "";
+  position: absolute;
+  inset: -8px -14px -14px;
+  z-index: -1;
+  background: linear-gradient(180deg, rgba(14, 5, 4, 0.7) 0%, rgba(14, 5, 4, 0.84) 100%);
+  -webkit-mask:
+    url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='112' height='22'><path d='M0 12 Q28 2 56 12 T112 12 V22 H0 Z'/></svg>") 0 0 / 112px 22px repeat-x,
+    linear-gradient(#000, #000) 0 21px / 100% calc(100% - 21px) no-repeat;
+  mask:
+    url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='112' height='22'><path d='M0 12 Q28 2 56 12 T112 12 V22 H0 Z'/></svg>") 0 0 / 112px 22px repeat-x,
+    linear-gradient(#000, #000) 0 21px / 100% calc(100% - 21px) no-repeat;
+  filter: url(#cv-brush);
+}
+.cv-composer { position: relative; display: flex; align-items: flex-end; gap: 10px; min-height: 54px; }
+/* Buttons sit level with a single line of writing, and stay at the bottom as it grows. */
+.cv-composer > .cv-pop-wrap, .cv-composer > .cv-send { margin-bottom: 7px; }
+.cv-cbtn, .cv-send {
+  display: grid;
+  place-items: center;
+  width: 40px;
+  height: 40px;
+  flex: none;
+  border-radius: 50%;
+  color: var(--cv-bone);
+  background: rgba(255, 226, 196, 0.12);
+  box-shadow: inset 0 0 0 1px rgba(255, 226, 196, 0.14);
+  transition: background-color 0.15s ease, color 0.15s ease, rotate 0.2s ease;
+}
+.cv-cbtn:hover, .cv-send:not(:disabled):hover { background: rgba(255, 226, 196, 0.2); color: #fff3e2; }
+.cv-cbtn[aria-expanded="true"] { rotate: 45deg; background: rgba(255, 226, 196, 0.2); }
+.cv-input {
+  min-width: 0;
+  flex: 1;
+  max-height: 200px;
+  margin: 0;
+  padding: 13px 4px;
+  resize: none;
+  border: 0;
+  outline: 0;
+  background: transparent;
+  font-family: var(--cv-font);
+  font-size: 20px;
+  font-weight: 400;
+  line-height: 1.42;
+  letter-spacing: 0.025em;
+  text-transform: uppercase;
+  color: var(--cv-bone);
+  caret-color: var(--cv-ochre-hi);
+  overflow-y: hidden;
+  scrollbar-width: thin;
+  scrollbar-color: rgba(242, 224, 196, 0.2) transparent;
+}
+.cv-input:focus-visible { outline: 0; }
+.cv-input::placeholder { color: rgba(242, 224, 196, 0.46); }
+/* The mode you picked, as quiet text you can click away. */
+/* Send dims until there's something to throw. */
+.cv-send:disabled { color: rgba(242, 224, 196, 0.36); background: rgba(255, 226, 196, 0.06); box-shadow: inset 0 0 0 1px rgba(255, 226, 196, 0.08); }
+.cv-send .cv-ic { width: 22px; height: 22px; }
+
+.cv-sugs { display: flex; flex-wrap: wrap; justify-content: center; gap: 7px; margin-top: 18px; animation: cv-rise 0.6s 0.16s cubic-bezier(0.3, 0.8, 0.4, 1) both; }
+.cv-sugs button {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  height: 38px;
+  padding: 0 13px 0 8px;
+  border-radius: 999px;
+  font-size: 15px;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  white-space: nowrap;
+  color: var(--cv-bone-2);
+  background: rgba(16, 7, 5, 0.5);
+  box-shadow: inset 0 0 0 1px rgba(242, 224, 196, 0.1);
+  transition: background-color 0.15s ease, color 0.15s ease, box-shadow 0.15s ease, transform 0.15s ease;
+}
+.cv-sugs button:hover:not(:disabled) { color: var(--cv-bone); background: rgba(214, 95, 46, 0.16); box-shadow: inset 0 0 0 1px rgba(214, 95, 46, 0.5); transform: translateY(-1px); }
+.cv-sugs .cv-picto { width: 24px; height: 24px; margin: 0; vertical-align: 0; }
+
+.cv-fine { margin: 4px 0 0; font-size: 13px; font-weight: 300; letter-spacing: 0.1em; text-align: center; text-transform: uppercase; color: rgba(242, 224, 196, 0.74); }
+.cv-hero .cv-fine { margin-top: 18px; animation: cv-rise 0.6s 0.22s cubic-bezier(0.3, 0.8, 0.4, 1) both; }
+
+.cv-down {
+  position: absolute;
+  top: -48px;
+  left: 50%;
+  display: grid;
+  place-items: center;
+  width: 38px;
+  height: 38px;
+  border-radius: 50%;
+  translate: -50% 0;
+  color: var(--cv-bone);
+  background: #2e1613;
+  box-shadow: 0 0 0 1px rgba(242, 224, 196, 0.16), 0 8px 18px -6px rgba(0, 0, 0, 0.7);
+  animation: cv-rise 0.2s ease both;
+}
+.cv-down:hover { background: #3c1d18; }
+
+/* ───────── Toasts and gifts ───────── */
+
+.cv-toast {
+  position: absolute;
+  top: 72px;
+  left: 50%;
+  z-index: 12;
+  display: flex;
+  align-items: center;
+  gap: 9px;
+  max-width: calc(100% - 32px);
+  padding: 9px 18px 9px 12px;
+  border-radius: 18px 14px 17px 15px;
+  font-size: 17px;
+  letter-spacing: 0.04em;
+  line-height: 1.15;
+  text-transform: uppercase;
+  color: var(--cv-bone);
+  background:
+    var(--cv-grain) 0 0 / 160px,
+    linear-gradient(170deg, #3e1e18, #261210);
+  background-blend-mode: soft-light, normal;
+  box-shadow: 0 0 0 1px rgba(214, 95, 46, 0.4), 0 18px 40px -12px rgba(0, 0, 0, 0.8);
+  translate: -50% 0;
+  animation: cv-toast 2.8s cubic-bezier(0.3, 1.2, 0.5, 1) both;
+  pointer-events: none;
+}
+.cv-toast .cv-picto { width: 28px; height: 28px; flex: none; margin: 0; vertical-align: 0; }
+@keyframes cv-toast { 0% { opacity: 0; transform: translateY(-10px) scale(0.96); } 8%, 86% { opacity: 1; transform: none; } 100% { opacity: 0; transform: translateY(-6px); } }
+
+.cv-fx { position: absolute; inset: 0; z-index: 11; display: grid; place-items: center; align-content: center; gap: 10px; pointer-events: none; background: radial-gradient(closest-side, rgba(16, 6, 4, 0.82), rgba(16, 6, 4, 0.55) 55%, rgba(16, 6, 4, 0) 100%) 50% 50% / min(620px, 100%) min(460px, 100%) no-repeat; animation: cv-fx-out 2s ease both; }
+.cv-fx-ring { position: relative; display: grid; place-items: center; width: 164px; height: 164px; border-radius: 50%; background: radial-gradient(circle, rgba(255, 140, 60, 0.28), rgba(255, 110, 40, 0.06) 60%, transparent 72%); animation: cv-fx-pop 0.55s cubic-bezier(0.3, 1.6, 0.5, 1) both; }
+.cv-fx-ring::before { content: ""; position: absolute; inset: 8px; border-radius: 50%; border: 3px dotted rgba(234, 166, 78, 0.8); animation: cv-turn 10s linear infinite; }
+.cv-fx-ring .cv-picto { width: 96px; height: 96px; margin: 0; vertical-align: 0; filter: drop-shadow(0 0 18px rgba(255, 120, 40, 0.45)); }
+.cv-fx-t { font-size: 30px; font-weight: 900; letter-spacing: 0.03em; text-transform: uppercase; color: var(--cv-gold); text-shadow: 0 2px 0 rgba(10, 3, 2, 0.5), 0 0 30px rgba(255, 120, 40, 0.4); animation: cv-rise 0.4s 0.15s ease both; }
+@keyframes cv-fx-pop { from { transform: scale(0.3) rotate(-30deg); opacity: 0; } to { transform: none; opacity: 1; } }
+@keyframes cv-fx-out { 0%, 80% { opacity: 1; } 100% { opacity: 0; } }
+
+/* ───────── Icons ───────── */
+
+.cv-ic { width: 20px; height: 20px; flex: none; }
+.cv-ic-sm { width: 16px; height: 16px; opacity: 0.7; }
+.cv-ic-xs { width: 14px; height: 14px; }
+
+/* ───────── Narrow windows ───────── */
+
+@container cv (max-width: 640px) {
+  .cv-top { padding: 12px 14px 4px; }
+  .cv-col { padding: 18px 16px 12px; }
+  .cv-band { padding: 19px 12px 15px; }
+  .cv-mine { max-width: 88%; font-size: 18.5px; }
+  .cv-text { font-size: 18.5px; }
+  .cv-mural .cv-picto { width: 44px; height: 44px; }
+  .cv-sugs { flex-wrap: nowrap; justify-content: flex-start; overflow-x: auto; align-self: stretch; margin: 14px -24px 0; padding: 0 24px 4px; scrollbar-width: none; }
+  .cv-pop-plus { width: min(354px, calc(100cqi - 24px)); }
+  .cv-paints { grid-template-columns: repeat(6, 1fr); }
+  .cv-hero-h { gap: 10px; }
+  .cv-old { opacity: 0.6; }
+  .cv-old-p { scale: 0.55; }
+}
+@container cv (max-width: 440px) {
+  .cv-gifts { grid-template-columns: repeat(2, 1fr); }
+}
+@media (max-height: 640px) {
+  .cv-hero-frieze { width: min(380px, 80%); margin-bottom: 8px; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .cave *, .cave *::before, .cave *::after { animation: none !important; transition: none !important; }
+}
+
+/* ───────── The site's sidebar: Grug's row ───────── */
+
+/*
+ * The open Grug in the site's agent list: a small slab of the same rock, with
+ * Grug painted on it and the fire going. Lives outside the window, so it uses
+ * no shared SVG filters.
+ */
+.cv-pick {
+  --cv-bone: #f2e0c4;
+  position: relative;
+  isolation: isolate;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  width: 100%;
+  overflow: hidden;
+  padding: 8px 12px 8px 8px;
+  border-radius: 17px 13px 16px 14px / 14px 16px 13px 17px;
+  font-family: var(--font-londrina), "Londrina Solid", system-ui, sans-serif;
+  text-align: left;
+  color: var(--cv-bone);
+  text-shadow: none;
+  background:
+    radial-gradient(120% 150% at 0% 110%, rgba(255, 120, 40, 0.3), transparent 60%),
+    linear-gradient(162deg, #4d261e 0%, #331814 100%);
+  box-shadow:
+    0 0 0 1px rgba(10, 3, 2, 0.6),
+    inset 0 1px 0 rgba(255, 200, 150, 0.17),
+    0 12px 26px -12px rgba(5, 1, 0, 0.75);
+  animation: cv-pick-in 0.32s cubic-bezier(0.3, 1.4, 0.5, 1);
+}
+.cv-pick::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  z-index: -1;
+  background: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='160' height='160'><filter id='g'><feTurbulence type='fractalNoise' baseFrequency='.85' numOctaves='2' stitchTiles='stitch'/><feColorMatrix values='1 0 0 0 0  1 0 0 0 0  1 0 0 0 0  0 0 0 0 .55'/></filter><rect width='100%' height='100%' filter='url(%23g)'/></svg>") 0 0 / 160px;
+  mix-blend-mode: soft-light;
+  opacity: 0.8;
+}
+/* A painted rule of dots along the bottom. */
+.cv-pick::after {
+  content: "";
+  position: absolute;
+  left: 14px;
+  right: 14px;
+  bottom: 3px;
+  height: 4px;
+  background: radial-gradient(circle, #d65f2e 1.1px, transparent 1.7px) 0 50% / 9px 4px repeat-x;
+  opacity: 0.55;
+}
+.cv-pick:hover { filter: brightness(1.06); }
+.cv-pick:focus-visible { outline: 2px solid #eaa64e; outline-offset: 2px; }
+@keyframes cv-pick-in { from { transform: scale(0.97); opacity: 0.5; } to { transform: none; opacity: 1; } }
+.cv-pick-av { position: relative; display: grid; flex: none; place-items: center; width: 42px; height: 42px; }
+.cv-pick-av .cv-pick-hand { position: absolute; inset: -4px; width: 50px; height: 50px; opacity: 0.55; }
+.cv-pick-av .gpty { position: relative; filter: drop-shadow(0 0 8px rgba(255, 120, 40, 0.4)); }
+.cv-pick-name { display: flex; align-items: baseline; gap: 7px; font-size: 21px; font-weight: 900; line-height: 1.05; letter-spacing: 0.04em; text-transform: uppercase; }
+.cv-pick-name small { font-size: 12.5px; font-weight: 300; letter-spacing: 0.08em; color: #ef7d3f; }
+.cv-pick-sub { display: flex; align-items: center; gap: 6px; margin-top: 2px; overflow: hidden; font-size: 13px; font-weight: 300; letter-spacing: 0.08em; text-transform: uppercase; white-space: nowrap; text-overflow: ellipsis; color: rgba(242, 224, 196, 0.74); }
+.cv-pick-blob { display: inline-block; width: 8px; height: 8px; flex: none; border-radius: 48% 52% 45% 55%; background: #ef7d3f; box-shadow: 0 0 8px rgba(255, 120, 40, 0.7); animation: cv-blob 0.8s ease-in-out infinite alternate; }
+@keyframes cv-flame { from { transform: scale(1, 1) rotate(-2deg); } to { transform: scale(0.94, 1.07) rotate(2deg); } }
+.cv-pick-fire { width: 24px; height: 24px; flex: none; margin-left: auto; color: #d65f2e; --p2: #eaa64e; transform-origin: 50% 90%; animation: cv-flame 1.2s ease-in-out infinite alternate; }
+
+@media (prefers-reduced-motion: reduce) {
+  .cv-pick, .cv-pick * { animation: none !important; }
+}

@@ -197,7 +197,7 @@ export function MsnLayout({ costume, lines, busy, waiting, error, onSend, active
   const buddy = costume.assistant;
   const { value, setValue, submit, onKeyDown } = useComposer(onSend, busy);
   // Drag the window around the chat area by its title bar, like a desktop.
-  const { ref: win, handle } = useDesktopDrag<HTMLDivElement>(costume.id);
+  const { ref: win, handle } = useDesktopDrag<HTMLDivElement>();
   const input = useRef<HTMLTextAreaElement>(null);
   const compose = useRef<HTMLDivElement>(null);
   const [notes, setNotes] = useState<Note[]>([]);
@@ -376,7 +376,7 @@ export function MsnLayout({ costume, lines, busy, waiting, error, onSend, active
   const toastText = toastLine ? replyText(toastLine.text) : "";
 
   return (
-    <div className={`${segoe.variable} msn flex h-full justify-center`}>
+    <div className={`${segoe.variable} msn flex h-full items-center justify-center`}>
       <div ref={win} className="msn-window" style={{ maxWidth: costume.window.w, maxHeight: costume.window.h }}>
         <MsnDefs />
 

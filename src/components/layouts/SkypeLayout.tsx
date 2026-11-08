@@ -206,7 +206,7 @@ export function SkypeLayout({ costume, lines, busy, waiting, error, onSend, onSt
   const buddy = costume.assistant;
   const { value, setValue, submit, onKeyDown } = useComposer(onSend, busy);
   // Drag the window around the chat area by its title bar, like a desktop.
-  const { ref: win, handle } = useDesktopDrag<HTMLDivElement>(costume.id);
+  const { ref: win, handle } = useDesktopDrag<HTMLDivElement>();
   const input = useRef<HTMLTextAreaElement>(null);
   const compose = useRef<HTMLDivElement>(null);
   const statusRef = useRef<HTMLDivElement>(null);
@@ -438,7 +438,7 @@ export function SkypeLayout({ costume, lines, busy, waiting, error, onSend, onSt
   const buddyPic = (size: number, m: Mood = "idle") => <BuddyPicture agent={agent} mood={m} size={size} />;
 
   return (
-    <div className={`${segoe.variable} ${rounded.variable} skype flex h-full justify-center`}>
+    <div className={`${segoe.variable} ${rounded.variable} skype flex h-full items-center justify-center`}>
       <div ref={win} className="sk-window" style={{ maxWidth: costume.window.w, maxHeight: costume.window.h }}>
         <SkypeDefs />
 

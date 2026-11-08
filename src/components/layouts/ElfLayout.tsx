@@ -1,25 +1,206 @@
 "use client";
 
-import { useState } from "react";
-import { useComposer, useStickyScroll } from "./hooks";
-import { clock, type LayoutProps, type ThreadItem } from "./types";
+import { type CSSProperties, useEffect, useMemo, useRef, useState } from "react";
+import {
+  CarolFace,
+  Doodle,
+  type DoodleId,
+  ElfDefs,
+  Frieze,
+  Icon,
+  Present,
+  PRESENTS,
+  Splat,
+  Sticker,
+  StringLights,
+  WrappingPaper,
+} from "@/components/elf/art";
+import "@/components/elf/elf.css";
+import { elfFonts } from "@/components/elf/font";
+import type { Mood } from "@/components/Gpty";
+import { getAgent } from "@/lib/agents";
+import { useComposer, useDesktopDrag, useNow, useStickyScroll } from "./hooks";
+import { type ChatLine, clock, type LayoutProps, relativeDay, type ThreadItem } from "./types";
 
-const WOOD = "linear-gradient(175deg, #7a4a28, #5e3a20 60%, #6b4226)";
-const LIGHTS = ["#ff5252", "#ffd54f", "#4fc3f7", "#81c784", "#ff8a65", "#ba68c8"];
+/* ───────── Workshop breaks ───────── */
 
-function randomFlake() {
-  const big = Math.random() > 0.75;
-  return {
-    left: Math.random() * 100,
-    size: big ? 14 : 8 + Math.random() * 4,
-    dur: 7 + Math.random() * 8,
-    delay: -Math.random() * 15,
-    char: big ? "❄" : "•",
-    o: 0.3 + Math.random() * 0.5,
-  };
+/**
+ * Three things one elf does to another between presents. Each is a message
+ * on its own ("/snowball"), and Carol can do any of them back by starting
+ * her reply with it (see personas.ts).
+ */
+type Act = "snowball" | "cocoa" | "jingle";
+const ACT_RE = /^\/(snowball|cocoa|jingle)\b[ \t]*(.*)$/i;
+const ACT_ONLY = /^\/(snowball|cocoa|jingle)\s*$/i;
+
+const ACTS: { id: Act; label: string; note: string }[] = [
+  { id: "snowball", label: "Snowball", note: "Throw one at Carol" },
+  { id: "cocoa", label: "Cocoa", note: "Bring her a hot one" },
+  { id: "jingle", label: "Jingle", note: "Ring the bell on her bench" },
+];
+
+const ACT_LINES: Record<Act, { mine: string; hers: string; fxMine: string; fxHers: string }> = {
+  snowball: { mine: "You threw a snowball at Carol", hers: "Carol threw a snowball back!", fxMine: "Direct hit!", fxHers: "Got you!" },
+  cocoa: { mine: "You brought Carol a cocoa", hers: "Carol made you a cocoa", fxMine: "Cocoa for Carol!", fxHers: "Cocoa for you!" },
+  jingle: { mine: "You rang Carol's bell", hers: "Carol rang your bell", fxMine: "Jingle jingle!", fxHers: "Jingle jingle!" },
+};
+
+const STICKER: Record<Act, "snowball" | "cocoa" | "bell"> = { snowball: "snowball", cocoa: "cocoa", jingle: "bell" };
+
+/** What the empty bench offers, written on gift tags. */
+const SUGGESTIONS: { d: DoodleId; label: string; ask: string }[] = [
+  { d: "gift", label: "Wrap a bicycle?!", ask: "How do I wrap a bicycle so nobody can guess what it is?" },
+  { d: "mitten", label: "Gift for my dad", ask: "Help me pick a present for my dad. He says he wants nothing." },
+  { d: "star", label: "Write the tag", ask: "Write a short, funny poem for a gift tag." },
+  { d: "tree", label: "Pack the sleigh", ask: "We've got two billion presents and one sleigh. How do we pack it?" },
+  { d: "stocking", label: "Am I on the list?", ask: "Be honest: am I on the nice list this year?" },
+];
+
+const FINE = "Carol can be wrong. Santa checks everything twice.";
+
+/** Saved letters by day, the workshop way. */
+const LETTER_DAYS: Record<string, string> = {
+  Today: "This shift",
+  Yesterday: "Last shift",
+  "Previous 7 days": "This week",
+  Older: "Earlier this season",
+};
+
+/* ───────── The sleigh ───────── */
+
+/**
+ * The sleigh leaves at six on Christmas Eve, local time, and is back by the
+ * 26th; after that the count starts over for next year.
+ */
+function sleigh(now: number) {
+  const y = new Date(now).getFullYear();
+  let leaves = new Date(y, 11, 24, 18).getTime();
+  if (now >= new Date(y, 11, 26).getTime()) leaves = new Date(y + 1, 11, 24, 18).getTime();
+  if (now >= leaves) return { out: true as const };
+  const ms = leaves - now;
+  const days = Math.floor(ms / 86_400_000);
+  const rest = ms % 86_400_000;
+  const parts = [Math.floor(rest / 3_600_000), Math.floor(rest / 60_000) % 60, Math.floor(rest / 1000) % 60];
+  return { out: false as const, days, clock: parts.map((n) => String(n).padStart(2, "0")).join(":") };
 }
 
-/** WorkshopChat: the North Pole's internal messenger, deep in crunch season. */
+const sleeps = (days: number) => (days === 0 ? "Tonight!" : `${days} ${days === 1 ? "sleep" : "sleeps"}`);
+
+/** A gift tag in the corner, counting down to the sleigh. Ticks on its own so the chat doesn't. */
+function SleighTag() {
+  const s = sleigh(useNow(1000));
+  return (
+    <div className="el-sleigh-wrap" role="timer" aria-label={s.out ? "The sleigh is out" : `The sleigh leaves in ${sleeps(s.days)}`}>
+      <div className="el-sleigh">
+        <span className="el-sleigh-l">{s.out ? "Ho ho ho!" : "Sleigh leaves in"}</span>
+        <span className="el-sleigh-n">
+          <b>{s.out ? "It's out!" : sleeps(s.days)}</b>
+          {!s.out && <span className="el-sleigh-c">{s.clock}</span>}
+        </span>
+      </div>
+    </div>
+  );
+}
+
+/** "The sleigh leaves in 47 sleeps." for the empty bench. */
+function SleighLine() {
+  const s = sleigh(useNow(60_000));
+  if (s.out) return <>The sleigh is out tonight!</>;
+  return s.days === 0 ? <>The sleigh leaves tonight!</> : <>The sleigh leaves in {sleeps(s.days)}.</>;
+}
+
+/* ───────── Rows ───────── */
+
+type MsgRow = { kind: "msg"; key: string; mine: boolean; text: string; at: number; live: boolean };
+type ActRow = { kind: "act"; key: string; mine: boolean; act: Act };
+type Row = MsgRow | ActRow;
+
+const actOf = (s: string) => s.toLowerCase() as Act;
+
+/** Lines become rows: "/snowball" on its own (or atop Carol's reply) becomes a workshop break. */
+function toRows(lines: ChatLine[], busy: boolean): Row[] {
+  const rows: Row[] = [];
+  lines.forEach((l, i) => {
+    if (l.role === "user") {
+      const a = l.text.trim().match(ACT_ONLY);
+      if (a) rows.push({ kind: "act", key: l.id, mine: true, act: actOf(a[1]) });
+      else rows.push({ kind: "msg", key: l.id, mine: true, text: l.text, at: l.at, live: false });
+      return;
+    }
+    const live = busy && i === lines.length - 1;
+    let text = l.text;
+    // A break still arriving: wait for the rest of its line.
+    if (live && text.startsWith("/") && !text.includes("\n")) return;
+    const [first, ...rest] = text.split("\n");
+    const a = first.trim().match(ACT_RE);
+    if (a) {
+      rows.push({ kind: "act", key: `${l.id}:act`, mine: false, act: actOf(a[1]) });
+      text = [a[2], ...rest].join("\n").replace(/^\s+/, "");
+    }
+    if (text.trim()) rows.push({ kind: "msg", key: l.id, mine: false, text, at: l.at, live });
+  });
+  return rows;
+}
+
+/* ───────── Snow ───────── */
+
+function rand(seed: number) {
+  let s = seed;
+  return () => (s = (s * 16807) % 2147483647) / 2147483647;
+}
+
+const FLAKES = (() => {
+  const r = rand(7);
+  return Array.from({ length: 36 }, () => ({ x: r() * 100, s: 2 + r() * 3.4, d: 11 + r() * 13, dl: -r() * 24, dx: (r() - 0.5) * 70, o: 0.25 + r() * 0.45 }));
+})();
+
+/* ───────── The belt ───────── */
+
+/**
+ * The conveyor along the workbench: presents roll toward the sleigh while
+ * Carol wraps a reply, and every finished reply is one more wrapped together.
+ */
+function Belt({ count, run, bump }: { count: number; run: boolean; bump: number }) {
+  return (
+    <div className="el-belt" data-run={run || undefined}>
+      <div className="el-belt-sign" title="Presents wrapped together (one per reply)">
+        <span className="el-belt-l">Wrapped together</span>
+        <Doodle id="gift" className="el-belt-gift" />
+        <b key={bump} data-bump={bump ? "" : undefined}>
+          {count}
+        </b>
+      </div>
+      <div className="el-belt-run" aria-hidden>
+        <div className="el-belt-track">
+          {[0, 1, 2].flatMap((k) =>
+            PRESENTS.map((p, i) => (
+              <span key={`${k}-${i}`} className="el-belt-p" style={{ "--b": `${(i % 3) - 1}deg` } as CSSProperties}>
+                <Present {...p} />
+              </span>
+            )),
+          )}
+        </div>
+        <div className="el-belt-band" />
+      </div>
+      <div className="el-belt-end" aria-hidden>
+        to the sleigh <span>→</span>
+      </div>
+    </div>
+  );
+}
+
+type Fx = { k: number; act: Act; mine: boolean; x: number; y: number };
+type Toast = { k: number; text: string };
+
+/* ───────── The window ───────── */
+
+/**
+ * WorkshopChat: the North Pole's own chat app, a few weeks before the big
+ * night. You're the elf at the next bench; Carol's in wrapping. It's drawn
+ * like a hand-made holiday card: pine-green felt printed with doodles,
+ * cream stitched notes, string lights, a countdown tag to the sleigh and the
+ * conveyor belt along the workbench.
+ */
 export function ElfLayout({
   costume,
   lines,
@@ -27,178 +208,416 @@ export function ElfLayout({
   waiting,
   error,
   onSend,
+  onStop,
   threads,
   activeId,
   onSelectThread,
   onNewThread,
   onDeleteThread,
 }: LayoutProps) {
+  const agent = getAgent(costume.id);
+  const { ref: win, handle } = useDesktopDrag<HTMLDivElement>();
+  const input = useRef<HTMLTextAreaElement>(null);
+  const plusBox = useRef<HTMLDivElement>(null);
+
+  const [menu, setMenu] = useState(false);
+  const [away, setAway] = useState(false);
+  const [toast, setToast] = useState<Toast | null>(null);
+  const [fx, setFx] = useState<Fx | null>(null);
+  const [ring, setRing] = useState(0);
+  const [bump, setBump] = useState(0);
+
   const { value, setValue, submit, onKeyDown } = useComposer(onSend, busy);
-  const scroller = useStickyScroll<HTMLDivElement>(lines);
-  const [flakes] = useState(() => Array.from({ length: 26 }, randomFlake));
-  const letters = threads.filter((t) => !t.draft);
+  const rows = useMemo(() => toRows(lines, busy), [lines, busy]);
+  const empty = rows.length === 0 && !waiting && !error;
+  const scroller = useStickyScroll<HTMLDivElement>(`${rows.length}:${lines.at(-1)?.text.length ?? 0}:${waiting}:${error}`);
+  const liveMsg = rows.some((r) => r.kind === "msg" && r.live);
+  const typing = waiting || (busy && !liveMsg);
+
+  const mood: Mood = error ? "error" : typing ? "thinking" : busy ? "typing" : "watching";
+  const status = error ? "antenna's down" : typing ? "finding the good tape…" : busy ? "wrapping a reply…" : "on shift · wrapping, bench 7";
+
+  /* One present per finished reply; the counter hops when it goes up. */
+  const wrapped = rows.filter((r) => r.kind === "msg" && !r.mine && !r.live).length;
+  const prevWrapped = useRef(wrapped);
+  useEffect(() => {
+    if (wrapped > prevWrapped.current) setBump(Date.now());
+    prevWrapped.current = wrapped;
+  }, [wrapped]);
+
+  /* Breaks land with a little show; old ones in the history don't. */
+  const acts = rows.filter((r): r is ActRow => r.kind === "act");
+  const actKeys = acts.map((a) => a.key).join(" ");
+  const latestActs = useRef(acts);
+  const seen = useRef<Set<string> | null>(null);
+  useEffect(() => {
+    latestActs.current = acts;
+  });
+  useEffect(() => {
+    const all = latestActs.current;
+    if (!seen.current) {
+      seen.current = new Set(all.map((a) => a.key));
+      return;
+    }
+    const fresh = all.filter((a) => !seen.current!.has(a.key));
+    if (!fresh.length) return;
+    fresh.forEach((a) => seen.current!.add(a.key));
+    const a = fresh.at(-1)!;
+    const r = Math.random;
+    // Yours fly up from your bench; Carol's come in from over the top.
+    const x = a.mine ? 30 + r() * 40 : 48 + r() * 28;
+    const y = a.mine ? 22 + r() * 26 : 42 + r() * 24;
+    setFx({ k: Date.now(), act: a.act, mine: a.mine, x, y });
+    if (a.act === "jingle") setRing(Date.now());
+  }, [actKeys]);
+
+  /* Short-lived things clear themselves. */
+  useEffect(() => {
+    if (!fx) return;
+    const t = setTimeout(() => setFx(null), fx.act === "snowball" ? 4600 : 2200);
+    return () => clearTimeout(t);
+  }, [fx]);
+  useEffect(() => {
+    if (!ring) return;
+    const t = setTimeout(() => setRing(0), 1000);
+    return () => clearTimeout(t);
+  }, [ring]);
+  useEffect(() => {
+    if (!bump) return;
+    const t = setTimeout(() => setBump(0), 1400);
+    return () => clearTimeout(t);
+  }, [bump]);
+  useEffect(() => {
+    if (!toast) return;
+    const t = setTimeout(() => setToast(null), 2600);
+    return () => clearTimeout(t);
+  }, [toast]);
+
+  /* The menu closes on a click elsewhere or Escape. */
+  useEffect(() => {
+    if (!menu) return;
+    const down = (e: PointerEvent) => {
+      if (!plusBox.current?.contains(e.target as Node)) setMenu(false);
+    };
+    const key = (e: KeyboardEvent) => {
+      if (e.key === "Escape") setMenu(false);
+    };
+    document.addEventListener("pointerdown", down);
+    document.addEventListener("keydown", key);
+    return () => {
+      document.removeEventListener("pointerdown", down);
+      document.removeEventListener("keydown", key);
+    };
+  }, [menu]);
+
+  /* The note grows with what you write, up to a point. */
+  useEffect(() => {
+    const el = input.current;
+    if (!el) return;
+    el.style.height = "auto";
+    el.style.height = `${Math.min(el.scrollHeight, 180)}px`;
+    el.style.overflowY = el.scrollHeight > 180 ? "auto" : "hidden";
+  }, [value]);
+
+  /* Ready to write on arrival, where there's a keyboard. */
+  useEffect(() => {
+    if (window.matchMedia("(pointer: fine)").matches) input.current?.focus({ preventScroll: true });
+  }, []);
+
+  const doBreak = (a: Act) => {
+    setMenu(false);
+    if (busy) {
+      setToast((t) => ({ k: (t?.k ?? 0) + 1, text: "Carol's mid-bow. Try in a sec!" }));
+      return;
+    }
+    onSend(`/${a}`);
+  };
+
+  const letters = useMemo(() => {
+    const out: { label: string; items: ThreadItem[] }[] = [];
+    threads
+      .filter((t) => !t.draft)
+      .forEach((t) => {
+        const label = LETTER_DAYS[relativeDay(t.updatedAt)] ?? "Earlier this season";
+        const g = out.find((x) => x.label === label);
+        if (g) g.items.push(t);
+        else out.push({ label, items: [t] });
+      });
+    return out;
+  }, [threads]);
+
+  const fxText = fx ? (fx.mine ? ACT_LINES[fx.act].fxMine : ACT_LINES[fx.act].fxHers) : "";
 
   return (
-    <div
-      className="relative flex h-full flex-col overflow-hidden rounded-2xl font-sans text-[13.5px] text-[#3a2a1a] shadow-[0_24px_80px_rgba(0,0,0,.7)] ring-1 ring-black/40"
-      style={{ background: WOOD }}
-    >
-      {/* Candy-stripe top bar with string lights */}
-      <header
-        className="relative z-[2] flex h-9 shrink-0 items-center gap-2 px-3 font-bold text-white [text-shadow:0_1px_2px_rgba(0,0,0,.45)]"
-        style={{ background: "repeating-linear-gradient(-45deg, #d94f4f 0 14px, #f3f3ef 14px 28px)" }}
+    <div className={`elf ${elfFonts} flex h-full items-center justify-center`}>
+      <div
+        ref={win}
+        className="el-window"
+        data-ring={ring ? "" : undefined}
+        style={{ maxWidth: costume.window.w, maxHeight: costume.window.h }}
       >
-        <span className="rounded bg-black/30 px-2 py-0.5">🎄 WorkshopChat</span>
-        <span className="hidden rounded bg-black/25 px-2 py-0.5 text-[11px] font-normal sm:inline">
-          North Pole · internal only · day 361 of crunch
-        </span>
-        <span className="ml-auto rounded bg-black/25 px-2 py-0.5 text-[11px] font-normal">❄ −40°</span>
-      </header>
-      <div className="relative z-[2] flex h-3 shrink-0 items-center justify-around bg-black/35" aria-hidden>
-        {Array.from({ length: 22 }).map((_, i) => (
-          <span
-            key={i}
-            className="light-dot h-2 w-2 rounded-full"
-            style={{ background: LIGHTS[i % LIGHTS.length], color: LIGHTS[i % LIGHTS.length], animationDelay: `${(i % 5) * 0.3}s` }}
-          />
-        ))}
-      </div>
+        <ElfDefs />
+        <WrappingPaper className="el-paper" />
+        <div className="el-snow" aria-hidden>
+          {FLAKES.map((f, i) => (
+            <span
+              key={i}
+              className="el-flake"
+              style={{ left: `${f.x}%`, width: f.s, height: f.s, opacity: f.o, "--d": `${f.d}s`, "--dl": `${f.dl}s`, "--x": `${f.dx}px` } as CSSProperties}
+            />
+          ))}
+        </div>
 
-      <div className="z-[1] flex min-h-0 flex-1 gap-2 p-2">
-        {/* Letters inbox */}
-        <aside data-threads className="hidden w-56 shrink-0 flex-col rounded-xl bg-[#f7f1e4] shadow-inner ring-1 ring-black/20 md:flex">
-          <div className="flex items-center justify-between rounded-t-xl bg-[#2e6b3e] px-3 py-2 font-bold text-white">
-            💌 Letters
-            <span className="rounded-full bg-white/20 px-2 text-[11px] font-normal">{letters.length}</span>
-          </div>
-          <button onClick={onNewThread} className="mx-2 mt-2 rounded-lg border-2 border-dashed border-[#2e6b3e]/50 px-2 py-1.5 text-left font-semibold text-[#2e6b3e] hover:bg-[#2e6b3e]/10">
-            ✏️ {costume.newThread}
+        {/* ───── Letters (threads; the site hides these for now) ───── */}
+        <aside data-threads className="el-threads" aria-label="Letters">
+          <button type="button" className="el-newletter" onClick={onNewThread}>
+            <Icon name="pen" />
+            {costume.newThread}
           </button>
-          <nav className="min-h-0 flex-1 overflow-y-auto p-2" aria-label="Letters">
-            {letters.map((t) => (
-              <Letter key={t.id} t={t} active={t.id === activeId} onSelect={onSelectThread} onDelete={onDeleteThread} />
+          <nav className="el-th-list">
+            {letters.map((g) => (
+              <div key={g.label}>
+                <div className="el-th-h">{g.label}</div>
+                {g.items.map((t) => {
+                  const a = t.title.trim().match(ACT_ONLY);
+                  return (
+                    <div key={t.id} className="el-th" data-on={t.id === activeId || undefined}>
+                      <button type="button" onClick={() => onSelectThread(t.id)} className="el-th-t">
+                        {a ? ACTS.find((x) => x.id === actOf(a[1]))!.label : t.title}
+                      </button>
+                      <button type="button" onClick={() => onDeleteThread(t.id)} className="el-th-x" aria-label={`Recycle ${t.title}`} title="Recycle">
+                        <Icon name="bin" />
+                      </button>
+                    </div>
+                  );
+                })}
+              </div>
             ))}
           </nav>
-          <div className="border-t border-black/10 px-3 py-2 text-[11px] text-[#7a6a52]">
-            🦌 Sleigh capacity: 97% · cocoa: critical
-          </div>
         </aside>
 
-        {/* Chat */}
-        <section className="relative flex min-w-0 flex-1 flex-col overflow-hidden rounded-xl bg-gradient-to-b from-[#eef5fb] to-[#fdfdfb] ring-1 ring-black/20">
-          {/* Snow inside the window */}
-          <div className="pointer-events-none absolute inset-0 z-[2] overflow-hidden" aria-hidden>
-            {flakes.map((f, i) => (
-              <span
-                key={i}
-                className="snowflake text-white [text-shadow:0_0_3px_rgba(120,160,200,.8)]"
-                style={{ left: `${f.left}%`, fontSize: f.size, opacity: f.o, animationDuration: `${f.dur}s`, animationDelay: `${f.delay}s` }}
-              >
-                {f.char}
-              </span>
-            ))}
-          </div>
-
-          <div className="z-[1] flex shrink-0 items-center gap-2 border-b border-black/10 bg-white/70 px-3 py-2">
-            <span className="grid h-8 w-8 place-items-center rounded-full bg-[#2e6b3e] text-lg">🧝</span>
-            <div className="leading-tight">
-              <div className="font-bold">
-                {costume.assistant} <span className="font-normal text-[#7a6a52]">· wrapping dept, 3rd shift</span>
-              </div>
-              <div className="text-[11px] text-[#4f9c5e]">● online (always, it&apos;s crunch)</div>
-            </div>
-            <span className="ml-auto hidden rounded-full bg-[#d94f4f]/10 px-2 py-0.5 text-[11px] font-semibold text-[#b33a3a] sm:inline">
-              🧸 backlog: 4,000 trucks
-            </span>
-          </div>
-
-          <div ref={scroller} className="z-[1] min-h-0 flex-1 overflow-y-auto px-3 py-3">
-            <Bubble them at={0} text={costume.greeting} />
-            {lines.map((l) => (
-              <Bubble key={l.id} them={l.role === "assistant"} text={l.text} at={l.at} />
-            ))}
-            {waiting && (
-              <div className="mb-1 flex items-center gap-1.5 text-[12px] text-[#7a6a52]">
-                🎁 {costume.typing}
-                <span className="inline-flex gap-0.5 pt-1">
-                  {[0, 1, 2].map((i) => (
-                    <span key={i} className="dot h-1.5 w-1.5 rounded-full bg-[#2e6b3e]" style={{ animationDelay: `${i * 0.15}s` }} />
-                  ))}
+        <div className="el-main" data-empty={empty || undefined}>
+          {/* ───── Top: who you're talking to, and the sleigh ───── */}
+          <header className="el-top" {...handle}>
+            <div className="el-who">
+              <CarolFace agent={agent} size={40} mood={mood} />
+              <div className="el-who-t">
+                <b>{costume.assistant}</b>
+                <span className="el-who-s">
+                  <i className="el-dot" data-state={error ? "error" : busy ? "busy" : undefined} />
+                  {status}
                 </span>
               </div>
-            )}
-            {error && (
-              <div className="inline-block rounded-xl bg-[#d94f4f]/10 px-3 py-1.5 text-[#b33a3a] ring-1 ring-[#d94f4f]/30">
-                🌨️ {costume.error}
+            </div>
+            <div className="el-brand" aria-hidden>
+              <Doodle id="bell" />
+              {costume.app}
+            </div>
+            <SleighTag />
+          </header>
+          <StringLights className="el-top-lights" />
+
+          {/* ───── The conversation ───── */}
+          <div
+            ref={scroller}
+            className="el-scroll"
+            onScroll={(e) => {
+              const el = e.currentTarget;
+              setAway(el.scrollHeight - el.scrollTop - el.clientHeight > 180);
+            }}
+          >
+            {empty ? (
+              <div className="el-hero">
+                <Frieze className="el-hero-frieze" />
+                <div className="el-hero-carol">
+                  <CarolFace agent={agent} size={64} mood="watching" />
+                  <span className="el-hero-hi">oh hi, bench-buddy!</span>
+                </div>
+                <h1 className="el-hero-h">What are we wrapping tonight?</h1>
+                <p className="el-hero-sub">
+                  Carol&apos;s at bench 7 with the good tape. <SleighLine />
+                </p>
+                <div className="el-sugs">
+                  {SUGGESTIONS.map((s) => (
+                    <button key={s.label} type="button" className="el-tag" onClick={() => onSend(s.ask)} disabled={busy}>
+                      <Doodle id={s.d} />
+                      {s.label}
+                    </button>
+                  ))}
+                </div>
+                <p className="el-fine">{FINE}</p>
+              </div>
+            ) : (
+              <div className="el-col">
+                {rows.map((r) =>
+                  r.kind === "act" ? (
+                    <div key={r.key} className="el-act" data-mine={r.mine || undefined}>
+                      <span className="el-act-ic">
+                        <Sticker id={STICKER[r.act]} />
+                      </span>
+                      {r.mine ? ACT_LINES[r.act].mine : ACT_LINES[r.act].hers}
+                    </div>
+                  ) : r.mine ? (
+                    <div key={r.key} className="el-msg el-you">
+                      <div className="el-bubble el-bubble-you">{r.text}</div>
+                      {r.at > 0 && <time className="el-time">{clock(r.at)}</time>}
+                    </div>
+                  ) : (
+                    <div key={r.key} className="el-msg el-carol" data-live={r.live || undefined}>
+                      <CarolFace agent={agent} size={34} className="el-msg-face" />
+                      <div className="el-msg-b">
+                        <div className="el-name">
+                          {costume.assistant}
+                          {r.at > 0 && <time>{clock(r.at)}</time>}
+                        </div>
+                        <div className="el-bubble el-bubble-carol">
+                          {r.text}
+                          {r.live && <i className="el-caret" aria-hidden />}
+                        </div>
+                      </div>
+                    </div>
+                  ),
+                )}
+
+                {typing && (
+                  <div className="el-msg el-carol el-wait" role="status">
+                    <CarolFace agent={agent} size={34} mood="thinking" className="el-msg-face" />
+                    <div className="el-msg-b">
+                      <div className="el-name">{costume.typing}</div>
+                      <div className="el-bubble el-bubble-carol el-baubles" aria-hidden>
+                        <i />
+                        <i />
+                        <i />
+                      </div>
+                    </div>
+                  </div>
+                )}
+
+                {error && (
+                  <div className="el-err" role="alert">
+                    <Doodle id="snowflake" />
+                    {costume.error}
+                  </div>
+                )}
               </div>
             )}
           </div>
 
-          <div className="z-[3] flex shrink-0 items-end gap-2 border-t border-black/10 bg-white/80 p-2">
-            <textarea
-              value={value}
-              onChange={(e) => setValue(e.target.value)}
-              onKeyDown={onKeyDown}
-              rows={1}
-              placeholder={costume.placeholder}
-              aria-label="Message"
-              className="min-h-[38px] min-w-0 flex-1 resize-none rounded-xl border border-black/15 bg-white px-3 py-2 outline-none placeholder:text-[#a79a86] focus:border-[#2e6b3e]"
-            />
-            <button
-              onClick={submit}
-              disabled={busy || !value.trim()}
-              className="h-[38px] rounded-xl bg-[#d94f4f] px-4 font-bold text-white shadow-[inset_0_-2px_rgba(0,0,0,.2)] transition hover:bg-[#c74444] disabled:opacity-40"
+          {/* ───── Where you write: a cream note with a stitched edge ───── */}
+          <div className="el-dock">
+            {away && !empty && (
+              <button
+                type="button"
+                className="el-down"
+                aria-label="Go to newest"
+                onClick={() => scroller.current?.scrollTo({ top: scroller.current.scrollHeight, behavior: "smooth" })}
+              >
+                <Icon name="arrowDown" />
+              </button>
+            )}
+            <form
+              className="el-composer"
+              onSubmit={(e) => {
+                e.preventDefault();
+                submit();
+              }}
             >
-              Send 🔔
-            </button>
+              <div className="el-pop-wrap" ref={plusBox}>
+                <button
+                  type="button"
+                  className="el-cbtn"
+                  aria-label="Take a workshop break"
+                  aria-haspopup="menu"
+                  aria-expanded={menu}
+                  onClick={() => setMenu((m) => !m)}
+                >
+                  <Icon name="plus" />
+                </button>
+                {menu && (
+                  <div className="el-pop" role="menu" aria-label="Workshop break">
+                    <div className="el-pop-h">Workshop break</div>
+                    {ACTS.map((a) => (
+                      <button key={a.id} type="button" role="menuitem" className="el-mi" onClick={() => doBreak(a.id)}>
+                        <span className="el-mi-ic">
+                          <Sticker id={STICKER[a.id]} />
+                        </span>
+                        <span className="min-w-0">
+                          <b>{a.label}</b>
+                          <small>{a.note}</small>
+                        </span>
+                      </button>
+                    ))}
+                  </div>
+                )}
+              </div>
+              <textarea
+                ref={input}
+                rows={1}
+                value={value}
+                onChange={(e) => setValue(e.target.value)}
+                onKeyDown={onKeyDown}
+                placeholder={costume.placeholder}
+                aria-label="Message Carol"
+                className="el-input"
+              />
+              {busy ? (
+                <button type="button" className="el-send" onClick={onStop} aria-label="Stop Carol" title="Stop">
+                  <Icon name="stop" />
+                </button>
+              ) : (
+                <button type="submit" className="el-send" disabled={!value.trim()} aria-label="Send" title="Send (Enter)">
+                  <Icon name="send" />
+                </button>
+              )}
+            </form>
+            {!empty && <p className="el-fine">{FINE}</p>}
           </div>
-        </section>
-      </div>
-    </div>
-  );
-}
 
-function Bubble({ them, text, at }: { them: boolean; text: string; at: number }) {
-  return (
-    <div className={`mb-2 flex ${them ? "justify-start" : "justify-end"}`}>
-      <div
-        className={`max-w-[82%] whitespace-pre-wrap break-words rounded-2xl px-3.5 py-2 ring-1 ${
-          them
-            ? "rounded-bl-md bg-[#e3f2e6] text-[#1d3a24] ring-[#2e6b3e]/25"
-            : "rounded-br-md bg-[#d94f4f] text-white ring-black/10"
-        }`}
-      >
-        {text}
-        {at > 0 && (
-          <span className={`mt-0.5 block text-right text-[10px] ${them ? "text-[#5a7a62]" : "text-white/70"}`}>
-            {clock(at)}
-          </span>
+          <Belt count={wrapped} run={busy || !!bump} bump={bump} />
+        </div>
+
+        {toast && (
+          <div key={toast.k} className="el-toast" role="status">
+            <Doodle id="bell" />
+            {toast.text}
+          </div>
+        )}
+
+        {fx && (
+          <div
+            key={fx.k}
+            className="el-fx"
+            data-act={fx.act}
+            data-mine={fx.mine || undefined}
+            style={{ "--ex": `${fx.x}%`, "--ey": `${fx.y}%` } as CSSProperties}
+            aria-hidden
+          >
+            {fx.act === "snowball" ? (
+              <>
+                <span className="el-fx-ball">
+                  <Sticker id="snowball" />
+                </span>
+                <Splat className="el-fx-splat" />
+                <span className="el-fx-t">{fxText}</span>
+              </>
+            ) : fx.act === "cocoa" ? (
+              <>
+                <span className="el-fx-ring">
+                  <Sticker id="cocoa" />
+                </span>
+                <span className="el-fx-t">{fxText}</span>
+              </>
+            ) : (
+              <>
+                <span className="el-fx-bell">
+                  <Sticker id="bell" />
+                </span>
+                <span className="el-fx-t">{fxText}</span>
+              </>
+            )}
+          </div>
         )}
       </div>
-    </div>
-  );
-}
-
-function Letter({
-  t,
-  active,
-  onSelect,
-  onDelete,
-}: {
-  t: ThreadItem;
-  active: boolean;
-  onSelect: (id: string) => void;
-  onDelete: (id: string) => void;
-}) {
-  return (
-    <div className={`group mb-1 flex items-center rounded-lg ${active ? "bg-[#2e6b3e]/15 ring-1 ring-[#2e6b3e]/30" : "hover:bg-black/5"}`}>
-      <button onClick={() => onSelect(t.id)} className="min-w-0 flex-1 px-2 py-1.5 text-left">
-        <div className="truncate font-semibold">💌 {t.title}</div>
-        {t.preview && <div className="truncate text-[11px] text-[#7a6a52]">{t.preview}</div>}
-      </button>
-      <button onClick={() => onDelete(t.id)} className="hidden px-1.5 text-[#b33a3a] group-hover:block" aria-label={`Recycle ${t.title}`} title="Recycle (we're green up here)">
-        ♻️
-      </button>
     </div>
   );
 }

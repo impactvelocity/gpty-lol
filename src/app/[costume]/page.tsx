@@ -18,7 +18,7 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
   const a = isAgent(c.id) ? getAgent(c.id) : null;
   const title = a ? `${a.name} · ${agentEra(a)} — gpty.lol` : costumeTitle(c);
   const description = a
-    ? `Chat with ${a.name}, a gpty who lives in ${c.app} (${c.year}) and only knows the world up to then. ${a.bio}`
+    ? `Chat with ${a.name}, a Gpty who lives in ${c.app} (${c.year}) and only knows the world up to then. ${a.bio}`
     : `${c.tagline} An AI chatbot dressed up as ${c.app}.`;
   return {
     title,

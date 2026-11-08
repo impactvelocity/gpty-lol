@@ -1,22 +1,21 @@
 # Facebook costume art: gpt-image prompts
 
-The costume is complete without any of these: every slot has a drawn SVG
-fallback in `src/components/facebook/art.tsx`. The generated pictures make
-it look like the MSN and Skype windows: very familiar at a glance, hyperreal
-and slightly surreal up close.
+All slots are filled: the generated pictures live in `public/facebook/` as
+WebP and are listed in `FILES` at the top of `src/components/facebook/art.tsx`.
+Every slot also has a drawn SVG fallback, used when its line is removed. The
+wallpaper is used by the Facebook scene in `src/components/Scenes.tsx`.
 
 The look: Facebook in the summer of 2008. Facebook blue (#3b5998), pale blue
 panels, harsh point-and-shoot flash photos, thrown sheep. Mark is the
 periwinkle (#6d84b4) jellybean gpty with big white eyes.
 
-To add one:
+To replace one:
 
 1. Generate it with the prompt below (sizes and settings are gpt-image's).
 2. Resize and convert it (pictures 512×512, photos 512×384, the sheep 512px
    and the hand 1024px wide with alpha, wide pictures 1536px wide), for example
    `sips -Z 512 in.png --out s.png && cwebp -q 92 -alpha_q 100 s.png -o out.webp`.
-3. Save it in `public/facebook/` and uncomment its line in `FILES` at the top
-   of `src/components/facebook/art.tsx`.
+3. Save it over the file in `public/facebook/`.
 
 ---
 
@@ -152,22 +151,22 @@ exactly right with the cuff at the left edge.
 
 ---
 
-## Already drawn (SVG, no prompt needed)
+## Drawn (SVG, no prompt needed)
 
 These are vector and stay vector. They live in `art.tsx` and
-`emoticons.tsx` and need nothing generated:
+`emoticons.tsx`:
 
 - **Marks**: the blue "f" favicon, the red video-site tab icon, the Google "G"
   and the traffic lights, keyhole Back and Forward buttons (CSS).
-- **Pictures**: the pale default silhouette (`DefaultPic`), and the drawn
-  album photos (`PhotoScene`: beach, party with red-eye, road trip), with the
-  gptys composited on top and a flash hot spot.
+- **Picture fallbacks**: the pale default silhouette (`DefaultPic`), and the
+  drawn album photos (`PhotoScene`: beach, party with red-eye, road trip),
+  with the gpty composited on top and a flash hot spot.
 - **App icons** (16px, `AppIcon`): News Feed, Messages, Events, Photos,
   Friends, Groups, Notes, Video, SuperPoke!, Scrabulous, Top Friends,
   Zombies, Marketplace, Chat, the notifications flag and Applications.
-- **Poke and SuperPoke**: the pointing hand (`Finger`) and the sheep
-  (`Sheep`), each used until its picture above is in.
-- **Scene**: the sheep sky and the green pasture hill (`SheepSkyHill`).
+- **Fallbacks for the pictures above**: the pointing hand (`Finger`), the
+  sheep (`Sheep`), and the drifting sheep sky over a green hill
+  (`SheepSkyHill`), used if their lines are removed from `FILES`.
 - **Odds and ends**: the typing pencil and the search glass.
 - **23 chat emoticons**: :) :( :P :D ;) :O :/ :'( >:( 8-) 8| <3 ^_^ O:) 3:)
   -_- o.O :3 >:O :* (^^^) <(") :42:.

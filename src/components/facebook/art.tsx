@@ -18,19 +18,20 @@ export type ArtSlot =
 
 /**
  * Generated pictures that replace the drawn fallbacks (prompts and sizes in
- * src/components/facebook/ART.md). Drop the file in public/facebook/ and
- * uncomment its line; remove a line to fall back to the drawing.
+ * src/components/facebook/ART.md). Remove a line to fall back to the drawing.
+ * Pictures are 512px WebP, the album photos 512×384, the sheep and the hand
+ * cut-outs with alpha; the wide ones stay 1536px.
  */
 const FILES: Partial<Record<ArtSlot, string>> = {
-  // wallpaper: "/facebook/wallpaper.webp",
-  // backdrop: "/facebook/backdrop.webp",
-  // buddyPicture: "/facebook/dp-buddy.webp",
-  // userPicture: "/facebook/dp-you.webp",
-  // photo1: "/facebook/photo-beach.webp",
-  // photo2: "/facebook/photo-party.webp",
-  // photo3: "/facebook/photo-roadtrip.webp",
-  // sheep: "/facebook/sheep.webp",
-  // finger: "/facebook/finger.webp",
+  wallpaper: "/facebook/wallpaper.webp",
+  backdrop: "/facebook/backdrop.webp",
+  buddyPicture: "/facebook/dp-buddy.webp",
+  userPicture: "/facebook/dp-you.webp",
+  photo1: "/facebook/photo-beach.webp",
+  photo2: "/facebook/photo-party.webp",
+  photo3: "/facebook/photo-roadtrip.webp",
+  sheep: "/facebook/sheep.webp",
+  finger: "/facebook/finger.webp",
 };
 
 /** The picture for a slot, or undefined to draw the fallback. */
