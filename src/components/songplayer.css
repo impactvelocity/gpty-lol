@@ -337,7 +337,7 @@
 .tune[data-skin="fury"] .tune-viz { padding: 0; border-radius: 3px; overflow: hidden; box-shadow: 0 0 0 1px rgba(255, 46, 136, 0.5); }
 .tune[data-skin="fury"] :focus-visible { outline-color: #2ef2ff; }
 
-/* ───────── Carol, the North Pole: the same pine leather and cream stitch as her window ───────── */
+/* ───────── Carol, the North Pole: night-sky leather and the cream stitch of her window ───────── */
 
 .tune[data-skin="elf"] {
   position: relative;
@@ -349,11 +349,12 @@
   border-radius: 18px;
   font-family: var(--font-elf-body), "Nunito", ui-rounded, system-ui, sans-serif;
   color: #f8f0e1;
+  /* Night-sky navy from the wallpaper, with a breath of the aurora along the top. */
   background:
-    radial-gradient(120% 100% at 50% -40%, rgba(110, 190, 130, 0.1), transparent 65%),
-    linear-gradient(180deg, #123c23 0%, #0b2b17 100%);
+    radial-gradient(120% 100% at 60% -40%, rgba(70, 200, 170, 0.12), transparent 65%),
+    linear-gradient(180deg, #1d3248 0%, #13233a 100%);
   box-shadow:
-    0 0 0 1px rgba(2, 12, 6, 0.7),
+    0 0 0 1px rgba(4, 10, 22, 0.75),
     inset 0 1px 0 rgba(255, 255, 255, 0.06),
     0 14px 30px -14px rgba(0, 0, 0, 0.8);
 }

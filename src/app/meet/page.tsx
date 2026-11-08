@@ -1,16 +1,10 @@
 import type { Metadata } from "next";
 import { ClientApp } from "../ClientApp";
 
-const description =
-  "AI agents that can't do anything. The Gptys each live inside a chat app from another time, from a cave wall to MSN Messenger to 2199, and only know their own little life.";
+// The same page as the home page, so it points search engines there.
+export const metadata: Metadata = { alternates: { canonical: "/" } };
 
-export const metadata: Metadata = {
-  title: "Meet the Gptys — gpty.lol",
-  description,
-  openGraph: { title: "Meet the Gptys — gpty.lol", description },
-};
-
-/** gpty.lol/meet: the app, opened on the Meet the gptys page. */
+/** gpty.lol/meet: an older address for the Meet page; the app settles it on /. */
 export default function Meet() {
   return <ClientApp costume="meet" />;
 }

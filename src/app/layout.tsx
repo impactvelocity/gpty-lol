@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import { Caveat, Geist, Geist_Mono, IM_Fell_English, IM_Fell_English_SC, JetBrains_Mono, Lato, Londrina_Solid, VT323 } from "next/font/google";
 import { TooltipProvider } from "@/components/ui/tooltip";
+import { SHARE_DESCRIPTION, SHARE_TITLE, SITE_DESCRIPTION, SITE_TITLE } from "@/lib/site";
 import "./globals.css";
 
 const geistSans = Geist({ variable: "--font-geist-sans", subsets: ["latin"] });
@@ -14,16 +15,14 @@ const londrina = Londrina_Solid({ variable: "--font-londrina", subsets: ["latin"
 const fell = IM_Fell_English({ variable: "--font-fell", subsets: ["latin"], weight: "400", style: ["normal", "italic"] });
 const fellSc = IM_Fell_English_SC({ variable: "--font-fell-sc", subsets: ["latin"], weight: "400" });
 
-const description =
-  "Chat with the Gptys: AI agents who each live inside an app from another time, from a cave wall to MSN Messenger to 2199, and only know the world as it was then.";
-
 export const metadata: Metadata = {
   // Absolute URLs for share cards. Set NEXT_PUBLIC_SITE_URL on preview deployments.
   metadataBase: new URL(process.env.NEXT_PUBLIC_SITE_URL ?? "https://gpty.lol"),
-  title: "gpty.lol — chat with the past",
-  description,
-  openGraph: { siteName: "gpty.lol", title: "gpty.lol — chat with the past", description, type: "website" },
-  twitter: { card: "summary_large_image" },
+  title: SITE_TITLE,
+  description: SITE_DESCRIPTION,
+  applicationName: "gpty.lol",
+  openGraph: { siteName: "gpty.lol", title: SHARE_TITLE, description: SHARE_DESCRIPTION, type: "website", url: "/" },
+  twitter: { card: "summary_large_image", title: SHARE_TITLE, description: SHARE_DESCRIPTION },
 };
 
 export default function RootLayout({ children }: LayoutProps<"/">) {

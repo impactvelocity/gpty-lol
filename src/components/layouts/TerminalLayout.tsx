@@ -721,7 +721,11 @@ export function TerminalLayout({ costume, lines, busy, waiting, error, onSend, o
   const input = useRef<HTMLTextAreaElement>(null);
   const [value, setValue] = useState("");
   const recall = useRef(-1);
-  const focusInput = useCallback(() => requestAnimationFrame(() => input.current?.focus({ preventScroll: true })), []);
+  /** Back to the prompt, but only with a mouse: on a phone, focusing pops the keyboard over the screen. */
+  const focusInput = useCallback(() => {
+    if (window.matchMedia("(pointer: fine)").matches) requestAnimationFrame(() => input.current?.focus({ preventScroll: true }));
+  }, []);
+  useEffect(() => focusInput(), [focusInput]);
 
   const send = () => {
     if (link === "down") return redial();
@@ -1449,7 +1453,6 @@ function CommandLine({
           }}
           onBlur={() => setFocus(false)}
           rows={1}
-          autoFocus
           spellCheck={false}
           autoComplete="off"
           autoCapitalize="off"

@@ -50,13 +50,13 @@ export function Logo({ id }: { id?: string }) {
 }
 
 /**
- * The logo as the way home: a real link to /meet (so it opens in a new tab
+ * The logo as the way home: a real link to / (so it opens in a new tab
  * with ⌘/Ctrl or the middle button), but a plain click switches in place.
  */
 export function LogoLink({ id, onMeet }: { id?: string; onMeet: () => void }) {
   return (
     <a
-      href="/meet"
+      href="/"
       aria-label="gpty.lol: Meet the Gptys"
       title="Meet the Gptys"
       onClick={(e) => {
@@ -64,7 +64,7 @@ export function LogoLink({ id, onMeet }: { id?: string; onMeet: () => void }) {
         e.preventDefault();
         onMeet();
       }}
-      className="-m-1 rounded-lg p-1 transition-transform duration-150 hover:scale-[1.04] active:scale-[0.97]"
+      className="-m-1 cursor-pointer rounded-lg p-1 transition-transform duration-150 hover:scale-[1.04] active:scale-[0.97]"
     >
       <Logo id={id} />
     </a>
@@ -101,7 +101,7 @@ export function AgentSidebar({
   onOpenAgent: (id: string) => void;
 }) {
   return (
-    <div className="flex h-full flex-col">
+    <div className="flex h-full flex-col [&_a]:cursor-pointer [&_button:not(:disabled)]:cursor-pointer">
       {/* The logo and GitHub, 24px down: level with the top of the chat window beside it. */}
       <div className="mb-3 mt-6 flex h-8 shrink-0 items-center justify-between pl-6 pr-3">
         <LogoLink id={meet ? undefined : agentId} onMeet={onMeet} />

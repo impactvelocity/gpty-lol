@@ -619,7 +619,7 @@ export const COSTUMES: Costume[] = [
     user: "Guest",
     avatar: "🎰",
     userAvatar: "🪙",
-    // The empty screen shows this under "Pull to prompt."; it's also for share cards and previews.
+    // The empty screen shows this under "Push to prompt."; it's also for share cards and previews.
     greeting: "Good evening. Fresh tokens, warm reels.\nType a prompt and spin. Take your time.",
     placeholder: "Type a prompt…",
     typing: "Spinning",

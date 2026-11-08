@@ -5,6 +5,7 @@ import { Menu } from "lucide-react";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { flushSync } from "react-dom";
 import { type Agent, agentEra, getAgent, isAgent } from "@/lib/agents";
+import { SITE_TITLE } from "@/lib/site";
 import { messageText, previewOf, useThreads } from "@/lib/threads";
 import type { ChatMessage } from "@/lib/types";
 import { AboutModal } from "./AboutModal";
@@ -39,10 +40,10 @@ function agentFromUrl(fromRoute?: string) {
   return isAgent(fromRoute) ? fromRoute : undefined;
 }
 
-/** /meet opens the Meet the gptys page. */
+/** The Meet the gptys page lives at the root; /meet opens it too (and settles on /). */
 const MEET = "meet";
 
-/** Keep the address bar shareable: gpty.lol/<agent> or gpty.lol/meet. */
+/** Keep the address bar shareable: gpty.lol/<agent>, or gpty.lol/ for the Meet page. */
 function rememberPath(id: string) {
   const url = new URL(window.location.href);
   url.pathname = `/${id}`;
@@ -65,8 +66,8 @@ export function ChatApp({ costume: fromRoute }: { costume?: string }) {
   const song = useSong(meet ? undefined : agent.song?.src, paused);
 
   useEffect(() => {
-    document.title = meet ? "Meet the Gptys — gpty.lol" : `${agent.name} · ${agentEra(agent)} — gpty.lol`;
-    rememberPath(meet ? MEET : agent.id);
+    document.title = meet ? SITE_TITLE : `${agent.name} · ${agentEra(agent)} — gpty.lol`;
+    rememberPath(meet ? "" : agent.id);
   }, [agent, meet]);
 
   /**

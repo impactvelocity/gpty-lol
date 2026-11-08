@@ -115,6 +115,7 @@ type Row = PromptRow | PayRow;
  */
 function toRows(lines: ChatLine[], busy: boolean): Row[] {
   const rows: Row[] = [];
+  const results: Result[] = [];
   let last = "";
   let again = 0;
   let n = 0;
@@ -135,13 +136,15 @@ function toRows(lines: ChatLine[], busy: boolean): Row[] {
     const r = splitReply(l.text, live);
     if (r.pending || (live && !r.body.trim())) return;
     const sym = r.kind ?? inferKind(r.body);
+    const o = outcome(l.id, sym, stake, results);
+    results.push(o.result);
     rows.push({
       kind: "pay",
       key: l.id,
       body: r.body,
       sym,
       tagged: !!r.kind,
-      outcome: outcome(l.id, sym, stake),
+      outcome: o,
       live,
       stake,
       out: betOf(bet).x * toks(r.body),
@@ -764,7 +767,7 @@ function Reels({
       const yNow = currentY(el);
       const L = (((yEnd - yNow) % loop) + loop) % loop + loop;
       const speed = (loop / TURN_MS) * (slow ? 0.35 : 1);
-      const dur = Math.min(slow ? 2000 : 1300, Math.max(520, (2.8 * L) / speed));
+      const dur = Math.min(slow ? 1500 : 720, Math.max(480, (2 * L) / speed));
       anims.current[i]?.cancel();
       el.style.transform = `translateY(${yEnd}px)`;
       const a = el.animate([{ transform: `translateY(${yEnd - L}px)` }, { transform: `translateY(${yEnd}px)` }], {
@@ -796,7 +799,7 @@ function Reels({
         stopReel(0, false);
       }, 0),
     );
-    timers.push(window.setTimeout(() => stopReel(1, false), 380));
+    timers.push(window.setTimeout(() => stopReel(1, false), 200));
     if (teasing) {
       timers.push(
         window.setTimeout(() => {
@@ -805,11 +808,11 @@ function Reels({
           const a = anims.current[2];
           if (a?.updatePlaybackRate) a.updatePlaybackRate(0.35);
           else if (a) a.playbackRate = 0.35;
-        }, 760),
+        }, 400),
       );
-      timers.push(window.setTimeout(() => stopReel(2, true), 2050));
+      timers.push(window.setTimeout(() => stopReel(2, true), 1300));
     } else {
-      timers.push(window.setTimeout(() => stopReel(2, false), 760));
+      timers.push(window.setTimeout(() => stopReel(2, false), 400));
     }
     return () => {
       timers.forEach(clearTimeout);
@@ -1109,7 +1112,7 @@ function Hero({ greeting, bet, disabled, onPick }: { greeting: string; bet: BetI
   return (
     <div className="lk-hero">
       <h1 className="lk-hero-h">
-        <span>Pull</span> <em>to</em> <span>Prompt</span>
+        <span>Push</span> <em>to</em> <span>Prompt</span>
       </h1>
       <p className="lk-hero-sub">
         {greeting.split("\n").map((l, i) => (

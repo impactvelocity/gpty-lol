@@ -155,16 +155,23 @@ function justPast(strip: Sym[], s: Sym) {
   return strip[(strip.indexOf(s) - 1 + n) % n];
 }
 
+/** A win of any size, as far as streaks go. */
+export const isWin = (r: Result) => r === "win" || r === "big";
+
 /**
  * Where a pull lands, decided by the reply's id so it always lands the same
  * way: about a third are near misses, four in ten are "wins" that pay back
  * 30-80% of the stake, a few are hallucinations, the rare big win pays triple
  * (just enough to keep you pulling), and now and then AGI lines up twice and
- * the third one slides by.
+ * the third one slides by. `before` is the earlier pulls' results, oldest first.
  */
-export function outcome(id: string, kind: Kind, stake: number): Outcome {
+export function outcome(id: string, kind: Kind, stake: number, before: Result[] = []): Outcome {
   const h = hash(`${id}:${kind}`);
-  const r = h % 100;
+  let r = h % 100;
+  // It's a demo, so it never runs hot or cold for long: after two wins in a
+  // row the next pull loses, and after two losses the next one wins.
+  const [a, b] = before.filter((x) => x !== "tilt").slice(-2);
+  if (b !== undefined && isWin(a) === isWin(b)) r = isWin(b) ? r % 52 : 52 + (r % 48);
   const r3 = STRIPS[2];
   if (r < 6) return { result: "agi", reels: ["agi", "agi", justPast(r3, "agi")], tease: true, kind, payout: 0 };
   if (r < 40) return { result: "near", reels: [kind, kind, justPast(r3, kind)], tease: true, kind, payout: 0 };

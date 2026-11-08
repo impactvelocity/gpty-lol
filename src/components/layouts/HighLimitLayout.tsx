@@ -3,7 +3,7 @@
 import { ArrowDown, Check, Copy, RotateCw, Volume2, VolumeX } from "lucide-react";
 import { Fragment, memo, useCallback, useEffect, useLayoutEffect, useMemo, useRef, useState } from "react";
 import { hlFonts } from "@/components/highlimit/font";
-import { readSound, saveSound, sfx } from "@/components/highlimit/sound";
+import { readSound, saveSound, sfx, warmSounds } from "@/components/highlimit/sound";
 import { HlSymbol, KIND_NAME } from "@/components/highlimit/symbols";
 import "@/components/highlimit/highlimit.css";
 import {
@@ -13,6 +13,7 @@ import {
   inferKind,
   type Kind,
   type Outcome,
+  type Result,
   outcome,
   PULL_FEE,
   rng,
@@ -112,6 +113,7 @@ type Row = PromptRow | PayRow;
  */
 function toRows(lines: ChatLine[], busy: boolean): Row[] {
   const rows: Row[] = [];
+  const results: Result[] = [];
   let last = "";
   let again = 0;
   let stake = 0;
@@ -128,13 +130,15 @@ function toRows(lines: ChatLine[], busy: boolean): Row[] {
     const r = splitReply(l.text, live);
     if (r.pending || (live && !r.body.trim())) return;
     const sym = r.kind ?? inferKind(r.body);
+    const o = outcome(l.id, sym, stake, results);
+    results.push(o.result);
     rows.push({
       kind: "pay",
       key: l.id,
       body: r.body,
       sym,
       tagged: !!r.kind,
-      outcome: outcome(l.id, sym, stake),
+      outcome: o,
       live,
       stake,
       out: toks(r.body),
@@ -179,6 +183,7 @@ export function HighLimitLayout({ costume, lines, busy, waiting, error, onSend, 
   const soundOn = useRef(sound);
   useEffect(() => {
     soundOn.current = sound;
+    if (sound) warmSounds();
   }, [sound]);
   const play = useCallback((k: keyof typeof sfx) => {
     if (soundOn.current) sfx[k]();
@@ -330,6 +335,7 @@ export function HighLimitLayout({ costume, lines, busy, waiting, error, onSend, 
     saveSound(on);
     soundOn.current = on;
     if (on) sfx.coin();
+    else sfx.spinStop();
   };
 
   const v = shown ? verdict(shown) : null;
@@ -521,7 +527,6 @@ function Reels({
   const box = useRef<HTMLDivElement>(null);
   const strips = useRef<(HTMLDivElement | null)[]>([]);
   const anims = useRef<(Animation | null)[]>([null, null, null]);
-  const ticker = useRef(0);
   const [stopped, setStopped] = useState(3);
   const [tease, setTease] = useState(false);
   const target = landed?.o.reels ?? IDLE;
@@ -568,8 +573,7 @@ function Reels({
   // Spin.
   useEffect(() => {
     if (!spinning || reduced()) return;
-    clearInterval(ticker.current);
-    ticker.current = window.setInterval(() => play("tick"), 90);
+    play("spinStart");
     STRIPS.forEach((strip, i) => {
       const el = strips.current[i];
       if (!el) return;
@@ -608,7 +612,7 @@ function Reels({
     if (spinning || !landedKey) return;
     const reels = targetRef.current;
     if (!landedFresh || reduced()) {
-      clearInterval(ticker.current);
+      sfx.spinStop();
       anims.current.forEach((a) => a?.cancel());
       reels.forEach((s, i) => {
         rest(i, s);
@@ -632,7 +636,7 @@ function Reels({
       const yNow = currentY(el);
       const L = ((((yEnd - yNow) % loop) + loop) % loop) + loop;
       const speed = (loop / TURN_MS) * (slow ? 0.35 : 1);
-      const dur = Math.min(slow ? 1900 : 1200, Math.max(520, (2.8 * L) / speed));
+      const dur = Math.min(slow ? 1400 : 760, Math.max(480, (2 * L) / speed));
       anims.current[i]?.cancel();
       el.style.transform = `translateY(${yEnd}px)`;
       const a = el.animate([{ transform: `translateY(${yEnd - L}px)` }, { transform: `translateY(${yEnd}px)` }], {
@@ -650,39 +654,41 @@ function Reels({
         anims.current[i] = null;
         setStopped(i + 1);
         if (i === 2) {
-          clearInterval(ticker.current);
+          sfx.spinStop();
           setTease(false);
           onLanded();
         }
       };
     };
     const teasing = teaseRef.current;
+    play("spinRundown");
     timers.push(
       window.setTimeout(() => {
         setStopped(0);
         stopReel(0, false);
       }, 0),
     );
-    timers.push(window.setTimeout(() => stopReel(1, false), 360));
+    timers.push(window.setTimeout(() => stopReel(1, false), 200));
     if (teasing) {
       timers.push(
         window.setTimeout(() => {
           setTease(true);
+          play("spinTease");
           const a = anims.current[2];
           if (a?.updatePlaybackRate) a.updatePlaybackRate(0.4);
           else if (a) a.playbackRate = 0.4;
-        }, 720),
+        }, 400),
       );
-      timers.push(window.setTimeout(() => stopReel(2, true), 1800));
+      timers.push(window.setTimeout(() => stopReel(2, true), 1150));
     } else {
-      timers.push(window.setTimeout(() => stopReel(2, false), 720));
+      timers.push(window.setTimeout(() => stopReel(2, false), 400));
     }
     return () => timers.forEach(clearTimeout);
     // Runs once per landing.
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [spinning, landedKey]);
 
-  useEffect(() => () => clearInterval(ticker.current), []);
+  useEffect(() => () => sfx.spinStop(), []);
 
   const o = landed?.o;
   const hit = (i: number) => !!o && !spinning && stopped === 3 && matches(o, i);
@@ -778,7 +784,7 @@ function Hero({ greeting, disabled, onPick }: { greeting: string; disabled: bool
   return (
     <div className="hl-hero">
       <h1>
-        Pull to <em>prompt.</em>
+        Push to <em>prompt.</em>
       </h1>
       <p>
         {greeting.split("\n").map((l, i) => (

@@ -387,74 +387,57 @@ img.lk-sym { display: block; object-fit: contain; }
 .lk-rig[data-result="win"] .lk-side-glow,
 .lk-rig[data-result="big"] .lk-side-glow { --g: rgba(255, 197, 51, 0.38); animation: lk-breathe 0.5s ease-in-out 6; }
 
-/* The jackpot ladder: borderless rows with a faint wash of the tier's colour, a little gem, warm amounts. */
+/* The jackpot ladder: the names bent in neon glass like LUCKY PROMPT and HOT, amounts in warm gold, one tube on the blink. */
 .lk-ladder {
   position: relative;
   display: flex;
   flex-direction: column;
-  gap: 6px;
+  gap: 2px;
   width: min(100%, 280px);
   height: 100%;
   justify-content: center;
 }
 .lk-tier {
-  --c1: #6fe3a5;
+  --c1: var(--lk-green);
   flex: 1;
-  max-height: 30px;
+  max-height: 38px;
   min-height: 0;
   display: flex;
   align-items: center;
   justify-content: space-between;
   gap: 8px;
-  padding: 0 12px 0 10px;
-  border-radius: 999px;
-  background: linear-gradient(90deg, color-mix(in srgb, var(--c1) 8%, transparent), rgba(255, 255, 255, 0.015) 60%, transparent);
+  padding: 0 6px;
+  border-bottom: 1px dashed color-mix(in srgb, var(--c1) 30%, transparent);
 }
+.lk-tier:last-child { border-bottom: 0; }
 .lk-tier b {
-  display: flex;
-  align-items: center;
-  gap: 7px;
-  font-family: var(--lk-sign);
+  font-family: var(--lk-neon);
   font-weight: 400;
-  font-size: clamp(8px, 4.2cqi, 11px);
-  letter-spacing: 0.16em;
-  color: color-mix(in srgb, var(--c1) 85%, #fff);
-}
-/* The gem. */
-.lk-tier b::before {
-  content: "";
-  flex: none;
-  width: 7px;
-  height: 7px;
-  border-radius: 50%;
-  background: radial-gradient(circle at 35% 35%, #fff 0 15%, var(--c1) 45%, color-mix(in srgb, var(--c1) 50%, #000));
-  box-shadow: 0 0 6px var(--c1);
+  font-size: clamp(11px, 6.4cqi, 19px);
+  letter-spacing: 0.02em;
+  color: color-mix(in srgb, var(--c1) 25%, #fff);
+  text-shadow: 0 0 2px #fff, 0 0 6px var(--c1), 0 0 14px var(--c1), 0 0 26px var(--c1);
 }
 .lk-tier span {
   font-family: var(--lk-mono);
   font-size: clamp(10px, 5.4cqi, 16px);
   letter-spacing: 0.06em;
-  color: #ffd98a;
-  text-shadow: 0 0 6px rgba(255, 179, 64, 0.45);
+  color: #fff3c4;
+  text-shadow: 0 0 2px #fff, 0 0 8px var(--lk-gold), 0 0 18px rgba(255, 140, 0, 0.6);
   font-variant-numeric: tabular-nums;
   white-space: nowrap;
 }
-.lk-tier[data-t="grand"] { --c1: #ffc533; }
-.lk-tier[data-t="grand"] span { color: #fff0b3; text-shadow: 0 0 8px rgba(255, 197, 51, 0.7); }
-.lk-tier[data-t="major"] { --c1: #c99bff; }
-.lk-tier[data-t="minor"] { --c1: #7cc8ff; }
-/* While the reels spin the tiers light in turn; a win lights the one it paid. */
+.lk-tier[data-t="grand"] { --c1: var(--lk-gold); }
+.lk-tier[data-t="major"] { --c1: #c56bff; }
+.lk-tier[data-t="minor"] { --c1: var(--lk-cyan); }
+.lk-tier[data-t="minor"] b { animation: lk-neon 4s linear infinite; }
+/* While the reels spin the tiers light in turn; a win flashes the one it paid. */
 .lk-rig[data-busy] .lk-tier { animation: lk-tier 1.2s ease-out infinite; animation-delay: calc(var(--i) * 0.3s); }
-.lk-rig[data-busy] .lk-tier b::before { animation: lk-gem 1.2s ease-out infinite; animation-delay: calc(var(--i) * 0.3s); }
-@keyframes lk-tier { 0% { background-color: color-mix(in srgb, var(--c1) 14%, transparent); } 35%, 100% { background-color: transparent; } }
-@keyframes lk-gem { 0% { box-shadow: 0 0 12px 2px var(--c1); } 35%, 100% { box-shadow: 0 0 6px var(--c1); } }
+@keyframes lk-tier { 0% { filter: brightness(1.6) saturate(1.2); } 35%, 100% { filter: none; } }
 .lk-rig[data-result="big"] .lk-tier[data-t="grand"],
 .lk-rig[data-result="agi"] .lk-tier[data-t="grand"],
-.lk-rig[data-result="win"] .lk-tier[data-t="mini"] { animation: lk-tier-win 0.5s ease-in-out 6 both; }
-.lk-rig[data-result="big"] .lk-tier[data-t="grand"] b::before,
-.lk-rig[data-result="agi"] .lk-tier[data-t="grand"] b::before,
-.lk-rig[data-result="win"] .lk-tier[data-t="mini"] b::before { box-shadow: 0 0 12px 3px var(--c1); }
-@keyframes lk-tier-win { 50% { background-color: color-mix(in srgb, var(--c1) 18%, transparent); } }
+.lk-rig[data-result="win"] .lk-tier[data-t="mini"] { animation: lk-tier-win 0.5s steps(2) 6 both; }
+@keyframes lk-tier-win { 50% { filter: brightness(1.8) saturate(1.3); } }
 
 /* The HOT 777 sign. */
 .lk-hot {
@@ -831,7 +814,7 @@ img.lk-sym { display: block; object-fit: contain; }
   border-image: linear-gradient(90deg, rgba(255, 214, 120, 0.22), rgba(255, 214, 120, 0.04)) 1;
 }
 .lk-pay-who { display: flex; align-items: center; gap: 7px; font-family: var(--lk-sign); font-size: 12px; letter-spacing: 0.14em; color: var(--lk-gold); text-shadow: 0 0 8px rgba(255, 197, 51, 0.5); }
-/* A gold gem by the name, like the jackpot ladder. */
+/* A gold gem by the name. */
 .lk-pay-who::before { content: ""; width: 7px; height: 7px; border-radius: 50%; background: radial-gradient(circle at 35% 35%, #fff 0 15%, #ffc533 45%, #8a5a0c); box-shadow: 0 0 6px #ffc533; }
 .lk-mini { display: flex; gap: 3px; padding: 3px; border-radius: 8px; background: #07030f; box-shadow: inset 0 0 0 1px #000, 0 0 0 1px rgba(255, 214, 120, 0.3); }
 .lk-mini i { display: grid; width: 26px; height: 26px; place-items: center; border-radius: 5px; background: #120a2c; box-shadow: inset 0 0 0 1px rgba(255, 255, 255, 0.05); }

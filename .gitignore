@@ -42,3 +42,11 @@ next-env.d.ts
 
 # keep the template committable
 !.env.example
+
+# large media / brag video build output (keep plan, captions, share copy)
+/brag-output/work/
+/brag-output/*.mp4
+/brag-output/*.mov
+/brag-output/*.wav
+*.mov
+*.mkv

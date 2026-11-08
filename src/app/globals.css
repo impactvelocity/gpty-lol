@@ -401,6 +401,8 @@ button:hover > .gpty .gpty-body { animation: gpty-wiggle .5s ease-in-out; }
 @keyframes meet-bob { 0%, 100% { transform: translateY(0); } 50% { transform: translateY(-4px); } }
 @keyframes meet-in { from { opacity: 0; transform: translateY(6px); } to { opacity: 1; transform: none; } }
 @media (prefers-reduced-motion: reduce) { .meet-bob { animation: none !important; } }
+@keyframes meet-fade { from { opacity: 0; } }
+@keyframes meet-eq { 0%, 100% { transform: scaleY(.3); } 50% { transform: scaleY(1); } }
 
 /* Meet page footer (ported from LotteryClock): twinkling stars, bobbing bats, and the graveyard's ghosts, fog and pumpkins. */
 @keyframes lc-twinkle { 0%, 100% { opacity: 0.15; transform: scale(0.7); } 50% { opacity: 1; transform: scale(1); } }
