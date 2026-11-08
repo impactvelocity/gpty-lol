@@ -254,6 +254,43 @@ html, body { height: 100%; overflow: hidden; }
 .no-scrollbar { scrollbar-width: none; }
 .no-scrollbar::-webkit-scrollbar { display: none; }
 
+/* The share sheet: rises from the bottom on phones, springs in at the center elsewhere. */
+.share-sheet {
+  --sh-bg: #ffffff;
+  --sh-ink: #15131f;
+  --sh-soft: #5b5870;
+  --sh-icon: #3d3a4f;
+  --sh-tile: rgb(0 0 0 / .05);
+  --sh-tile-hover: rgb(0 0 0 / .09);
+  --sh-line: rgb(0 0 0 / .1);
+  --sh-btn: #15131f;
+  --sh-btn-ink: #ffffff;
+  --sh-tint: 16%;
+  --sh-shadow: 0 30px 80px -20px rgba(20, 10, 50, .5);
+}
+/* Night scenes (Grug's cave, the séance, the Grid…) get a dark sheet to match. */
+.share-sheet[data-theme="dark"] {
+  --sh-bg: #19171f;
+  --sh-ink: #f4f2fa;
+  --sh-soft: rgb(244 242 250 / .62);
+  --sh-icon: rgb(244 242 250 / .8);
+  --sh-tile: rgb(255 255 255 / .07);
+  --sh-tile-hover: rgb(255 255 255 / .12);
+  --sh-line: rgb(255 255 255 / .1);
+  --sh-btn: #f4f2fa;
+  --sh-btn-ink: #15131f;
+  --sh-tint: 22%;
+  --sh-shadow: 0 30px 80px -20px rgba(0, 0, 0, .8), inset 0 0 0 1px rgb(255 255 255 / .08);
+}
+.share-sheet[data-theme="dark"]::backdrop { background: rgb(0 0 0 / .62); }
+.share-sheet[open] { animation: share-up .32s cubic-bezier(.22,1,.36,1); }
+.share-sheet[open]::backdrop { animation: share-fade .2s ease-out; }
+@media (min-width: 640px) { .share-sheet[open] { animation-name: share-pop; } }
+@keyframes share-up { from { transform: translateY(40px); opacity: 0; } }
+@keyframes share-pop { from { transform: translateY(16px) scale(.97); opacity: 0; } }
+@keyframes share-fade { from { opacity: 0; } }
+@media (prefers-reduced-motion: reduce) { .share-sheet[open], .share-sheet[open]::backdrop { animation: none; } }
+
 /* ---------- Agent shell: a clean, quiet frame around the era windows ---------- */
 /* The shell floats on the agent's scene; its ink flips with the scene's tone. */
 .shell {
@@ -390,11 +427,6 @@ button:hover > .gpty .gpty-body { animation: gpty-wiggle .5s ease-in-out; }
 .gpty[data-look="pixel"] .gpty-look { transition: none; }
 .gpty[data-look="pixel"][data-mood="thinking"] .gpty-look { transform: translate(3px, -3px); }
 @media (prefers-reduced-motion: reduce) { .gpty * { animation: none !important; } }
-
-/* Meet page, demo video placeholder: the gptys in the dark, only their eyes lit, in each one's color (--glow). */
-.meet-eyes .gpty-body > path { fill: color-mix(in srgb, var(--glow) 12%, #0f0d17); }
-.meet-eyes .gpty-eyes ellipse { fill: color-mix(in oklab, var(--glow), white 35%); }
-.meet-eyes .gpty { filter: drop-shadow(0 0 5px color-mix(in srgb, var(--glow) 70%, transparent)); }
 
 /* Meet page, feature cards (src/components/meet/FeatureStages.tsx): a gentle bob, and content easing in as it changes. */
 .meet-bob { animation: meet-bob var(--d, 3s) ease-in-out infinite; animation-delay: var(--dl, 0s); }

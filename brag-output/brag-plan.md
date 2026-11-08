@@ -1,5 +1,13 @@
 # Gpty demo film: plan
 
+## v14
+
+- The gpty mark tucks into the top left, not the right
+- The four things an agent does now stack into a list (drawing on the left, line on the right), each arriving under the last as the list re-centres, so by "book your flights" the whole list of what an agent can do is on screen before the Jippities arrive
+- "Built for Kiroween / Costume Contest" lands as one headline, no stagger
+- Music: Daisy's song fades to about 5% at 0:38 and keeps going, very subtle, until about 1:08. Lucky's song is silent until exactly 1:15, where it enters on its knock at full volume (started at 44.36s into the track, just before the first knock) and runs to the end of the chorus. Film is 1:49
+- While the music is out (Lucky's window to 1:15), the slot machine's own sounds carry it: a coin as his window opens, a lever on every pull, three reel stops as they land, and a win/near/coin/big/jackpot sound when a badge pops, all timed to the reels in the recording. After 1:15 they sit 9 dB lower under the song
+
 ## v13
 
 - Opens on the gpty mark, centred, which tucks into the top right as the voice starts; "AI Agents" then rises on the words. The mark stays through the white section and fades as night falls

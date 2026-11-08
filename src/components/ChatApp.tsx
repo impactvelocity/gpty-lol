@@ -4,13 +4,14 @@ import { useChat } from "@ai-sdk/react";
 import { Menu } from "lucide-react";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { flushSync } from "react-dom";
-import { type Agent, agentEra, getAgent, isAgent } from "@/lib/agents";
+import { type Agent, agentEra, currentAgentId, getAgent, isAgent } from "@/lib/agents";
 import { SITE_TITLE } from "@/lib/site";
 import { messageText, previewOf, useThreads } from "@/lib/threads";
 import type { ChatMessage } from "@/lib/types";
 import { AboutModal } from "./AboutModal";
 import { AgentSidebar, LogoLink } from "./AgentSidebar";
 import { MeetPage } from "./MeetPage";
+import { ShareModal } from "./ShareModal";
 import { toneOf } from "./Scenes";
 import { SongPlayer } from "./SongPlayer";
 import { usePaused, useSong } from "./useSong";
@@ -31,8 +32,13 @@ const SETTLE: Keyframe[] = [
   { transform: "none" },
 ];
 
-/** An agent in the URL (/msn) opens a new chat with that agent. */
+/** The query a shared link names its agent with: gpty.lol/?agent=msn */
+const SHARE_PARAM = "agent";
+
+/** An agent in the URL (/msn, or a shared ?agent=msn) opens a new chat with that agent. */
 function agentFromUrl(fromRoute?: string) {
+  const shared = currentAgentId(new URLSearchParams(window.location.search).get(SHARE_PARAM));
+  if (shared) return shared;
   // Read the address bar rather than trusting the route alone: switching
   // agents rewrites the path without a navigation, so it's the newer value.
   const fromPath = window.location.pathname.split("/")[1];
@@ -48,6 +54,8 @@ function rememberPath(id: string) {
   const url = new URL(window.location.href);
   url.pathname = `/${id}`;
   url.searchParams.delete("costume");
+  // A shared ?agent= has done its job once that agent is open: the path says it now.
+  url.searchParams.delete(SHARE_PARAM);
   window.history.replaceState(null, "", url);
 }
 
@@ -58,6 +66,7 @@ export function ChatApp({ costume: fromRoute }: { costume?: string }) {
   const [aboutOpen, setAboutOpen] = useState(false);
   const [mood, setMood] = useState<Mood>("watching");
   const [drawer, setDrawer] = useState(false);
+  const [sharing, setSharing] = useState(false);
   const [meet, setMeet] = useState(
     () => window.location.pathname.split("/")[1] === MEET || (fromRoute === MEET && !fromUrl),
   );
@@ -131,6 +140,10 @@ export function ChatApp({ costume: fromRoute }: { costume?: string }) {
       mood={mood}
       onOpenAgent={onOpenAgent}
       onMeet={onMeet}
+      onShare={() => {
+        setDrawer(false);
+        setSharing(true);
+      }}
     />
   );
 
@@ -197,6 +210,7 @@ export function ChatApp({ costume: fromRoute }: { costume?: string }) {
         </main>
 
         <AboutModal open={aboutOpen} onClose={() => setAboutOpen(false)} agent={agent} />
+        {sharing && <ShareModal agentId={meet ? undefined : agent.id} onClose={() => setSharing(false)} />}
       </div>
     </GptyTheme>
   );

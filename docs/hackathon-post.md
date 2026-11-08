@@ -2,9 +2,9 @@
 
 **[Meet the Gptys at gpty.lol →](https://gpty.lol)**
 
-<!-- Images are first drafts in docs/hackathon-images/. Devpost needs them uploaded: drag each one into the editor where its line is. -->
+<!-- Images live in public/hackathon/ and are served from https://gpty.lol/hackathon/ once the site is deployed. -->
 
-![gpty: AI agents that can’t do anything](hackathon-images/banner.png)
+![gpty: AI agents that can’t do anything](https://gpty.lol/hackathon/banner.png)
 
 ## Inspiration
 
@@ -23,7 +23,7 @@ Each Gpty is an agent that doesn't do anything except be fun. Each one:
 - **is packed with easter eggs** for those who know.
 - **comes with a custom song** that matches the vibez.
 
-![The Gptys and their chat apps](hackathon-images/gptys-windows.png)
+![The Gptys and their chat apps](https://gpty.lol/hackathon/gptys-windows.png)
 
 ### Meet the Gptys
 

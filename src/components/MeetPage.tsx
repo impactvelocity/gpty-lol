@@ -1,8 +1,8 @@
 "use client";
 
-import { Play } from "lucide-react";
 import { type CSSProperties, type ReactNode } from "react";
 import { AGENTS, type Agent, agentEra } from "@/lib/agents";
+import { GITHUB_LOGO, LINKEDIN_LOGO, MAKER, REPO } from "@/lib/maker";
 import { HACKATHON, KIRO_GHOST_PATH } from "./AgentSidebar";
 import { Gpty } from "./Gpty";
 import { SongStage, ThemeStage, TimeStage } from "./meet/FeatureStages";
@@ -19,11 +19,8 @@ const ROSTER: Agent[] = AGENTS.filter((a) => !a.hidden);
  * and alternates: docs/meet-copy.md.
  */
 
-/**
- * The demo video. Set the YouTube id ("dQw4w9WgXcQ") when it's ready; left
- * empty, the frame shows a "coming soon" card instead.
- */
-const DEMO_YOUTUBE_ID = "";
+/** The demo video: https://youtu.be/SlJdcnLrmMo */
+const DEMO_YOUTUBE_ID = "SlJdcnLrmMo";
 
 /**
  * Other agents can / a Gpty can't: their feature list, crossed out, with a
@@ -112,17 +109,7 @@ function SectionHead({ title, children }: { title: string; children?: ReactNode 
   );
 }
 
-const MAKER = {
-  name: "Dylan Jones",
-  site: "https://hidylanjones.com",
-  avatar: "/dylan.webp",
-  linkedin: "https://www.linkedin.com/in/hidylanjones",
-};
-
-const LINKEDIN_LOGO =
-  "M20.447 20.452h-3.554v-5.569c0-1.328-.027-3.037-1.852-3.037-1.853 0-2.136 1.445-2.136 2.939v5.667H9.351V9h3.414v1.561h.046c.477-.9 1.637-1.85 3.37-1.85 3.601 0 4.267 2.37 4.267 5.455v6.286zM5.337 7.433c-1.144 0-2.063-.926-2.063-2.065 0-1.138.92-2.063 2.063-2.063 1.14 0 2.064.925 2.064 2.063 0 1.139-.925 2.065-2.064 2.065zm1.782 13.019H3.555V9h3.564v11.452zM22.225 0H1.771C.792 0 0 .774 0 1.729v20.542C0 23.227.792 24 1.771 24h20.451C23.2 24 24 23.227 24 22.271V1.729C24 .774 23.2 0 22.222 0h.003z";
-
-/** Who made it: avatar, name (to the maker's site), and their LinkedIn. */
+/** Who made it: avatar, name (to the maker's site), their LinkedIn, and the source on GitHub. */
 function BuiltBy() {
   return (
     <div className="relative mb-8 flex flex-wrap items-center justify-center gap-2 text-[15px] text-[#4a475c] @2xl:text-[16px]">
@@ -144,6 +131,18 @@ function BuiltBy() {
       >
         <svg aria-hidden viewBox="0 0 24 24" className="h-[15px] w-[15px]" fill="currentColor">
           <path d={LINKEDIN_LOGO} />
+        </svg>
+      </a>
+      <a
+        href={REPO}
+        target="_blank"
+        rel="noopener noreferrer"
+        aria-label="gpty.lol on GitHub"
+        title="Source on GitHub"
+        className="-m-1 grid h-7 w-7 place-items-center rounded-full text-[#3d3a4f] transition-colors hover:bg-black/[.05] hover:text-[#15131f]"
+      >
+        <svg aria-hidden viewBox="0 0 24 24" className="h-[15px] w-[15px]" fill="currentColor">
+          <path d={GITHUB_LOGO} />
         </svg>
       </a>
       <span aria-hidden className="mx-1 h-4 w-px bg-black/15" />
@@ -207,29 +206,13 @@ export function MeetPage({ onOpenAgent }: { onOpenAgent: (id: string) => void })
       <section id="demo" aria-label="Demo video" className="scroll-mt-6 px-6 pb-16 @2xl:px-12">
         <div className="mx-auto max-w-[980px] rounded-[28px] bg-[#f3effc] p-2 ring-1 ring-[#e4dcf8] @2xl:p-3">
           <div className="relative aspect-video overflow-hidden rounded-[20px] bg-[#0f0d17] shadow-[0_24px_48px_-24px_rgba(60,40,110,.5)]">
-            {DEMO_YOUTUBE_ID ? (
-              <iframe
-                className="absolute inset-0 h-full w-full"
-                src={`https://www.youtube-nocookie.com/embed/${DEMO_YOUTUBE_ID}?rel=0`}
-                title="gpty.lol demo video"
-                allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
-                allowFullScreen
-              />
-            ) : (
-              <div className="meet-eyes absolute inset-0 flex flex-col items-center justify-center gap-6 text-white">
-                <div className="flex items-end gap-2">
-                  {ROSTER.slice(0, 5).map((a) => (
-                    <span key={a.id} style={{ "--glow": a.look.color } as CSSProperties}>
-                      <Gpty agent={a} size={30} mood="watching" />
-                    </span>
-                  ))}
-                </div>
-                <span className="grid h-14 w-14 place-items-center rounded-full bg-white/10 ring-1 ring-white/20 @2xl:h-16 @2xl:w-16">
-                  <Play className="ml-0.5 h-6 w-6 fill-current" />
-                </span>
-                <p className="text-[14px] text-white/55">Demo video coming soon</p>
-              </div>
-            )}
+            <iframe
+              className="absolute inset-0 h-full w-full"
+              src={`https://www.youtube-nocookie.com/embed/${DEMO_YOUTUBE_ID}?rel=0`}
+              title="gpty.lol demo video"
+              allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+              allowFullScreen
+            />
           </div>
         </div>
       </section>
