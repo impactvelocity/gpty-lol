@@ -19,6 +19,7 @@ Built for the Kiroween Costume Contest with the Kiro IDE.
 0:20 What every Gpty comes with
 0:28 The roll call
 1:09 Try one
+1:10 Lucky plays us out
 
 ## Hashtags
 

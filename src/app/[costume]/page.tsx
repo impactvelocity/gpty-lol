@@ -3,7 +3,7 @@ import { notFound } from "next/navigation";
 import { Suspense } from "react";
 import { agentEra, getAgent, isAgent } from "@/lib/agents";
 import { COSTUMES, costumeTitle } from "@/lib/costumes";
-import { ClientApp, Splash } from "../ClientApp";
+import { ClientApp } from "../ClientApp";
 
 type Props = { params: Promise<{ costume: string }> };
 
@@ -31,7 +31,7 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
 /** gpty.lol/msn and friends: open the app wearing that costume. */
 export default function CostumePage({ params }: Props) {
   return (
-    <Suspense fallback={<Splash />}>
+    <Suspense fallback={null}>
       <Costume params={params} />
     </Suspense>
   );

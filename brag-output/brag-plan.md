@@ -1,5 +1,40 @@
 # Gpty demo film: plan
 
+## v13
+
+- Opens on the gpty mark, centred, which tucks into the top right as the voice starts; "AI Agents" then rises on the words. The mark stays through the white section and fades as night falls
+- Meet the Gptys and the "can't do anything" line come in faster; the costume change starts on "whole" and each one grows to 1.2x as it changes
+- Graveyard: the "Built for Kiroween" headline lands quicker; the 20–21s dead spot is gone (the graveyard leaves faster and the chat column is already arriving as it does)
+- Column titles are medium weight; "Dressed up" is the whole title, with the three avatars bare (no app labels) and closer together
+- Chats: Arthur's post goes out the moment his window opens and his slot is recorded at 3.2x so reddit's page-load pause and the comments fit; Channing's channel hovers land on each "that"; Mortimer's planchette is hidden for its first 1.2s so it doesn't flail on open
+- Ending: Lucky's song stays quieter (never above −24 dB) until 1:14, then ramps to full for the chorus; the logo is smaller (200px) and the twelve sit smaller (56px) with more air, placed as a group above the reels
+
+## v12
+
+- End scene zooms in on just the top of Lucky's machine: the title bar and the three reels, framed in gold under the logo and the row, so the reels can be seen spinning and landing round after round while the song plays
+- Lucky's music stays subtle from his entrance (never above −16 dB) until 1:15, then ramps to full over 1.6s so the "Prompt, prompt" chorus really hits; its position in the song is unchanged
+
+## v11
+
+- "Dressed up as an app" is one line, with the three avatars smaller to fit the column; the song column is just the title and the bars (no artist, no badge)
+- MSN's and Skype's corner toasts are hidden in the recording, so no reply streams in a notification (Skype's incoming-call toast stays). Capture-only; the site is unchanged
+- Name tags sit top right and land on the frame each window really appears, found in the take itself (the swap frames), not on a guessed offset
+- Grug → Mortimer dips through the dark instead of fading the bright red cave away
+- End scene rebuilt: "Built for Kiroween" is gone; the slots costume's own casino wallpaper sits behind (dimmed, flickering) with the marquee around the frame; the gpty logo and one row of the twelve at the top; and Lucky's machine shrinks into a gold-framed slot and keeps going, pulling a new round every 4.6s with the reels landing and a fresh reply streaming each time (a lever sound on every pull)
+- Lucky's song now joins at its pre-chorus (32s in) so the "Prompt, prompt, bye-bye, go, go" chorus hits at full volume right after the voice ends, and the film runs to the end of that chorus. Film is 1:51
+
+## v10
+
+- The names become their moments on "stuck" instead of waiting for "moment"
+- The ghost gptys now haunt the graveyard itself, in its perspective: the far ones small and faint high over the hills, the near ones larger and brighter among the headstones, each with a subtle vertical float (no more circling)
+- 22–28s is cleaner: plain fades everywhere (no bounces), the ghosts fade instead of flying off, the song player is just the avatar, title and bars (no card)
+- Roll call re-recorded at half speed with the page's own animations slowed to match, so it plays at 2x and every reply streams in fast enough to land in its slot. Every Gpty gets a message now (Daisy hi, Kayleigh "have u heard of ai?", Cal "can i call u?" then the call, Mark "r u THE mark??", Arthur's hot dog post, Channing's lunch orders, Grug's rock, Mortimer's board, Shelly's "help", Carol's bicycle, Cora "are you agi?", Lucky's "will i win big tonight?" spin)
+- The shell's window bounce is replaced with a soft fade in the recording, and the wallpapers crossfade properly (no more red flash from Grug to Mortimer). Capture-only; the site is unchanged
+- Name tags no longer overlap on a swap
+- Lucky's song starts 1.6s before his window, fades in over 2s, and goes to full once the voice is done
+- End card: smaller gptys, no gpty.lol text (the logo carries it), a marquee of bulbs around the frame that light in a sweep then chase, and the card holds 20s after the voice while they hop, glance and blink to the song. Film is 1:35
+- "AI Agents" is already rising at frame 0, so the film never opens on an empty white screen
+
 ## v9
 
 - smarter, faster and better now take the place of "AI Agents" (it leaves as the first word arrives), each one centred and large with its icon

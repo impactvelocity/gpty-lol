@@ -4,7 +4,7 @@
 
 <!-- Images are first drafts in docs/hackathon-images/. Devpost needs them uploaded: drag each one into the editor where its line is. -->
 
-![AI agents that can’t do anything](hackathon-images/01-hero.png)
+![gpty: AI agents that can’t do anything](hackathon-images/banner.png)
 
 ## Inspiration
 
@@ -23,7 +23,7 @@ Each Gpty is an agent that doesn't do anything except be fun. Each one:
 - **is packed with easter eggs** for those who know.
 - **comes with a custom song** that matches the vibez.
 
-![Twelve Gptys, twelve chat apps](hackathon-images/02-roster.png)
+![The Gptys and their chat apps](hackathon-images/gptys-windows.png)
 
 ### Meet the Gptys
 
@@ -48,8 +48,6 @@ Lucky lives at the end of row G in the Token Palace, a casino where it's always 
 
 That's true of all of them. None of them will book your flights, but ask a real question and they'll try to help in their own voice.
 
-![Five Gptys answer “what should I have for dinner tonight?”](hackathon-images/03-same-question.png)
-
 ### Easter eggs for those who know
 
 - Nudge Kayleigh on MSN and her window shakes. She'll nudge you back.
@@ -59,15 +57,9 @@ That's true of all of them. None of them will book your flights, but ask a real 
 - Grug has a `/think` mode. The answers get longer. They're still in cave talk.
 - Pick a Gpty and every Gpty on screen changes costume to match: pixel icons for ICQ, glossy gel for MSN, ochre paintings for Grug, engravings for Mortimer, felt ornaments for Carol, neon for Shelly, marquee lights for Lucky.
 
-![Kayleigh nudges back, Cal rings on Skype, Lucky spins](hackathon-images/04-easter-eggs.png)
-
-![Every Gpty redrawn in each era’s style](hackathon-images/05-costumes.png)
-
 ### A song for every Gpty
 
 Every Gpty has a theme song by a band from its world. Kayleigh's is "If You Call, I'll Answer" by The Away Messages. Mark's is "Poke Me Back" by The Thrown Sheep. Grug's is "Stone and Bone" by The Flintknappers. Lucky's is "The House Always Wins" by The High Rollers.
-
-![A custom song for every Gpty](hackathon-images/06-songs.png)
 
 ## How I built it
 
@@ -78,8 +70,6 @@ Underneath, one model wears every costume. Each Gpty is the same model with thre
 - **A persona.** A system prompt covering who they are, where they are, what they care about and how they talk. It lives on the server, and the browser only sends which Gpty you're talking to.
 - **A costume.** Each app is its own hand-built chat window, with period window chrome (Windows, XP, Vista, macOS), fonts, emoticons, sounds and quirks.
 - **A scene.** An illustrated backdrop from each era that crossfades in when you switch Gptys.
-
-![One model, twelve costumes](hackathon-images/07-how.png)
 
 The personas and the windows know about each other, which is how the easter eggs work. Kayleigh's prompt tells her she can start a reply with `/nudge`, and the MSN window turns that into a real nudge. Cal's emoticon codes become animated smileys. Lucky's answers come out as payouts.
 
@@ -106,8 +96,6 @@ Conversations are saved in your browser, so you can come back to Grug later. He'
 - The windows are more than skins. The Gptys can nudge you, ring you and pay out.
 - A song for every Gpty.
 - Lucky.
-
-![Demo video](hackathon-images/08-demo.png)
 
 ## What I learned
 

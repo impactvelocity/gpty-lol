@@ -2,20 +2,13 @@
 
 import dynamic from "next/dynamic";
 
-export function Splash() {
-  return (
-    <div className="grid h-dvh place-items-center bg-[#121214] font-sans text-sm text-white/60">
-      <span className="animate-pulse">🎭 gpty.lol</span>
-    </div>
-  );
-}
-
 // Threads and the chosen costume live in localStorage, so the app renders on
 // the client only. This avoids hydration mismatches and a flash of the
-// default costume.
+// default costume. Nothing shows while it loads; the body's dark background
+// fills the gap.
 const ChatApp = dynamic(() => import("@/components/ChatApp").then((m) => m.ChatApp), {
   ssr: false,
-  loading: Splash,
+  loading: () => null,
 });
 
 export function ClientApp({ costume }: { costume?: string }) {
