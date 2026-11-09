@@ -170,17 +170,19 @@ export function ChatApp({ costume: fromRoute }: { costume?: string }) {
         )}
 
         <main className="relative flex min-w-0 flex-1 flex-col">
-          {/* Phones have no room for the sidebar: a menu button opens it as a drawer. */}
-          <header className="flex h-12 shrink-0 items-center gap-1 px-2 md:hidden">
+          {/* Phones have no room for the sidebar: a menu button opens it as a drawer.
+              The bar is tall and its targets 44px so a thumb going for the menu
+              doesn't land on the song's play button just below. */}
+          <header className="mb-1 flex h-14 shrink-0 items-center px-1.5 md:hidden">
             <button
               onClick={() => setDrawer(true)}
               aria-label="Open agents"
-              className="grid h-9 w-9 place-items-center rounded-lg text-[var(--shell-muted)] hover:bg-[var(--shell-hover)] hover:text-[var(--shell-text)]"
+              className="grid h-11 w-11 place-items-center rounded-lg text-[var(--shell-muted)] hover:bg-[var(--shell-hover)] hover:text-[var(--shell-text)]"
             >
-              <Menu className="h-5 w-5" />
+              <Menu className="h-[22px] w-[22px]" />
             </button>
-            <LogoLink id={meet ? undefined : agent.id} onMeet={onMeet} />
-            <ShareButton onClick={() => setSharing(true)} className="ml-auto flex" />
+            <LogoLink id={meet ? undefined : agent.id} onMeet={onMeet} pad="px-1.5 py-2.5" />
+            <ShareButton onClick={() => setSharing(true)} className="ml-auto mr-0.5 flex" />
           </header>
           <div className="flex min-h-0 flex-1 flex-col px-2 pb-2 md:p-6">
             {/* The agent's song: a bar as wide as its window, level with the logo. */}

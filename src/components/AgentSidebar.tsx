@@ -43,7 +43,16 @@ export function Logo({ id }: { id?: string }) {
  * The logo as the way home: a real link to / (so it opens in a new tab
  * with ⌘/Ctrl or the middle button), but a plain click switches in place.
  */
-export function LogoLink({ id, onMeet }: { id?: string; onMeet: () => void }) {
+export function LogoLink({
+  id,
+  onMeet,
+  pad = "-m-1 p-1",
+}: {
+  id?: string;
+  onMeet: () => void;
+  /** The padding around the logo, which is its tap area (phones want a bigger one). */
+  pad?: string;
+}) {
   return (
     <a
       href="/"
@@ -54,7 +63,7 @@ export function LogoLink({ id, onMeet }: { id?: string; onMeet: () => void }) {
         e.preventDefault();
         onMeet();
       }}
-      className="-m-1 cursor-pointer rounded-lg p-1 transition-transform duration-150 hover:scale-[1.04] active:scale-[0.97]"
+      className={`${pad} block cursor-pointer rounded-lg transition-transform duration-150 hover:scale-[1.04] active:scale-[0.97]`}
     >
       <Logo id={id} />
     </a>
